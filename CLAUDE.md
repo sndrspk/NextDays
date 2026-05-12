@@ -80,6 +80,6 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 - [x] M2 — Calendar Strip (read-only): responsive 4/7-day window, today highlight, sort per §5.2, due-date 🔔 indicators per §5.4, future-`start_date` gating
 - [x] M3 — Task Interactions: per-column quick-add, checkbox toggle (`completed`/`completed_at`), client-side rollover on app load with work-project weekend exception
 - [x] M4 — Task Detail Panel: click-to-open slide-in panel with auto-save-on-blur for title, notes, start/due dates, project (dropdown), and tags. Escape/backdrop/× to close.
-- [ ] M5 — Projects
+- [x] M5 — Projects: sidebar list with create/edit/delete (`ProjectForm`), Personal/Work toggle that activates the rollover exception, `ProjectView` with active/completed/all filter, coloured project dot on task cards. Inter set as the interface font.
 - [ ] M6 — Custom Lists
 - [ ] M7 — Polish & Deploy

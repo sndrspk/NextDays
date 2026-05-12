@@ -1,6 +1,7 @@
 import type { ISODate, Task } from "../../types";
 import { diffInDays } from "../../lib/dates";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
+import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
 
 type DueUrgency = "overdue" | "today" | "tomorrow" | "later" | "none";
@@ -22,6 +23,10 @@ interface TaskCardProps {
 export default function TaskCard({ task, today }: TaskCardProps) {
   const toggle = useToggleTaskCompleted();
   const { setSelectedTaskId } = useSelection();
+  const projectsQuery = useProjects();
+  const project = task.project_id
+    ? projectsQuery.data?.find((p) => p.id === task.project_id)
+    : undefined;
   const u = urgency(task.due_date, today, task.completed);
 
   const titleClass = task.completed
@@ -71,9 +76,19 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           </svg>
         )}
       </button>
-      <span className={`text-sm leading-snug ${titleClass}`}>
-        {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
-        {task.title}
+      <span className={`flex flex-1 items-start gap-1.5 text-sm leading-snug ${titleClass}`}>
+        {project && (
+          <span
+            aria-hidden
+            title={project.name}
+            className="mt-1.5 inline-block h-1.5 w-1.5 flex-none rounded-full"
+            style={{ backgroundColor: project.colour }}
+          />
+        )}
+        <span>
+          {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
+          {task.title}
+        </span>
       </span>
     </li>
   );
