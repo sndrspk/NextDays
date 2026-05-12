@@ -56,7 +56,10 @@ Once Milestone 1 lands, expect to see:
 - Project is hosted on Supabase cloud (free tier). The user owns the project; Claude does not provision it.
 - Client lives in `src/lib/supabase.ts` and is constructed from `import.meta.env.VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
 - Schema is checked into `supabase/migrations/` so anyone can re-apply it. Run it via the Supabase SQL editor (paste & run) or the Supabase CLI if/when added.
-- **Auth + RLS (added at M7.5):** Supabase magic-link auth (single owner). RLS enabled on all four tables; every row has `user_id` defaulting to `auth.uid()`. The Supabase project needs its **Redirect URLs** allowlist to include both `http://localhost:5173/` (dev) and the deployed origin (`https://sndrspk.github.io/NextDays/`) for the magic-link round-trip to land back on the app.
+- **Auth + RLS (added at M7.5):** Supabase magic-link auth (single owner). RLS enabled on all four tables; every row has `user_id` defaulting to `auth.uid()`.
+  - Client passes `shouldCreateUser: false` to `signInWithOtp`, so strangers entering their own email get rejected with "This email isn't authorised to sign in." Only existing rows in `auth.users` can request a magic link.
+  - **The owner is created manually once**: Supabase dashboard → Authentication → Users → "Add user" → use your email. After that, sign-in works.
+  - The Supabase project needs its **Redirect URLs** allowlist to include both `http://localhost:5173` (dev) and the deployed origin (`https://sndrspk.github.io/NextDays/`) for the magic-link round-trip to land back on the app.
 
 ## Schema notes (plan §4 + §10)
 

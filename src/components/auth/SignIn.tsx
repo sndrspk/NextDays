@@ -20,7 +20,12 @@ export default function SignIn() {
       setStatus("sent");
     } catch (err) {
       setStatus("error");
-      setError(err instanceof Error ? err.message : String(err));
+      const raw = err instanceof Error ? err.message : String(err);
+      setError(
+        /signups? not allowed/i.test(raw)
+          ? "This email isn't authorised to sign in."
+          : raw,
+      );
     }
   }
 

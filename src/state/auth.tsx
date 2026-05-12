@@ -41,9 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading,
       signInWithMagicLink: async (email: string) => {
+        // shouldCreateUser:false makes this strictly single-owner: only an
+        // email that already exists in auth.users can request a magic link.
+        // The owner is created once via the Supabase dashboard
+        // (Authentication → Users → Add user). See CLAUDE.md.
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
+            shouldCreateUser: false,
             emailRedirectTo: window.location.origin + window.location.pathname,
           },
         });
