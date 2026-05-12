@@ -1,6 +1,7 @@
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
 import TaskCard from "./TaskCard";
+import QuickAdd from "./QuickAdd";
 
 interface DayColumnProps {
   date: Date;
@@ -68,12 +69,12 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
       </header>
 
       <ul className="flex-1">
-        {sorted.length === 0 ? (
-          <li className="text-xs italic text-stone-300">—</li>
-        ) : (
-          sorted.map((t) => <TaskCard key={t.id} task={t} today={today} />)
-        )}
+        {sorted.map((t) => (
+          <TaskCard key={t.id} task={t} today={today} />
+        ))}
       </ul>
+
+      <QuickAdd scheduledDate={isoDate} />
     </section>
   );
 }
