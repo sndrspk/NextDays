@@ -1,5 +1,6 @@
 import CalendarStrip from "./components/calendar/CalendarStrip";
 import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
+import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
 import Sidebar from "./components/sidebar/Sidebar";
 import { useRollover } from "./hooks/useRollover";
@@ -36,6 +37,10 @@ function MainView() {
 
   if (view.kind === "project") {
     return <ProjectView projectId={view.id} />;
+  }
+
+  if (view.kind === "list") {
+    return <CustomListView listId={view.id} />;
   }
 
   return (

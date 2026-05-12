@@ -5,7 +5,13 @@ import {
   useDeleteProject,
   useUpdateProject,
 } from "../../hooks/useProjectMutations";
-import type { Project, UUID } from "../../types";
+import {
+  useCreateCustomList,
+  useCustomLists,
+  useDeleteCustomList,
+  useUpdateCustomList,
+} from "../../hooks/useCustomLists";
+import type { CustomList, Project, UUID } from "../../types";
 import { useView } from "../../state/view";
 import ProjectForm from "./ProjectForm";
 
@@ -16,10 +22,18 @@ export default function Sidebar() {
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
 
+  const listsQuery = useCustomLists();
+  const createList = useCreateCustomList();
+  const updateList = useUpdateCustomList();
+  const deleteList = useDeleteCustomList();
+
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<UUID | null>(null);
+  const [creatingList, setCreatingList] = useState(false);
+  const [editingListId, setEditingListId] = useState<UUID | null>(null);
 
-  const activeId = view.kind === "project" ? view.id : null;
+  const activeProjectId = view.kind === "project" ? view.id : null;
+  const activeListId = view.kind === "list" ? view.id : null;
 
   return (
     <aside className="flex h-full w-60 flex-col border-r border-stone-200 bg-stone-50 px-4 py-6">
@@ -62,7 +76,7 @@ export default function Sidebar() {
             ) : (
               <ProjectRow
                 project={p}
-                active={p.id === activeId}
+                active={p.id === activeProjectId}
                 onOpen={() => setView({ kind: "project", id: p.id })}
                 onEdit={() => setEditingId(p.id)}
                 onDelete={() => {
@@ -71,7 +85,7 @@ export default function Sidebar() {
                   }
                   deleteProject.mutate(p.id, {
                     onSuccess: () => {
-                      if (activeId === p.id) setView({ kind: "calendar" });
+                      if (activeProjectId === p.id) setView({ kind: "calendar" });
                     },
                   });
                 }}
@@ -100,7 +114,160 @@ export default function Sidebar() {
           + New project
         </button>
       )}
+
+      <div className="mb-2 mt-6 text-[11px] font-medium uppercase tracking-[0.12em] text-stone-400">
+        Lists
+      </div>
+
+      <ul className="mb-2 space-y-0.5">
+        {listsQuery.data?.map((l) => (
+          <li key={l.id}>
+            {editingListId === l.id ? (
+              <ListNameForm
+                initial={l.name}
+                pending={updateList.isPending}
+                submitLabel="Save"
+                onCancel={() => setEditingListId(null)}
+                onSubmit={(name) =>
+                  updateList.mutate(
+                    { id: l.id, name },
+                    { onSuccess: () => setEditingListId(null) },
+                  )
+                }
+              />
+            ) : (
+              <ListRow
+                list={l}
+                active={l.id === activeListId}
+                onOpen={() => setView({ kind: "list", id: l.id })}
+                onEdit={() => setEditingListId(l.id)}
+                onDelete={() => {
+                  if (!window.confirm(`Delete list "${l.name}"? All items will be removed.`)) {
+                    return;
+                  }
+                  deleteList.mutate(l.id, {
+                    onSuccess: () => {
+                      if (activeListId === l.id) setView({ kind: "calendar" });
+                    },
+                  });
+                }}
+              />
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {creatingList ? (
+        <ListNameForm
+          pending={createList.isPending}
+          submitLabel="Create"
+          onCancel={() => setCreatingList(false)}
+          onSubmit={(name) =>
+            createList.mutate(name, {
+              onSuccess: () => setCreatingList(false),
+            })
+          }
+        />
+      ) : (
+        <button
+          onClick={() => setCreatingList(true)}
+          className="rounded-md px-2 py-1.5 text-left text-xs text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+        >
+          + New list
+        </button>
+      )}
     </aside>
+  );
+}
+
+interface ListRowProps {
+  list: CustomList;
+  active: boolean;
+  onOpen: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+function ListRow({ list, active, onOpen, onEdit, onDelete }: ListRowProps) {
+  return (
+    <div
+      className={`group flex items-center gap-2 rounded-md px-2 py-1 ${
+        active ? "bg-stone-200/70" : "hover:bg-stone-100"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex flex-1 items-center gap-2 text-left text-sm"
+      >
+        <ListIcon />
+        <span
+          className={`truncate ${
+            active ? "font-medium text-stone-900" : "text-stone-700"
+          }`}
+        >
+          {list.name}
+        </span>
+      </button>
+      <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+        <IconButton label="Rename list" onClick={onEdit}>
+          <PencilIcon />
+        </IconButton>
+        <IconButton label="Delete list" onClick={onDelete}>
+          <TrashIcon />
+        </IconButton>
+      </div>
+    </div>
+  );
+}
+
+interface ListNameFormProps {
+  initial?: string;
+  pending: boolean;
+  submitLabel: string;
+  onCancel: () => void;
+  onSubmit: (name: string) => void;
+}
+
+function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }: ListNameFormProps) {
+  const [name, setName] = useState(initial);
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const trimmed = name.trim();
+        if (!trimmed || pending) return;
+        onSubmit(trimmed);
+      }}
+      className="rounded-md border border-stone-200 bg-white p-2"
+    >
+      <input
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onCancel();
+        }}
+        placeholder="List name"
+        className="w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none"
+      />
+      <div className="mt-1.5 flex justify-end gap-1 text-[11px]">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded px-2 py-0.5 text-stone-500 hover:bg-stone-100"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={pending || !name.trim()}
+          className="rounded bg-stone-900 px-2 py-0.5 text-white disabled:opacity-50"
+        >
+          {submitLabel}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -170,6 +337,14 @@ function IconButton({
     >
       {children}
     </button>
+  );
+}
+
+function ListIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 flex-none text-stone-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M5.5 4h7M5.5 8h7M5.5 12h7M3 4h.01M3 8h.01M3 12h.01" strokeLinecap="round" />
+    </svg>
   );
 }
 

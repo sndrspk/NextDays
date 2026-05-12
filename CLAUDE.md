@@ -81,5 +81,5 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 - [x] M3 — Task Interactions: per-column quick-add, checkbox toggle (`completed`/`completed_at`), client-side rollover on app load with work-project weekend exception
 - [x] M4 — Task Detail Panel: click-to-open slide-in panel with auto-save-on-blur for title, notes, start/due dates, project (dropdown), and tags. Escape/backdrop/× to close.
 - [x] M5 — Projects: sidebar list with create/edit/delete (`ProjectForm`), Personal/Work toggle that activates the rollover exception, `ProjectView` with active/completed/all filter, coloured project dot on task cards. Inter set as the interface font.
-- [ ] M6 — Custom Lists
+- [x] M6 — Custom Lists: sidebar "Lists" section with create/rename/delete (inline `ListNameForm`), `CustomListView` page with active/completed/all filter, inline item add, checkbox toggle, per-item notes (expand-on-demand), title editing on blur, and delete. View state extended with `{ kind: "list" }`.
 - [ ] M7 — Polish & Deploy
