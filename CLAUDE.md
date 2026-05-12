@@ -22,6 +22,7 @@ NextDays is a keyboard-first rolling-day task manager (Teuxdeux / Tweek inspired
 ├── CLAUDE.md                       # this file
 ├── VERSIONS.md                     # running changelog
 ├── README.md                       # user-facing readme
+├── WISHLIST.md                     # post-M7.5 feature backlog, sized + spec'd
 ├── nextdays-project-plan.md        # product spec (do not modify lightly)
 └── (scaffold added in Milestone 1)
 ```
@@ -88,3 +89,7 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 - [x] M6 — Custom Lists: sidebar "Lists" section with create/rename/delete (inline `ListNameForm`), `CustomListView` page with active/completed/all filter, inline item add, checkbox toggle, per-item notes (expand-on-demand), title editing on blur, and delete. View state extended with `{ kind: "list" }`.
 - [x] M7 — Polish & Deploy: GitHub Pages deploy workflow (`.github/workflows/deploy.yml`) with Vite `base` set to `/NextDays/` under Actions. Visual overhaul to a macOS-app feel — Apple-gray canvas with soft radial accents, glass sidebar with `backdrop-blur`, floating calendar card with `shadow-elevated`, today column with gradient + accent stripe, circular accent-coloured checkboxes, segmented filter control, glass task-detail panel with larger title input, refined empty states, custom thin scrollbars, accent focus rings. Tailwind theme extended (`shadow-card`/`elevated`/`panel`, `accent`, `ease-out-soft`, `animate-fade-up`).
 - [x] M7.5 — Auth + RLS (prerequisite for public deploy): Supabase magic-link sign-in (single owner), session gating, sign-out in sidebar footer. Migration `0002_auth.sql` wipes existing rows, adds `user_id uuid not null default auth.uid()` to all four tables, enables RLS, and adds per-command policies (select/insert/update/delete) scoped to `auth.uid() = user_id`.
+
+## Backlog
+
+Post-M7.5 feature ideas live in `WISHLIST.md`, each written out as an actionable spec with a rough S/M/L size. Pick the next milestone from there in consultation with the user.
