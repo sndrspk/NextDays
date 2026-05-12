@@ -10,7 +10,6 @@ import { useUpdateTask } from "../../hooks/useTaskMutations";
 import { runRecurrenceGenerator } from "../../hooks/useRecurrenceGenerator";
 import {
   buildRRule,
-  daysBetween,
   NO_RECURRENCE,
   parseRRule,
   type RecurrenceEnds,
@@ -18,7 +17,7 @@ import {
   type RecurrencePreset,
   type RecurrenceUnit,
 } from "../../lib/recurrence";
-import type { Task } from "../../types";
+import type { ISODate, Task } from "../../types";
 
 const WEEKDAYS_LONG = [
   "Sunday",
@@ -30,12 +29,12 @@ const WEEKDAYS_LONG = [
   "Saturday",
 ];
 
-function isoWeekday(iso: string): string {
+function isoWeekday(iso: ISODate): string {
   const [y, m, d] = iso.split("-").map(Number);
   return WEEKDAYS_LONG[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 }
 
-function isoMonthDay(iso: string): number {
+function isoMonthDay(iso: ISODate): number {
   return Number(iso.split("-")[2]);
 }
 
@@ -45,7 +44,8 @@ function formsEqual(a: RecurrenceForm, b: RecurrenceForm): boolean {
     if (a.interval !== b.interval || a.unit !== b.unit) return false;
   }
   if (a.ends.kind !== b.ends.kind) return false;
-  if (a.ends.kind === "after" && b.ends.kind === "after" && a.ends.count !== b.ends.count) return false;
+  if (a.ends.kind === "after" && b.ends.kind === "after" && a.ends.count !== b.ends.count)
+    return false;
   if (a.ends.kind === "on" && b.ends.kind === "on" && a.ends.date !== b.ends.date) return false;
   return true;
 }
@@ -67,16 +67,41 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
     [templatesQuery.data, task.template_id],
   );
 
-  const initialForm: RecurrenceForm = useMemo(() => {
-    if (!template) return NO_RECURRENCE;
-    return parseRRule(template.rrule, template.dtstart);
+  // Initial forms, derived from the template (if any). Each side is "none"
+  // when its rule is unset on the template.
+  const { initialStart, initialDue } = useMemo(() => {
+    return {
+      initialStart:
+        template?.start_rrule && template.start_dtstart
+          ? parseRRule(template.start_rrule, template.start_dtstart)
+          : NO_RECURRENCE,
+      initialDue:
+        template?.due_rrule && template.due_dtstart
+          ? parseRRule(template.due_rrule, template.due_dtstart)
+          : NO_RECURRENCE,
+    };
   }, [template]);
 
-  const [form, setForm] = useState<RecurrenceForm>(initialForm);
-  // Reset when the task changes (panel reopens with a different task).
-  useEffect(() => setForm(initialForm), [initialForm]);
+  const [startForm, setStartForm] = useState<RecurrenceForm>(initialStart);
+  const [dueForm, setDueForm] = useState<RecurrenceForm>(initialDue);
 
-  const dirty = !formsEqual(form, initialForm);
+  // Reset on task change.
+  useEffect(() => {
+    setStartForm(initialStart);
+    setDueForm(initialDue);
+  }, [initialStart, initialDue]);
+
+  const dirty =
+    !formsEqual(startForm, initialStart) || !formsEqual(dueForm, initialDue);
+  const startEnabled = startForm.preset !== "none";
+  const dueEnabled = dueForm.preset !== "none";
+  const startNeedsDate = startEnabled && !task.start_date;
+  const dueNeedsDate = dueEnabled && !task.due_date;
+  const canSave =
+    (startEnabled || dueEnabled || (template !== null && !startEnabled && !dueEnabled)) &&
+    !startNeedsDate &&
+    !dueNeedsDate;
+
   const busy =
     createTemplate.isPending ||
     updateTemplate.isPending ||
@@ -84,44 +109,40 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
     updateTask.isPending;
 
   async function save() {
-    if (form.preset === "none") {
-      if (template) {
-        await deleteTemplate.mutateAsync(template.id);
-      }
+    // Both rules off → stop repeating.
+    if (!startEnabled && !dueEnabled) {
+      if (template) await deleteTemplate.mutateAsync(template.id);
       return;
     }
 
-    const dtstart = task.scheduled_date;
-    const rrule = buildRRule(form, dtstart);
-    const start_offset_days = daysBetween(task.start_date, dtstart);
-    const due_offset_days = daysBetween(task.due_date, dtstart);
+    const startRule = startEnabled && task.start_date
+      ? buildRRule(startForm, task.start_date)
+      : null;
+    const dueRule = dueEnabled && task.due_date
+      ? buildRRule(dueForm, task.due_date)
+      : null;
+
+    const patch = {
+      start_rrule: startRule,
+      start_dtstart: startEnabled ? task.start_date : null,
+      due_rrule: dueRule,
+      due_dtstart: dueEnabled ? task.due_date : null,
+    };
 
     if (template) {
-      await updateTemplate.mutateAsync({
-        id: template.id,
-        patch: { rrule, dtstart, start_offset_days, due_offset_days },
-      });
+      await updateTemplate.mutateAsync({ id: template.id, patch });
     } else {
       const created = await createTemplate.mutateAsync({
         title: task.title,
         notes: task.notes,
         project_id: task.project_id,
         tags: task.tags,
-        rrule,
-        dtstart,
-        start_offset_days,
-        due_offset_days,
+        ...patch,
       });
       await updateTask.mutateAsync({ id: task.id, patch: { template_id: created.id } });
     }
     await runRecurrenceGenerator(qc);
   }
-
-  const selectClass =
-    "focus-ring rounded-lg border border-black/[0.07] bg-white/80 px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-black/[0.12] focus:border-accent/50 focus:outline-none";
-
-  const weekdayLabel = isoWeekday(task.scheduled_date);
-  const monthDayLabel = isoMonthDay(task.scheduled_date);
 
   return (
     <div className="mb-4">
@@ -129,16 +150,89 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
         Repeats
       </span>
 
+      <RuleSection
+        label="Start date"
+        anchor={task.start_date}
+        form={startForm}
+        onChange={setStartForm}
+        missingDateHint="Set a start date above to make it recur."
+      />
+
+      <div className="my-2.5 border-t border-black/[0.04]" />
+
+      <RuleSection
+        label="Due date"
+        anchor={task.due_date}
+        form={dueForm}
+        onChange={setDueForm}
+        missingDateHint="Set a due date above to make it recur."
+      />
+
+      {(dirty || (template && !startEnabled && !dueEnabled)) && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={save}
+            disabled={busy || !canSave}
+            className="focus-ring rounded-md bg-accent px-3 py-1 text-[12px] font-medium text-white shadow-card transition hover:bg-accent/90 disabled:opacity-50"
+          >
+            {!startEnabled && !dueEnabled && template ? "Stop repeating" : "Save recurrence"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStartForm(initialStart);
+              setDueForm(initialDue);
+            }}
+            disabled={busy}
+            className="focus-ring rounded-md px-2 py-1 text-[12px] text-stone-500 transition hover:text-stone-800 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const selectClass =
+  "focus-ring rounded-lg border border-black/[0.07] bg-white/80 px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-black/[0.12] focus:border-accent/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+
+interface RuleSectionProps {
+  label: string;
+  anchor: ISODate | null;
+  form: RecurrenceForm;
+  onChange: (next: RecurrenceForm) => void;
+  missingDateHint: string;
+}
+
+function RuleSection({ label, anchor, form, onChange, missingDateHint }: RuleSectionProps) {
+  const disabled = !anchor;
+  const weekdayLabel = anchor ? isoWeekday(anchor) : "weekday";
+  const monthDayLabel = anchor ? isoMonthDay(anchor) : 0;
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center gap-2">
+        <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
+          {label}
+        </span>
+        {disabled && form.preset !== "none" && (
+          <span className="text-[10px] text-red-500">{missingDateHint}</span>
+        )}
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={form.preset}
-          onChange={(e) => setForm({ ...form, preset: e.target.value as RecurrencePreset })}
+          disabled={disabled}
+          onChange={(e) => onChange({ ...form, preset: e.target.value as RecurrencePreset })}
           className={selectClass + " cursor-pointer"}
         >
           <option value="none">Does not repeat</option>
           <option value="daily">Daily</option>
           <option value="weekly">Weekly on {weekdayLabel}</option>
-          <option value="monthly">Monthly on day {monthDayLabel}</option>
+          <option value="monthly">Monthly on day {monthDayLabel || "—"}</option>
           <option value="custom">Custom…</option>
         </select>
 
@@ -150,13 +244,13 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
               min={1}
               value={form.interval}
               onChange={(e) =>
-                setForm({ ...form, interval: Math.max(1, Number(e.target.value) || 1) })
+                onChange({ ...form, interval: Math.max(1, Number(e.target.value) || 1) })
               }
               className={selectClass + " w-16"}
             />
             <select
               value={form.unit}
-              onChange={(e) => setForm({ ...form, unit: e.target.value as RecurrenceUnit })}
+              onChange={(e) => onChange({ ...form, unit: e.target.value as RecurrenceUnit })}
               className={selectClass + " cursor-pointer"}
             >
               <option value="day">day(s)</option>
@@ -172,12 +266,12 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
           <span className="text-[11px] uppercase tracking-[0.14em] text-stone-400">Ends</span>
           <select
             value={form.ends.kind}
+            disabled={disabled}
             onChange={(e) => {
               const kind = e.target.value as RecurrenceEnds["kind"];
-              if (kind === "never") setForm({ ...form, ends: { kind: "never" } });
-              else if (kind === "after")
-                setForm({ ...form, ends: { kind: "after", count: 10 } });
-              else setForm({ ...form, ends: { kind: "on", date: task.scheduled_date } });
+              if (kind === "never") onChange({ ...form, ends: { kind: "never" } });
+              else if (kind === "after") onChange({ ...form, ends: { kind: "after", count: 10 } });
+              else onChange({ ...form, ends: { kind: "on", date: anchor ?? "" } });
             }}
             className={selectClass + " cursor-pointer"}
           >
@@ -194,7 +288,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
                 value={form.ends.count}
                 onChange={(e) => {
                   const next = Math.max(1, Number(e.target.value) || 1);
-                  setForm({ ...form, ends: { kind: "after", count: next } });
+                  onChange({ ...form, ends: { kind: "after", count: next } });
                 }}
                 className={selectClass + " w-16"}
               />
@@ -205,33 +299,10 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
             <input
               type="date"
               value={form.ends.date}
-              onChange={(e) =>
-                setForm({ ...form, ends: { kind: "on", date: e.target.value } })
-              }
+              onChange={(e) => onChange({ ...form, ends: { kind: "on", date: e.target.value } })}
               className={selectClass}
             />
           )}
-        </div>
-      )}
-
-      {(dirty || (template && form.preset === "none")) && (
-        <div className="mt-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={save}
-            disabled={busy}
-            className="focus-ring rounded-md bg-accent px-3 py-1 text-[12px] font-medium text-white shadow-card transition hover:bg-accent/90 disabled:opacity-50"
-          >
-            {form.preset === "none" && template ? "Stop repeating" : "Save recurrence"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setForm(initialForm)}
-            disabled={busy}
-            className="focus-ring rounded-md px-2 py-1 text-[12px] text-stone-500 transition hover:text-stone-800 disabled:opacity-50"
-          >
-            Cancel
-          </button>
         </div>
       )}
     </div>

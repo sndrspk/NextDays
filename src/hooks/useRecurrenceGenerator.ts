@@ -3,16 +3,22 @@ import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 import { todayLocal, toISODate } from "../lib/dates";
 import {
-  applyOffset,
   horizonEnd,
+  nextOccurrenceOnOrAfter,
   occurrencesBetween,
 } from "../lib/recurrence";
-import type { Task, TaskTemplate } from "../types";
+import type { ISODate, Task, TaskTemplate } from "../types";
 
-// Walks every template, materialises any missing instances in [today, today+horizon].
-// We never re-create instances for dates < today: if the user deleted yesterday's
-// recurring task, it stays deleted. Edits to a template only affect instances
-// generated from now on (existing rows are not touched).
+// Pairing model (chosen with the user):
+//   * If start_rrule is set, every start_rrule occurrence in [today, horizon]
+//     spawns one instance. scheduled_date = start_date = the occurrence.
+//     due_date = next occurrence of due_rrule on or after start_date (or null
+//     if due_rrule is unset).
+//   * Otherwise due_rrule drives. scheduled_date = due_date = the occurrence;
+//     start_date stays null.
+//
+// Instances are deduped by (template_id, scheduled_date) — same key as the
+// previous version, so rolled-forward instances aren't re-created.
 export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
   if (!supabaseConfigured) return;
 
@@ -63,24 +69,48 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
   const baseSortOrder = Math.floor(Date.now() / 1000);
 
   for (const tpl of templates as TaskTemplate[]) {
-    let occurrences: string[];
+    let occurrences: ISODate[] = [];
+    let driverIsStart = false;
     try {
-      occurrences = occurrencesBetween(tpl.rrule, tpl.dtstart, today, horizon);
+      if (tpl.start_rrule && tpl.start_dtstart) {
+        occurrences = occurrencesBetween(tpl.start_rrule, tpl.start_dtstart, today, horizon);
+        driverIsStart = true;
+      } else if (tpl.due_rrule && tpl.due_dtstart) {
+        occurrences = occurrencesBetween(tpl.due_rrule, tpl.due_dtstart, today, horizon);
+      } else {
+        // Malformed template (CHECK constraint should prevent this) — skip.
+        continue;
+      }
     } catch (err) {
       console.error(`Recurrence parse failed for template ${tpl.id}:`, err);
       continue;
     }
+
     const have = existingByTemplate.get(tpl.id) ?? new Set();
     for (const date of occurrences) {
       if (have.has(date)) continue;
+
+      let start_date: ISODate | null = null;
+      let due_date: ISODate | null = null;
+      const scheduled_date = date;
+
+      if (driverIsStart) {
+        start_date = date;
+        if (tpl.due_rrule && tpl.due_dtstart) {
+          due_date = nextOccurrenceOnOrAfter(tpl.due_rrule, tpl.due_dtstart, date);
+        }
+      } else {
+        due_date = date;
+      }
+
       toInsert.push({
         title: tpl.title,
         notes: tpl.notes,
         project_id: tpl.project_id,
         tags: tpl.tags,
-        scheduled_date: date,
-        start_date: applyOffset(date, tpl.start_offset_days),
-        due_date: applyOffset(date, tpl.due_offset_days),
+        scheduled_date,
+        start_date,
+        due_date,
         template_id: tpl.id,
         sort_order: baseSortOrder,
       });

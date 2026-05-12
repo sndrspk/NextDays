@@ -19,10 +19,10 @@ export interface NewTemplate {
   notes: string | null;
   project_id: UUID | null;
   tags: string[];
-  rrule: string;
-  dtstart: ISODate;
-  start_offset_days: number | null;
-  due_offset_days: number | null;
+  start_rrule: string | null;
+  start_dtstart: ISODate | null;
+  due_rrule: string | null;
+  due_dtstart: ISODate | null;
 }
 
 export function useCreateTaskTemplate() {

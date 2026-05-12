@@ -18,16 +18,19 @@ export interface Task {
   template_id: UUID | null;
 }
 
+// At least one of {start_rrule, start_dtstart} or {due_rrule, due_dtstart}
+// must be populated. The DB CHECK constraint enforces it; clients should
+// treat templates that violate it as malformed.
 export interface TaskTemplate {
   id: UUID;
   title: string;
   notes: string | null;
   project_id: UUID | null;
   tags: string[];
-  rrule: string;
-  dtstart: ISODate;
-  start_offset_days: number | null;
-  due_offset_days: number | null;
+  start_rrule: string | null;
+  start_dtstart: ISODate | null;
+  due_rrule: string | null;
+  due_dtstart: ISODate | null;
   created_at: ISOTimestamp;
 }
 

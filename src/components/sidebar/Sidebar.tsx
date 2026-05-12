@@ -45,7 +45,7 @@ export default function Sidebar() {
 
       <button
         onClick={() => setView({ kind: "calendar" })}
-        className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
+        className={`focus-ring mb-1 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
           view.kind === "calendar"
             ? "bg-white text-stone-900 shadow-card"
             : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
@@ -53,6 +53,18 @@ export default function Sidebar() {
       >
         <CalendarIcon active={view.kind === "calendar"} />
         Calendar
+      </button>
+
+      <button
+        onClick={() => setView({ kind: "focus" })}
+        className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
+          view.kind === "focus"
+            ? "bg-white text-stone-900 shadow-card"
+            : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
+        }`}
+      >
+        <FocusIcon active={view.kind === "focus"} />
+        Focus
       </button>
 
       <SectionHeader>Projects</SectionHeader>
@@ -386,6 +398,21 @@ function ListIcon({ active }: { active?: boolean }) {
       strokeWidth="1.5"
     >
       <path d="M5.5 4h7M5.5 8h7M5.5 12h7M3 4h.01M3 8h.01M3 12h.01" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FocusIcon({ active }: { active?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={`h-3.5 w-3.5 ${active ? "text-accent" : "text-stone-500"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <circle cx="8" cy="8" r="5.5" />
+      <circle cx="8" cy="8" r="2.5" />
     </svg>
   );
 }
