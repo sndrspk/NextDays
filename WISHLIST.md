@@ -180,6 +180,45 @@ Go with (a) unless the user says otherwise.
 
 ---
 
+## 7. "Today" view — focused list grouped by urgency — **S**
+
+**Goal:** A second top-level view in the sidebar (directly under "Calendar") that strips the rolling-day strip away and shows a single, focused list of what to do *right now*, broken into three sections:
+
+1. **Overdue** — uncompleted tasks with `due_date < today`.
+2. **Due today** — uncompleted tasks with `due_date = today`.
+3. **Scheduled for today** — uncompleted tasks with `scheduled_date = today` that aren't already in one of the two sections above (i.e. `due_date` is null or `> today`).
+
+Rollover guarantees that overdue tasks have `scheduled_date = today`, so in practice all three groups are subsets of "today's column" partitioned by due date. The view is read/write — clicking a row opens the existing `TaskDetailPanel`, the circular checkbox toggles `completed`, and there's a quick-add at the top that creates a task with `scheduled_date = today`.
+
+**Working name: "Today".** The wishlist author proposed it as the placeholder pending a better name. Alternatives floated: "Focus" (more loaded, sets an expectation that the view is opinionated), "Agenda" (calendar-app convention; potentially confusing next to wishlist item 6's calendar overlay).
+
+**Where it slots into the app:**
+- Sidebar (`src/components/sidebar/Sidebar.tsx`): a new entry above the "Projects" section, directly below the "Calendar" entry.
+- `src/state/view.ts`: extend the `View` discriminated union with `{ kind: "today" }`.
+- `src/App.tsx` → `MainView`: route `view.kind === "today"` to a new `TodayView` component.
+
+**Implementation notes:**
+- New file `src/components/today/TodayView.tsx`. Lay it out like `ProjectView` — left-aligned column, h2 heading, three section blocks each with a small uppercase label, a count badge, and the same `TaskCard`-style rows.
+- Data: simplest is one query (`useTodayTasks` in `src/hooks/useTodayTasks.ts`) that fetches `tasks` where `completed = false` AND `(scheduled_date = today OR due_date <= today)`. Partition client-side into the three groups in a `useMemo`. RLS already scopes to the owner.
+- Reuse the existing `TaskCard` from the calendar so styling (project dot, urgency colouring, bold-on-due, ↻ glyph) stays in sync. If `TaskCard` is too column-specific, refactor it lightly or build a thin `TodayTaskRow` that delegates to the shared parts.
+- Quick-add at the top mirrors `QuickAdd.tsx` from the calendar (calls `useCreateTask` with `scheduled_date = today`).
+- Empty groups: hide the heading entirely rather than rendering "Nothing here" three times. If *all* three are empty, show a single celebratory empty state ("Inbox zero. Enjoy the day.").
+- Sorting within each section: same rule as the calendar (`sort_order` ascending, completed pushed to the bottom — though completed shouldn't appear here at all since the query filters it out).
+
+**Open questions to confirm before building:**
+- **Should completed tasks ever show?** Recommendation: no — "Today" is for outstanding work. Once completed they vanish from this view (they remain visible in the calendar and project views).
+- **Should the view auto-refresh at midnight?** Probably yes, but cheap: re-derive `today` whenever the view mounts; for long-running sessions, a lightweight interval (every minute) checking whether the local date has changed and invalidating the query is enough. Defer until someone hits the bug.
+- **Should overdue tasks span all of recent history, or only those rolled forward to today?** They're the same set in practice (rollover always pulls overdue forward), but if rollover didn't run for some reason, the query `due_date < today` catches them regardless of `scheduled_date`. Recommend keeping it permissive.
+
+**Manual test plan:**
+- Create three tasks: one with due yesterday, one due today, one scheduled today with no due → each lands in the matching section.
+- Tick the overdue one complete → it disappears from the view; remains in the calendar's today column with strike-through.
+- Toggle to project view and back to Today → state preserved (selection panel still works).
+- With zero outstanding tasks → single "Inbox zero" empty state.
+- Quick-add a task from the Today view → appears at the bottom of the "Scheduled for today" section.
+
+---
+
 ## Sizing summary
 
 | # | Item | Size | Status |
@@ -190,5 +229,6 @@ Go with (a) unless the user says otherwise.
 | 4 | Drag-and-drop in calendar | **M** | open |
 | 5 | Daily Discord digest | **M** | open |
 | 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | open |
+| 7 | "Today" view (overdue / due today / scheduled today) | **S** | open |
 
-Tackle them roughly in that order — items 1 and 2 are quick wins that improve daily use; 3 and 4 are the next big UX leaps; 5 and 6 require server-side scaffolding (Edge Functions, cron) and should probably share that groundwork.
+Tackle them roughly in that order — items 1 and 2 are quick wins that improve daily use; 3 and 4 are the next big UX leaps; 5 and 6 require server-side scaffolding (Edge Functions, cron) and should probably share that groundwork. Item 7 is another quick win and a natural follow-up to items 1 and 3.
