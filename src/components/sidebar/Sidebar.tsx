@@ -36,7 +36,7 @@ export default function Sidebar() {
   const activeListId = view.kind === "list" ? view.id : null;
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r border-stone-200 bg-stone-50 px-4 py-6">
+    <aside className="flex h-full w-60 flex-col overflow-y-auto border-r border-stone-200 bg-stone-50 px-4 py-6">
       <div className="mb-6">
         <h1 className="text-base font-semibold tracking-tight text-stone-900">NextDays</h1>
       </div>
