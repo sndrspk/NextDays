@@ -26,7 +26,7 @@ export function useCreateCustomList() {
     mutationFn: async (name: string): Promise<CustomList> => {
       const { data, error } = await supabase
         .from("custom_lists")
-        .insert({ name, sort_order: Date.now() })
+        .insert({ name, sort_order: Math.floor(Date.now() / 1000) })
         .select()
         .single();
       if (error) throw error;

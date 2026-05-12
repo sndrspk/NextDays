@@ -20,7 +20,7 @@ export function useCreateTask() {
         .insert({
           title,
           scheduled_date,
-          sort_order: Date.now(),
+          sort_order: Math.floor(Date.now() / 1000),
         })
         .select()
         .single();

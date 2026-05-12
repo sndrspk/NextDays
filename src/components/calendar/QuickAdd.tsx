@@ -37,7 +37,9 @@ export default function QuickAdd({ scheduledDate }: QuickAddProps) {
         className="w-full bg-transparent text-sm text-stone-700 placeholder:text-stone-300 focus:outline-none disabled:opacity-50"
       />
       {create.error && (
-        <p className="mt-1 text-[11px] text-red-600">Failed: {String(create.error)}</p>
+        <p className="mt-1 text-[11px] text-red-600">
+          Failed: {create.error instanceof Error ? create.error.message : String(create.error)}
+        </p>
       )}
     </form>
   );
