@@ -12,6 +12,7 @@ import {
   useUpdateCustomList,
 } from "../../hooks/useCustomLists";
 import type { CustomList, Project, UUID } from "../../types";
+import { useAuth } from "../../state/auth";
 import { useView } from "../../state/view";
 import ProjectForm from "./ProjectForm";
 
@@ -165,7 +166,37 @@ export default function Sidebar() {
       ) : (
         <AddButton onClick={() => setCreatingList(true)} label="New list" />
       )}
+
+      <UserFooter />
     </aside>
+  );
+}
+
+function UserFooter() {
+  const { session, signOut } = useAuth();
+  const email = session?.user?.email ?? "Signed in";
+  return (
+    <div className="mt-auto pt-6">
+      <div className="flex items-center gap-2 rounded-lg border border-black/[0.05] bg-white/70 px-2.5 py-2 shadow-card">
+        <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent">
+          {email.slice(0, 1).toUpperCase()}
+        </div>
+        <span className="flex-1 truncate text-[11px] text-stone-600" title={email}>
+          {email}
+        </span>
+        <button
+          type="button"
+          onClick={() => signOut()}
+          aria-label="Sign out"
+          title="Sign out"
+          className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-700"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M9 3H4.5A1.5 1.5 0 003 4.5v7A1.5 1.5 0 004.5 13H9M11 5.5L13.5 8 11 10.5M6.5 8H13" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
   );
 }
 
