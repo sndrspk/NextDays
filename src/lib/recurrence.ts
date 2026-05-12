@@ -140,6 +140,13 @@ export function parseRRule(rrule: string, dtstart: ISODate): RecurrenceForm {
   return { preset: "custom", interval: Math.max(1, interval), unit, ends };
 }
 
+function buildRule(rruleStr: string, dtstart: ISODate): RRule {
+  return new RRule({
+    ...RRule.parseString(rruleStr),
+    dtstart: isoToDate(dtstart),
+  } as { freq: Frequency; dtstart: Date });
+}
+
 // Compute the occurrences of an rrule that fall within [from, to], inclusive.
 export function occurrencesBetween(
   rruleStr: string,
@@ -147,30 +154,22 @@ export function occurrencesBetween(
   from: ISODate,
   to: ISODate,
 ): ISODate[] {
-  const rule = new RRule({
-    ...RRule.parseString(rruleStr),
-    dtstart: isoToDate(dtstart),
-  } as { freq: Frequency; dtstart: Date });
-  const fromDate = isoToDate(from);
-  const toDate = isoToDate(to);
-  return rule.between(fromDate, toDate, true).map(dateToIso);
+  return buildRule(rruleStr, dtstart)
+    .between(isoToDate(from), isoToDate(to), true)
+    .map(dateToIso);
+}
+
+// First occurrence of the rule on or after `after`. Used to pair a due-rule
+// occurrence to a start-rule occurrence inside the generator.
+export function nextOccurrenceOnOrAfter(
+  rruleStr: string,
+  dtstart: ISODate,
+  after: ISODate,
+): ISODate | null {
+  const next = buildRule(rruleStr, dtstart).after(isoToDate(after), true);
+  return next ? dateToIso(next) : null;
 }
 
 export function horizonEnd(today: ISODate): ISODate {
   return addDaysIso(today, RECURRENCE_HORIZON_DAYS);
-}
-
-// Compute scheduled_date + offset, returning an ISO date string or null.
-export function applyOffset(scheduled: ISODate, offset: number | null): ISODate | null {
-  if (offset === null) return null;
-  return addDaysIso(scheduled, offset);
-}
-
-// Compute the offset (in whole days) between two ISO dates, or null when
-// either is missing. Used when promoting a one-off task into a template.
-export function daysBetween(a: ISODate | null, b: ISODate): number | null {
-  if (!a) return null;
-  const aMs = isoToDate(a).getTime();
-  const bMs = isoToDate(b).getTime();
-  return Math.round((aMs - bMs) / 86_400_000);
 }

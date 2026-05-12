@@ -57,7 +57,7 @@ Go with (a) unless the user says otherwise.
 
 ---
 
-## 3. Recurring start and due dates — **M / L** — ✅ shipped (0.0.12; Approach A, client-side generator, presets + custom)
+## 3. Recurring start and due dates — **M / L** — ✅ shipped (0.0.12 initial; 0.0.13 reworked to per-field recurrence with start-drives pairing)
 
 **Goal:** A task can recur. Both `start_date` and `due_date` should be expressible as repeating rules (e.g. "every Monday", "every 2 weeks", "the 1st of every month"). When one instance is completed, the next one materialises.
 
