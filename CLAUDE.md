@@ -45,7 +45,8 @@ Once Milestone 1 lands, expect to see:
 
 ## Working agreements
 
-- **Branch:** all work goes on `claude/setup-vite-react-supabase-vNMSj`. Do not push to `main`.
+- **Branches:** each milestone is developed on its own branch (e.g. M6 → `claude/nextdays-m6-UumCU`). Do not push to `main`.
+- **PRs:** at the end of every milestone, open a pull request from the milestone branch into `main` so the user can review + merge. Don't wait to be asked — it's the default handoff. Include a short summary and a manual test plan.
 - **Spec discipline:** if a task seems to conflict with `nextdays-project-plan.md`, ask before deviating. Section §10 ("Key Design Decisions to Preserve") is especially important.
 - **Bookkeeping:** after each meaningful edit, update `CLAUDE.md` (this file) and add a one-line entry to `VERSIONS.md`.
 - **Secrets:** never commit `.env`. Only `.env.example` goes in git. The Supabase **anon** key is fine to ship to the browser; the **service-role** key must never end up in client code or the repo.

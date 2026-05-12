@@ -33,7 +33,7 @@ export function useCreateCustomListItem() {
     mutationFn: async ({ list_id, title }: CreateItemInput): Promise<CustomListItem> => {
       const { data, error } = await supabase
         .from("custom_list_items")
-        .insert({ list_id, title, sort_order: Date.now() })
+        .insert({ list_id, title, sort_order: Math.floor(Date.now() / 1000) })
         .select()
         .single();
       if (error) throw error;
