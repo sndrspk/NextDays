@@ -4,6 +4,7 @@ import type { UUID } from "../types";
 
 export type View =
   | { kind: "calendar" }
+  | { kind: "focus" }
   | { kind: "project"; id: UUID }
   | { kind: "list"; id: UUID };
 

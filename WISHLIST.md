@@ -180,7 +180,7 @@ Go with (a) unless the user says otherwise.
 
 ---
 
-## 7. "Focus" view — focused list grouped by urgency — **S**
+## 7. "Focus" view — focused list grouped by urgency — **S** — ✅ shipped (0.0.15)
 
 **Goal:** A second top-level view in the sidebar (directly under "Calendar") that strips the rolling-day strip away and shows a single, focused list of what to do *right now*, broken into three sections:
 
@@ -229,6 +229,6 @@ Rollover guarantees that overdue tasks have `scheduled_date = today`, so in prac
 | 4 | Drag-and-drop in calendar | **M** | open |
 | 5 | Daily Discord digest | **M** | open |
 | 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | open |
-| 7 | "Focus" view (overdue / due today / scheduled today) | **S** | open |
+| 7 | "Focus" view (overdue / due today / scheduled today) | **S** | ✅ 0.0.15 |
 
 Tackle them roughly in that order — items 1 and 2 are quick wins that improve daily use; 3 and 4 are the next big UX leaps; 5 and 6 require server-side scaffolding (Edge Functions, cron) and should probably share that groundwork. Item 7 is another quick win and a natural follow-up to items 1 and 3.

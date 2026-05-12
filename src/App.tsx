@@ -1,6 +1,7 @@
 import SignIn from "./components/auth/SignIn";
 import CalendarStrip from "./components/calendar/CalendarStrip";
 import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
+import FocusView from "./components/focus/FocusView";
 import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
 import Sidebar from "./components/sidebar/Sidebar";
@@ -71,6 +72,10 @@ function AppShell() {
 
 function MainView() {
   const { view } = useView();
+
+  if (view.kind === "focus") {
+    return <FocusView />;
+  }
 
   if (view.kind === "project") {
     return <ProjectView projectId={view.id} />;
