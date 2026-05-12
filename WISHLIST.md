@@ -1,0 +1,4 @@
+- [ ] Tasks overdue or due today should be bold in every view.
+- [ ] I want to add tasks directly from the Project views.
+- [ ] I want both the starting date and the due date to be able to be recurring.
+- [ ] Tasks in the calendar should be draggable. It should change the tasks.scheduled_date to the date it's being dropped into.
