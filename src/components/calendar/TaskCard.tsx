@@ -1,6 +1,7 @@
 import type { ISODate, Task } from "../../types";
 import { diffInDays } from "../../lib/dates";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
+import { useSelection } from "../../state/selection";
 
 type DueUrgency = "overdue" | "today" | "tomorrow" | "later" | "none";
 
@@ -20,6 +21,7 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, today }: TaskCardProps) {
   const toggle = useToggleTaskCompleted();
+  const { setSelectedTaskId } = useSelection();
   const u = urgency(task.due_date, today, task.completed);
 
   const titleClass = task.completed
@@ -36,11 +38,17 @@ export default function TaskCard({ task, today }: TaskCardProps) {
   const showBell = !task.completed && (u === "overdue" || u === "today" || u === "tomorrow");
 
   return (
-    <li className="group flex items-start gap-2 py-1.5">
+    <li
+      className="group flex cursor-pointer items-start gap-2 rounded py-1.5 hover:bg-stone-100/60"
+      onClick={() => setSelectedTaskId(task.id)}
+    >
       <button
         type="button"
         aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
-        onClick={() => toggle.mutate(task)}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggle.mutate(task);
+        }}
         disabled={toggle.isPending}
         className={`mt-1 inline-flex h-3.5 w-3.5 flex-none items-center justify-center rounded-[3px] border transition-colors ${
           task.completed

@@ -79,7 +79,7 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 - [x] M1 — Skeleton & DB (scaffold landed, schema applied to Supabase, smoke screen verified end-to-end)
 - [x] M2 — Calendar Strip (read-only): responsive 4/7-day window, today highlight, sort per §5.2, due-date 🔔 indicators per §5.4, future-`start_date` gating
 - [x] M3 — Task Interactions: per-column quick-add, checkbox toggle (`completed`/`completed_at`), client-side rollover on app load with work-project weekend exception
-- [ ] M4 — Task Detail Panel
+- [x] M4 — Task Detail Panel: click-to-open slide-in panel with auto-save-on-blur for title, notes, start/due dates, project (dropdown), and tags. Escape/backdrop/× to close.
 - [ ] M5 — Projects
 - [ ] M6 — Custom Lists
 - [ ] M7 — Polish & Deploy
