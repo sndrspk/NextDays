@@ -2,7 +2,10 @@ import { createContext, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { UUID } from "../types";
 
-export type View = { kind: "calendar" } | { kind: "project"; id: UUID };
+export type View =
+  | { kind: "calendar" }
+  | { kind: "project"; id: UUID }
+  | { kind: "list"; id: UUID };
 
 interface ViewState {
   view: View;
