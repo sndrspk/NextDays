@@ -46,29 +46,35 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
 
   return (
     <section
-      className={`flex min-w-0 flex-1 flex-col border-r border-stone-200 px-5 pt-5 pb-8 last:border-r-0 ${
-        isToday ? "bg-stone-50" : "bg-white"
+      className={`relative flex min-w-0 flex-1 flex-col border-r border-black/[0.05] px-5 pt-5 pb-7 last:border-r-0 ${
+        isToday ? "bg-gradient-to-b from-accent-50/40 via-white to-white" : "bg-white"
       }`}
       data-date={isoDate}
     >
+      {isToday && (
+        <span
+          aria-hidden
+          className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+        />
+      )}
       <header className="mb-4">
         <div
-          className={`text-[11px] uppercase tracking-[0.12em] ${
-            isToday ? "text-stone-900" : "text-stone-400"
+          className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${
+            isToday ? "text-accent" : "text-stone-400"
           }`}
         >
-          {weekday}
+          {isToday ? "Today" : weekday}
         </div>
         <div
-          className={`mt-0.5 text-base ${
-            isToday ? "font-semibold text-stone-900" : "font-medium text-stone-600"
+          className={`mt-1 text-[17px] tracking-tight ${
+            isToday ? "font-semibold text-stone-900" : "font-medium text-stone-700"
           }`}
         >
           {dayMonth}
         </div>
       </header>
 
-      <ul className="flex-1">
+      <ul className="flex-1 space-y-0.5">
         {sorted.map((t) => (
           <TaskCard key={t.id} task={t} today={today} />
         ))}

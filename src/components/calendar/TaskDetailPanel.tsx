@@ -37,7 +37,7 @@ export default function TaskDetailPanel() {
     <>
       <div
         onClick={() => setSelectedTaskId(null)}
-        className={`fixed inset-0 z-30 bg-stone-900/10 transition-opacity ${
+        className={`fixed inset-0 z-30 bg-stone-900/15 backdrop-blur-[2px] transition-opacity duration-200 ${
           isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden={!isOpen}
@@ -45,8 +45,8 @@ export default function TaskDetailPanel() {
       <aside
         role="dialog"
         aria-label="Task details"
-        className={`fixed inset-y-0 right-0 z-40 flex w-full max-w-md flex-col border-l border-stone-200 bg-white shadow-xl transition-transform duration-200 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed inset-y-3 right-3 z-40 flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white/95 shadow-panel backdrop-blur-xl transition-transform duration-200 ease-out-soft ${
+          isOpen ? "translate-x-0" : "translate-x-[120%]"
         }`}
       >
         {isOpen && taskQuery.data && (
@@ -98,42 +98,50 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
     onPatch({ [field]: next } as Partial<Task>);
   }
 
+  const inputClass =
+    "focus-ring w-full rounded-lg border border-black/[0.07] bg-white/80 px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-black/[0.12] focus:border-accent/50 focus:outline-none";
+
   return (
     <>
-      <header className="flex items-center justify-between border-b border-stone-200 px-5 py-3">
-        <div className="text-[11px] uppercase tracking-[0.12em] text-stone-400">
-          {isSaving ? "Saving…" : "Task"}
+      <header className="flex items-center justify-between border-b border-black/[0.05] bg-white/60 px-5 py-3 backdrop-blur-xl">
+        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">
+          <span>Task</span>
+          {isSaving && (
+            <span className="inline-flex items-center gap-1 text-accent">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+              Saving
+            </span>
+          )}
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="text-stone-400 hover:text-stone-700"
+          className="focus-ring rounded-md p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
         >
-          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75">
             <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
           </svg>
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5">
-        <Field label="Title">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => saveIfChanged("title", title.trim() || task.title)}
-            className="w-full border-0 border-b border-stone-200 bg-transparent pb-1 text-base font-medium text-stone-900 focus:border-stone-500 focus:outline-none"
-          />
-        </Field>
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => saveIfChanged("title", title.trim() || task.title)}
+          className="focus-ring mb-5 w-full bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-stone-900 placeholder:text-stone-300 focus:outline-none"
+          placeholder="Untitled task"
+        />
 
         <Field label="Notes">
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             onBlur={() => saveIfChanged("notes", notes === "" ? null : notes)}
-            rows={5}
+            rows={4}
             placeholder="Add notes…"
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-300 focus:border-stone-500 focus:outline-none"
+            className={inputClass + " resize-y leading-relaxed"}
           />
         </Field>
 
@@ -144,7 +152,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               onBlur={() => saveIfChanged("start_date", startDate === "" ? null : startDate)}
-              className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 focus:border-stone-500 focus:outline-none"
+              className={inputClass}
             />
           </Field>
           <Field label="Due date">
@@ -153,7 +161,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               onBlur={() => saveIfChanged("due_date", dueDate === "" ? null : dueDate)}
-              className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 focus:border-stone-500 focus:outline-none"
+              className={inputClass}
             />
           </Field>
         </div>
@@ -166,20 +174,15 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
               setProjectId(next);
               saveIfChanged("project_id", next === "" ? null : next);
             }}
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 focus:border-stone-500 focus:outline-none"
+            className={inputClass + " cursor-pointer"}
           >
-            <option value="">(no project)</option>
+            <option value="">— No project —</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>
             ))}
           </select>
-          {projects.length === 0 && (
-            <p className="mt-1 text-[11px] text-stone-400">
-              Projects can be created in Milestone 5.
-            </p>
-          )}
         </Field>
 
         <Field label="Tags">
@@ -194,14 +197,19 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
               setTags(formatTags(next));
             }}
             placeholder="comma, separated, tags"
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-300 focus:border-stone-500 focus:outline-none"
+            className={inputClass}
           />
         </Field>
 
-        <div className="mt-6 text-[11px] text-stone-400">
-          <div>Scheduled: {task.scheduled_date}</div>
+        <div className="mt-6 space-y-0.5 border-t border-black/[0.05] pt-4 text-[11px] text-stone-400">
+          <div>
+            <span className="text-stone-500">Scheduled</span> · {task.scheduled_date}
+          </div>
           {task.completed && task.completed_at && (
-            <div>Completed: {new Date(task.completed_at).toLocaleString()}</div>
+            <div>
+              <span className="text-stone-500">Completed</span> ·{" "}
+              {new Date(task.completed_at).toLocaleString()}
+            </div>
           )}
         </div>
       </div>
@@ -212,7 +220,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="mb-4 block">
-      <span className="mb-1 block text-[11px] uppercase tracking-[0.12em] text-stone-400">
+      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
         {label}
       </span>
       {children}

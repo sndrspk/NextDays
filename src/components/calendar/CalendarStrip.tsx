@@ -34,12 +34,15 @@ export default function CalendarStrip() {
   return (
     <div className="flex flex-col">
       {tasksQuery.error && (
-        <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-          Failed to load tasks: {String(tasksQuery.error)}
+        <div className="mb-3 rounded-xl border border-red-200/70 bg-red-50/80 px-4 py-2.5 text-xs text-red-700 shadow-card backdrop-blur">
+          Failed to load tasks:{" "}
+          {tasksQuery.error instanceof Error
+            ? tasksQuery.error.message
+            : String(tasksQuery.error)}
         </div>
       )}
 
-      <div className="flex min-h-[60vh] overflow-hidden rounded-lg border border-stone-200 bg-white">
+      <div className="flex min-h-[70vh] overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
         {windowDates.map((date) => {
           const iso = toISODate(date);
           return (

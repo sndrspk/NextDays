@@ -12,6 +12,7 @@ import {
   useUpdateCustomList,
 } from "../../hooks/useCustomLists";
 import type { CustomList, Project, UUID } from "../../types";
+import { useAuth } from "../../state/auth";
 import { useView } from "../../state/view";
 import ProjectForm from "./ProjectForm";
 
@@ -36,28 +37,27 @@ export default function Sidebar() {
   const activeListId = view.kind === "list" ? view.id : null;
 
   return (
-    <aside className="flex h-full w-60 flex-col overflow-y-auto border-r border-stone-200 bg-stone-50 px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-base font-semibold tracking-tight text-stone-900">NextDays</h1>
+    <aside className="flex h-full w-64 flex-none flex-col overflow-y-auto border-r border-black/[0.06] bg-white/60 px-3 py-5 backdrop-blur-xl">
+      <div className="mb-7 px-2">
+        <h1 className="text-[15px] font-semibold tracking-tight text-stone-900">NextDays</h1>
+        <p className="text-[11px] text-stone-400">Keyboard-first daily focus</p>
       </div>
 
       <button
         onClick={() => setView({ kind: "calendar" })}
-        className={`mb-6 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${
+        className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
           view.kind === "calendar"
-            ? "bg-stone-200/70 font-medium text-stone-900"
-            : "text-stone-600 hover:bg-stone-100"
+            ? "bg-white text-stone-900 shadow-card"
+            : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
         }`}
       >
-        <CalendarIcon />
+        <CalendarIcon active={view.kind === "calendar"} />
         Calendar
       </button>
 
-      <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-stone-400">
-        Projects
-      </div>
+      <SectionHeader>Projects</SectionHeader>
 
-      <ul className="mb-2 space-y-0.5">
+      <ul className="mb-1 space-y-px">
         {projectsQuery.data?.map((p) => (
           <li key={p.id}>
             {editingId === p.id ? (
@@ -107,19 +107,14 @@ export default function Sidebar() {
           }
         />
       ) : (
-        <button
-          onClick={() => setCreating(true)}
-          className="rounded-md px-2 py-1.5 text-left text-xs text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-        >
-          + New project
-        </button>
+        <AddButton onClick={() => setCreating(true)} label="New project" />
       )}
 
-      <div className="mb-2 mt-6 text-[11px] font-medium uppercase tracking-[0.12em] text-stone-400">
-        Lists
+      <div className="mt-7">
+        <SectionHeader>Lists</SectionHeader>
       </div>
 
-      <ul className="mb-2 space-y-0.5">
+      <ul className="mb-1 space-y-px">
         {listsQuery.data?.map((l) => (
           <li key={l.id}>
             {editingListId === l.id ? (
@@ -169,14 +164,61 @@ export default function Sidebar() {
           }
         />
       ) : (
-        <button
-          onClick={() => setCreatingList(true)}
-          className="rounded-md px-2 py-1.5 text-left text-xs text-stone-500 hover:bg-stone-100 hover:text-stone-900"
-        >
-          + New list
-        </button>
+        <AddButton onClick={() => setCreatingList(true)} label="New list" />
       )}
+
+      <UserFooter />
     </aside>
+  );
+}
+
+function UserFooter() {
+  const { session, signOut } = useAuth();
+  const email = session?.user?.email ?? "Signed in";
+  return (
+    <div className="mt-auto pt-6">
+      <div className="flex items-center gap-2 rounded-lg border border-black/[0.05] bg-white/70 px-2.5 py-2 shadow-card">
+        <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent">
+          {email.slice(0, 1).toUpperCase()}
+        </div>
+        <span className="flex-1 truncate text-[11px] text-stone-600" title={email}>
+          {email}
+        </span>
+        <button
+          type="button"
+          onClick={() => signOut()}
+          aria-label="Sign out"
+          title="Sign out"
+          className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-700"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M9 3H4.5A1.5 1.5 0 003 4.5v7A1.5 1.5 0 004.5 13H9M11 5.5L13.5 8 11 10.5M6.5 8H13" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+      {children}
+    </div>
+  );
+}
+
+function AddButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="focus-ring flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12px] text-stone-400 transition-colors duration-150 hover:bg-white/70 hover:text-stone-700"
+    >
+      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-stone-200/70 text-[10px] text-stone-500">
+        +
+      </span>
+      {label}
+    </button>
   );
 }
 
@@ -191,25 +233,21 @@ interface ListRowProps {
 function ListRow({ list, active, onOpen, onEdit, onDelete }: ListRowProps) {
   return (
     <div
-      className={`group flex items-center gap-2 rounded-md px-2 py-1 ${
-        active ? "bg-stone-200/70" : "hover:bg-stone-100"
+      className={`group flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors duration-150 ease-out-soft ${
+        active
+          ? "bg-white text-stone-900 shadow-card"
+          : "text-stone-700 hover:bg-white/70"
       }`}
     >
       <button
         type="button"
         onClick={onOpen}
-        className="flex flex-1 items-center gap-2 text-left text-sm"
+        className="focus-ring flex flex-1 items-center gap-2.5 rounded text-left text-[13px]"
       >
-        <ListIcon />
-        <span
-          className={`truncate ${
-            active ? "font-medium text-stone-900" : "text-stone-700"
-          }`}
-        >
-          {list.name}
-        </span>
+        <ListIcon active={active} />
+        <span className={`truncate ${active ? "font-medium" : ""}`}>{list.name}</span>
       </button>
-      <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+      <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <IconButton label="Rename list" onClick={onEdit}>
           <PencilIcon />
         </IconButton>
@@ -239,7 +277,7 @@ function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }
         if (!trimmed || pending) return;
         onSubmit(trimmed);
       }}
-      className="rounded-md border border-stone-200 bg-white p-2"
+      className="animate-fade-up rounded-xl border border-black/[0.06] bg-white p-2.5 shadow-card"
     >
       <input
         autoFocus
@@ -249,20 +287,20 @@ function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }
           if (e.key === "Escape") onCancel();
         }}
         placeholder="List name"
-        className="w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none"
+        className="w-full bg-transparent text-[13px] text-stone-800 placeholder:text-stone-300 focus:outline-none"
       />
-      <div className="mt-1.5 flex justify-end gap-1 text-[11px]">
+      <div className="mt-2 flex justify-end gap-1 text-[11px]">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded px-2 py-0.5 text-stone-500 hover:bg-stone-100"
+          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending || !name.trim()}
-          className="rounded bg-stone-900 px-2 py-0.5 text-white disabled:opacity-50"
+          className="rounded-md bg-accent px-2.5 py-1 font-medium text-white shadow-sm transition-colors hover:bg-accent-600 disabled:opacity-50"
         >
           {submitLabel}
         </button>
@@ -282,32 +320,30 @@ interface ProjectRowProps {
 function ProjectRow({ project, active, onOpen, onEdit, onDelete }: ProjectRowProps) {
   return (
     <div
-      className={`group flex items-center gap-2 rounded-md px-2 py-1 ${
-        active ? "bg-stone-200/70" : "hover:bg-stone-100"
+      className={`group flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors duration-150 ease-out-soft ${
+        active
+          ? "bg-white text-stone-900 shadow-card"
+          : "text-stone-700 hover:bg-white/70"
       }`}
     >
       <button
         type="button"
         onClick={onOpen}
-        className="flex flex-1 items-center gap-2 text-left text-sm"
+        className="focus-ring flex flex-1 items-center gap-2.5 rounded text-left text-[13px]"
       >
         <span
           aria-hidden
-          className="inline-block h-2.5 w-2.5 flex-none rounded-full"
+          className="inline-block h-2 w-2 flex-none rounded-full ring-1 ring-inset ring-black/5"
           style={{ backgroundColor: project.colour }}
         />
-        <span
-          className={`truncate ${
-            active ? "font-medium text-stone-900" : "text-stone-700"
-          }`}
-        >
-          {project.name}
-        </span>
+        <span className={`truncate ${active ? "font-medium" : ""}`}>{project.name}</span>
         {!project.is_personal && (
-          <span className="text-[10px] uppercase tracking-wider text-stone-400">work</span>
+          <span className="rounded-full bg-stone-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
+            work
+          </span>
         )}
       </button>
-      <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+      <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <IconButton label="Edit project" onClick={onEdit}>
           <PencilIcon />
         </IconButton>
@@ -333,25 +369,37 @@ function IconButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="rounded p-1 text-stone-400 hover:bg-stone-200/70 hover:text-stone-700"
+      className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-700"
     >
       {children}
     </button>
   );
 }
 
-function ListIcon() {
+function ListIcon({ active }: { active?: boolean }) {
   return (
-    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 flex-none text-stone-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      viewBox="0 0 16 16"
+      className={`h-3.5 w-3.5 flex-none ${active ? "text-accent" : "text-stone-400"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <path d="M5.5 4h7M5.5 8h7M5.5 12h7M3 4h.01M3 8h.01M3 12h.01" strokeLinecap="round" />
     </svg>
   );
 }
 
-function CalendarIcon() {
+function CalendarIcon({ active }: { active?: boolean }) {
   return (
-    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" />
+    <svg
+      viewBox="0 0 16 16"
+      className={`h-3.5 w-3.5 ${active ? "text-accent" : "text-stone-500"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <rect x="2" y="3.5" width="12" height="10.5" rx="2" />
       <path d="M2 7h12M5.5 1.5v3M10.5 1.5v3" strokeLinecap="round" />
     </svg>
   );
@@ -368,7 +416,11 @@ function PencilIcon() {
 function TrashIcon() {
   return (
     <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 4.5h10M6 4.5V3a1 1 0 011-1h2a1 1 0 011 1v1.5M4.5 4.5l.75 8.5a1 1 0 001 .92h3.5a1 1 0 001-.92l.75-8.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M3 4.5h10M6 4.5V3a1 1 0 011-1h2a1 1 0 011 1v1.5M4.5 4.5l.75 8.5a1 1 0 001 .92h3.5a1 1 0 001-.92l.75-8.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
