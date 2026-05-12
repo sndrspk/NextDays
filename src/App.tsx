@@ -18,9 +18,9 @@ export default function App() {
           <Sidebar />
           <main className="flex-1 overflow-hidden">
             {!supabaseConfigured && (
-              <div className="mx-6 mt-6 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                Supabase env vars are not set. Copy <code>.env.example</code> to <code>.env</code>{" "}
-                and restart <code>npm run dev</code>.
+              <div className="mx-8 mt-6 rounded-xl border border-amber-200/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 shadow-card backdrop-blur">
+                Supabase env vars are not set. Copy <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">.env.example</code> to <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">.env</code>{" "}
+                and restart <code className="rounded bg-amber-100 px-1 py-0.5 text-xs">npm run dev</code>.
               </div>
             )}
             <MainView />
@@ -44,7 +44,7 @@ function MainView() {
   }
 
   return (
-    <div className="px-6 py-6 lg:px-8">
+    <div className="h-full overflow-y-auto px-8 py-8 lg:px-10">
       <CalendarStrip />
     </div>
   );

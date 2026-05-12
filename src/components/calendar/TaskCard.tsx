@@ -44,7 +44,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
 
   return (
     <li
-      className="group flex cursor-pointer items-start gap-2 rounded py-1.5 hover:bg-stone-100/60"
+      className="group flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50"
       onClick={() => setSelectedTaskId(task.id)}
     >
       <button
@@ -55,10 +55,10 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           toggle.mutate(task);
         }}
         disabled={toggle.isPending}
-        className={`mt-1 inline-flex h-3.5 w-3.5 flex-none items-center justify-center rounded-[3px] border transition-colors ${
+        className={`focus-ring mt-[3px] inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border transition-all duration-150 ease-out-soft ${
           task.completed
-            ? "border-stone-300 bg-stone-200 text-stone-500"
-            : "border-stone-400 hover:border-stone-700"
+            ? "border-accent bg-accent text-white"
+            : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm"
         } disabled:opacity-50`}
       >
         {task.completed && (
@@ -68,7 +68,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
             className="h-2.5 w-2.5"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
@@ -76,12 +76,12 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           </svg>
         )}
       </button>
-      <span className={`flex flex-1 items-start gap-1.5 text-sm leading-snug ${titleClass}`}>
+      <span className={`flex flex-1 items-start gap-1.5 text-[13px] leading-snug ${titleClass}`}>
         {project && (
           <span
             aria-hidden
             title={project.name}
-            className="mt-1.5 inline-block h-1.5 w-1.5 flex-none rounded-full"
+            className="mt-[7px] inline-block h-1.5 w-1.5 flex-none rounded-full ring-1 ring-inset ring-black/5"
             style={{ backgroundColor: project.colour }}
           />
         )}

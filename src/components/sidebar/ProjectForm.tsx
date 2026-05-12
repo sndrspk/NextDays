@@ -43,14 +43,14 @@ export default function ProjectForm({
         if (!trimmed) return;
         onSubmit({ name: trimmed, colour, is_personal: isPersonal });
       }}
-      className="space-y-3 rounded-md border border-stone-200 bg-white p-3"
+      className="animate-fade-up space-y-3 rounded-xl border border-black/[0.06] bg-white p-3 shadow-card"
     >
       <input
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Project name"
-        className="w-full border-0 border-b border-stone-200 bg-transparent pb-1 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none"
+        className="w-full border-0 border-b border-stone-200 bg-transparent pb-1 text-[13px] text-stone-900 placeholder:text-stone-400 focus:border-accent focus:outline-none"
       />
 
       <div className="flex flex-wrap gap-1.5">
@@ -61,47 +61,47 @@ export default function ProjectForm({
             aria-label={`Colour ${c}`}
             onClick={() => setColour(c)}
             style={{ backgroundColor: c }}
-            className={`h-5 w-5 rounded-full ring-offset-1 transition ${
-              colour === c ? "ring-2 ring-stone-700" : "ring-0 hover:ring-1 hover:ring-stone-300"
+            className={`h-5 w-5 rounded-full ring-1 ring-inset ring-black/10 ring-offset-1 transition-all duration-150 ease-out-soft hover:scale-110 ${
+              colour === c ? "ring-2 ring-accent ring-offset-2" : ""
             }`}
           />
         ))}
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-stone-600">
-        <span>Type:</span>
-        <button
-          type="button"
-          onClick={() => setIsPersonal(true)}
-          className={`rounded-md px-2 py-1 ${
-            isPersonal ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700"
-          }`}
-        >
-          Personal
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsPersonal(false)}
-          className={`rounded-md px-2 py-1 ${
-            !isPersonal ? "bg-stone-900 text-white" : "bg-stone-100 text-stone-700"
-          }`}
-        >
-          Work
-        </button>
+      <div className="inline-flex gap-0.5 rounded-lg bg-stone-200/60 p-0.5 text-[11px]">
+        {(
+          [
+            { v: true, label: "Personal" },
+            { v: false, label: "Work" },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.label}
+            type="button"
+            onClick={() => setIsPersonal(opt.v)}
+            className={`rounded-md px-2.5 py-0.5 font-medium transition-all duration-150 ease-out-soft ${
+              isPersonal === opt.v
+                ? "bg-white text-stone-900 shadow-card"
+                : "text-stone-500 hover:text-stone-900"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
 
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="flex justify-end gap-1 pt-1 text-[11px]">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-md px-2 py-1 text-xs text-stone-500 hover:text-stone-900"
+          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={pending || !name.trim()}
-          className="rounded-md bg-stone-900 px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+          className="rounded-md bg-accent px-2.5 py-1 font-medium text-white shadow-sm transition-colors hover:bg-accent-600 disabled:opacity-50"
         >
           {submitLabel}
         </button>
