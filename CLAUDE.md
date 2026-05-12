@@ -76,7 +76,7 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 
 ## Milestone status
 
-- [x] M1 — Skeleton & DB (scaffold landed; awaiting live read/write verification once user supplies Supabase creds)
+- [x] M1 — Skeleton & DB (scaffold landed, schema applied to Supabase, smoke screen verified end-to-end)
 - [ ] M2 — Calendar Strip (read-only)
 - [ ] M3 — Task Interactions
 - [ ] M4 — Task Detail Panel
