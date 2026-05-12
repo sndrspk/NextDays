@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "../lib/supabase";
-import type { ISODate, Task } from "../types";
+import type { ISODate, Task, UUID } from "../types";
 
 export function useTasks(windowStart: ISODate, windowEndExclusive: ISODate) {
   return useQuery({
@@ -16,6 +16,19 @@ export function useTasks(windowStart: ISODate, windowEndExclusive: ISODate) {
         .order("sort_order", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Task[];
+    },
+  });
+}
+
+export function useTask(id: UUID | null) {
+  return useQuery({
+    enabled: supabaseConfigured && id !== null,
+    queryKey: ["task", id],
+    queryFn: async (): Promise<Task | null> => {
+      if (!id) return null;
+      const { data, error } = await supabase.from("tasks").select("*").eq("id", id).single();
+      if (error) throw error;
+      return data as Task;
     },
   });
 }

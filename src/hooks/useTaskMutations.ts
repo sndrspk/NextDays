@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
-import type { ISODate, Task } from "../types";
+import type { ISODate, Task, UUID } from "../types";
+
+type TaskUpdate = Partial<
+  Pick<Task, "title" | "notes" | "scheduled_date" | "start_date" | "due_date" | "project_id" | "tags">
+>;
 
 interface CreateTaskInput {
   title: string;
@@ -24,6 +28,26 @@ export function useCreateTask() {
       return data as Task;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
+export function useUpdateTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: UUID; patch: TaskUpdate }): Promise<Task> => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(patch)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Task;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["task", data.id] });
+    },
   });
 }
 
