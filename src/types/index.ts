@@ -15,6 +15,20 @@ export interface Task {
   tags: string[];
   sort_order: number;
   created_at: ISOTimestamp;
+  template_id: UUID | null;
+}
+
+export interface TaskTemplate {
+  id: UUID;
+  title: string;
+  notes: string | null;
+  project_id: UUID | null;
+  tags: string[];
+  rrule: string;
+  dtstart: ISODate;
+  start_offset_days: number | null;
+  due_offset_days: number | null;
+  created_at: ISOTimestamp;
 }
 
 export interface Project {

@@ -1,0 +1,80 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase, supabaseConfigured } from "../lib/supabase";
+import type { ISODate, TaskTemplate, UUID } from "../types";
+
+export function useTaskTemplates() {
+  return useQuery({
+    enabled: supabaseConfigured,
+    queryKey: ["task_templates"],
+    queryFn: async (): Promise<TaskTemplate[]> => {
+      const { data, error } = await supabase.from("task_templates").select("*");
+      if (error) throw error;
+      return (data ?? []) as TaskTemplate[];
+    },
+  });
+}
+
+export interface NewTemplate {
+  title: string;
+  notes: string | null;
+  project_id: UUID | null;
+  tags: string[];
+  rrule: string;
+  dtstart: ISODate;
+  start_offset_days: number | null;
+  due_offset_days: number | null;
+}
+
+export function useCreateTaskTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: NewTemplate): Promise<TaskTemplate> => {
+      const { data, error } = await supabase
+        .from("task_templates")
+        .insert(input)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as TaskTemplate;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["task_templates"] }),
+  });
+}
+
+export function useUpdateTaskTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      patch,
+    }: {
+      id: UUID;
+      patch: Partial<NewTemplate>;
+    }): Promise<TaskTemplate> => {
+      const { data, error } = await supabase
+        .from("task_templates")
+        .update(patch)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as TaskTemplate;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["task_templates"] }),
+  });
+}
+
+export function useDeleteTaskTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: UUID) => {
+      const { error } = await supabase.from("task_templates").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["task_templates"] });
+      // Existing instances had template_id null'd by the FK; refresh task views too.
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+}

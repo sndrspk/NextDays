@@ -4,6 +4,7 @@ import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
 import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
 import Sidebar from "./components/sidebar/Sidebar";
+import { useRecurrenceGenerator } from "./hooks/useRecurrenceGenerator";
 import { useRollover } from "./hooks/useRollover";
 import { supabaseConfigured } from "./lib/supabase";
 import { AuthProvider, useAuth } from "./state/auth";
@@ -51,6 +52,7 @@ function AuthGate() {
 
 function AppShell() {
   useRollover();
+  useRecurrenceGenerator();
 
   return (
     <SelectionProvider>

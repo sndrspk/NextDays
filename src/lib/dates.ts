@@ -53,6 +53,15 @@ export function isSameISODate(a: ISODate, b: ISODate): boolean {
   return a === b;
 }
 
+export function isDueOrOverdue(
+  dueDate: ISODate | null,
+  today: ISODate,
+  completed: boolean,
+): boolean {
+  if (!dueDate || completed) return false;
+  return dueDate <= today;
+}
+
 export function formatColumnHeader(date: Date): { weekday: string; dayMonth: string } {
   return {
     weekday: WEEKDAYS[date.getDay()],

@@ -1,5 +1,5 @@
 import type { ISODate, Task } from "../../types";
-import { diffInDays } from "../../lib/dates";
+import { diffInDays, isDueOrOverdue } from "../../lib/dates";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
@@ -29,6 +29,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     : undefined;
   const u = urgency(task.due_date, today, task.completed);
 
+  const urgent = isDueOrOverdue(task.due_date, today, task.completed);
   const titleClass = task.completed
     ? "text-stone-400 line-through"
     : u === "overdue"
@@ -36,6 +37,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     : u === "today"
     ? "text-orange-600"
     : "text-stone-800";
+  const weightClass = urgent ? "font-semibold" : "";
 
   const bellClass =
     u === "overdue" ? "text-red-500" : u === "today" || u === "tomorrow" ? "text-orange-500" : "";
@@ -76,7 +78,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           </svg>
         )}
       </button>
-      <span className={`flex flex-1 items-start gap-1.5 text-[13px] leading-snug ${titleClass}`}>
+      <span className={`flex flex-1 items-start gap-1.5 text-[13px] leading-snug ${titleClass} ${weightClass}`}>
         {project && (
           <span
             aria-hidden
@@ -88,6 +90,11 @@ export default function TaskCard({ task, today }: TaskCardProps) {
         <span>
           {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
           {task.title}
+          {task.template_id && (
+            <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
+              ↻
+            </span>
+          )}
         </span>
       </span>
     </li>
