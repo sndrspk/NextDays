@@ -1,5 +1,7 @@
 # Wishlist
 
+Status legend: ✅ shipped (see `VERSIONS.md` for the matching entry).
+
 Future features, written out so a future Claude session can pick one up and implement it without re-deriving the design. Each item is sized roughly:
 
 - **S** ≈ a focused afternoon, one or two files, no schema change.
@@ -10,7 +12,7 @@ When picking one up, follow the working agreements in `CLAUDE.md` (branch per mi
 
 ---
 
-## 1. Bold overdue / due-today tasks in every view — **S**
+## 1. Bold overdue / due-today tasks in every view — **S** — ✅ shipped (0.0.12)
 
 **Goal:** A task whose `due_date <= today` and `completed === false` should render in **bold** wherever it appears, so urgency is visible at a glance without relying on colour or the 🔔 alone.
 
@@ -32,7 +34,7 @@ When picking one up, follow the working agreements in `CLAUDE.md` (branch per mi
 
 ---
 
-## 2. Quick-add tasks from inside a Project view — **S**
+## 2. Quick-add tasks from inside a Project view — **S** — ✅ shipped (0.0.12)
 
 **Goal:** While viewing a project (`ProjectView`), I can add a task to that project without bouncing back to the calendar.
 
@@ -55,7 +57,7 @@ Go with (a) unless the user says otherwise.
 
 ---
 
-## 3. Recurring start and due dates — **M / L**
+## 3. Recurring start and due dates — **M / L** — ✅ shipped (0.0.12; Approach A, client-side generator, presets + custom)
 
 **Goal:** A task can recur. Both `start_date` and `due_date` should be expressible as repeating rules (e.g. "every Monday", "every 2 weeks", "the 1st of every month"). When one instance is completed, the next one materialises.
 
@@ -180,13 +182,13 @@ Go with (a) unless the user says otherwise.
 
 ## Sizing summary
 
-| # | Item | Size |
-|---|---|---|
-| 1 | Bold overdue / due-today tasks | **S** |
-| 2 | Quick-add from Project view | **S** |
-| 3 | Recurring start / due dates | **M–L** |
-| 4 | Drag-and-drop in calendar | **M** |
-| 5 | Daily Discord digest | **M** |
-| 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** |
+| # | Item | Size | Status |
+|---|---|---|---|
+| 1 | Bold overdue / due-today tasks | **S** | ✅ 0.0.12 |
+| 2 | Quick-add from Project view | **S** | ✅ 0.0.12 |
+| 3 | Recurring start / due dates | **M–L** | ✅ 0.0.12 |
+| 4 | Drag-and-drop in calendar | **M** | open |
+| 5 | Daily Discord digest | **M** | open |
+| 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | open |
 
 Tackle them roughly in that order — items 1 and 2 are quick wins that improve daily use; 3 and 4 are the next big UX leaps; 5 and 6 require server-side scaffolding (Edge Functions, cron) and should probably share that groundwork.

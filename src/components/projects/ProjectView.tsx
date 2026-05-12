@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useProjects } from "../../hooks/useProjects";
 import { useProjectTasks } from "../../hooks/useProjectTasks";
-import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
-import { todayLocal, toISODate } from "../../lib/dates";
+import { useCreateTask, useToggleTaskCompleted } from "../../hooks/useTaskMutations";
+import { isDueOrOverdue, todayLocal, toISODate } from "../../lib/dates";
 import { useSelection } from "../../state/selection";
 import type { Task, UUID } from "../../types";
 
@@ -49,9 +49,12 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
         </span>
       </header>
 
-      <SegmentedFilter value={filter} onChange={setFilter} />
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <SegmentedFilter value={filter} onChange={setFilter} />
+        <ProjectQuickAdd projectId={projectId} today={today} />
+      </div>
 
-      <div className="mt-4 flex-1 overflow-y-auto rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
+      <div className="flex-1 overflow-y-auto rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
         {tasksQuery.isLoading ? (
           <p className="p-8 text-sm text-stone-400">Loading…</p>
         ) : filtered.length === 0 ? (
@@ -59,7 +62,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
             title="Nothing here yet"
             subtitle={
               filter === "active"
-                ? "Add a task on the calendar and assign it to this project."
+                ? "Use the input above to add your first task."
                 : filter === "completed"
                 ? "Completed tasks will appear here."
                 : "No tasks in this project."
@@ -104,6 +107,38 @@ function SegmentedFilter({
   );
 }
 
+function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string }) {
+  const [title, setTitle] = useState("");
+  const create = useCreateTask();
+
+  function submit() {
+    const trimmed = title.trim();
+    if (!trimmed || create.isPending) return;
+    create.mutate(
+      { title: trimmed, scheduled_date: today, project_id: projectId },
+      { onSuccess: () => setTitle("") },
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+      className="flex w-72 items-center rounded-lg border border-stone-200 bg-white px-3 py-1.5 shadow-card focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/20"
+    >
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="+ Add task to project"
+        disabled={create.isPending}
+        className="w-full bg-transparent text-[13px] text-stone-800 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
+      />
+    </form>
+  );
+}
+
 function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-1 px-6 py-16 text-center">
@@ -118,6 +153,7 @@ function ProjectTaskRow({ task, today }: { task: Task; today: string }) {
   const { setSelectedTaskId } = useSelection();
 
   const overdue = task.due_date && !task.completed && task.due_date < today;
+  const urgent = isDueOrOverdue(task.due_date, today, task.completed);
 
   return (
     <li
@@ -147,7 +183,7 @@ function ProjectTaskRow({ task, today }: { task: Task; today: string }) {
       <span
         className={`flex-1 text-[13px] ${
           task.completed ? "text-stone-400 line-through" : "text-stone-800"
-        }`}
+        } ${urgent ? "font-semibold" : ""}`}
       >
         {task.title}
       </span>

@@ -4,6 +4,7 @@ import { useTask } from "../../hooks/useTasks";
 import { useProjects } from "../../hooks/useProjects";
 import { useUpdateTask } from "../../hooks/useTaskMutations";
 import { useSelection } from "../../state/selection";
+import RecurrenceEditor from "./RecurrenceEditor";
 
 function parseTags(input: string): string[] {
   return input
@@ -184,6 +185,8 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
             ))}
           </select>
         </Field>
+
+        <RecurrenceEditor task={task} />
 
         <Field label="Tags">
           <input

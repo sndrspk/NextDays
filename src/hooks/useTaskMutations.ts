@@ -3,23 +3,35 @@ import { supabase } from "../lib/supabase";
 import type { ISODate, Task, UUID } from "../types";
 
 type TaskUpdate = Partial<
-  Pick<Task, "title" | "notes" | "scheduled_date" | "start_date" | "due_date" | "project_id" | "tags">
+  Pick<
+    Task,
+    | "title"
+    | "notes"
+    | "scheduled_date"
+    | "start_date"
+    | "due_date"
+    | "project_id"
+    | "tags"
+    | "template_id"
+  >
 >;
 
 interface CreateTaskInput {
   title: string;
   scheduled_date: ISODate;
+  project_id?: UUID | null;
 }
 
 export function useCreateTask() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, scheduled_date }: CreateTaskInput): Promise<Task> => {
+    mutationFn: async ({ title, scheduled_date, project_id }: CreateTaskInput): Promise<Task> => {
       const { data, error } = await supabase
         .from("tasks")
         .insert({
           title,
           scheduled_date,
+          project_id: project_id ?? null,
           sort_order: Math.floor(Date.now() / 1000),
         })
         .select()
