@@ -2,3 +2,5 @@
 - [ ] I want to add tasks directly from the Project views.
 - [ ] I want both the starting date and the due date to be able to be recurring.
 - [ ] Tasks in the calendar should be draggable. It should change the tasks.scheduled_date to the date it's being dropped into.
+- [ ] A daily notification every morning with my scheduled tasks for that day. Can be sent via a Discord DM (I've set up a server for a different project.)
+- [ ] Sync with Google Calendar and other calendars to also read-only show those calendar items in the Calendar.
