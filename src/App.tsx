@@ -1,14 +1,12 @@
-import SmokeScreen from "./components/dev/SmokeScreen";
+import CalendarStrip from "./components/calendar/CalendarStrip";
 import { supabaseConfigured } from "./lib/supabase";
 
 export default function App() {
   return (
-    <div className="min-h-full p-8">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">NextDays</h1>
-        <p className="text-sm text-stone-500">
-          Milestone 1 scaffold — calendar UI lands in Milestone 2.
-        </p>
+    <div className="min-h-full px-6 py-8 lg:px-10">
+      <header className="mb-6 flex items-baseline justify-between">
+        <h1 className="text-xl font-semibold tracking-tight text-stone-900">NextDays</h1>
+        <p className="text-xs text-stone-400">Milestone 2 · read-only calendar</p>
       </header>
 
       {!supabaseConfigured && (
@@ -18,7 +16,7 @@ export default function App() {
         </div>
       )}
 
-      <SmokeScreen />
+      <CalendarStrip />
     </div>
   );
 }

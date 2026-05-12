@@ -77,7 +77,7 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 ## Milestone status
 
 - [x] M1 — Skeleton & DB (scaffold landed, schema applied to Supabase, smoke screen verified end-to-end)
-- [ ] M2 — Calendar Strip (read-only)
+- [x] M2 — Calendar Strip (read-only): responsive 4/7-day window, today highlight, sort per §5.2, due-date 🔔 indicators per §5.4, future-`start_date` gating
 - [ ] M3 — Task Interactions
 - [ ] M4 — Task Detail Panel
 - [ ] M5 — Projects
