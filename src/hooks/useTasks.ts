@@ -12,10 +12,17 @@ export function useTasks(windowStart: ISODate, windowEndExclusive: ISODate) {
         .select("*")
         .gte("scheduled_date", windowStart)
         .lt("scheduled_date", windowEndExclusive)
-        .or(`start_date.is.null,start_date.lte.${windowStart}`)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Task[];
+      // Hide tasks whose start_date is still in the future *relative to their
+      // own scheduled_date* — i.e. the user's "delayed start" one-off case.
+      // A row where start_date <= scheduled_date (always true for recurring
+      // instances) belongs in its scheduled column even when that column is
+      // a future day in the calendar window. PostgREST can't compare two
+      // columns in a URL filter, so we filter here.
+      return ((data ?? []) as Task[]).filter(
+        (t) => !t.start_date || t.start_date <= t.scheduled_date,
+      );
     },
   });
 }
