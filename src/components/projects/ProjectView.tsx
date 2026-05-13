@@ -197,6 +197,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
                 key={t.id}
                 task={t}
                 today={today}
+                tint={project.colour}
                 selectMode={selectMode}
                 selected={selectedIds.has(t.id)}
                 onToggleSelected={() => toggleSelected(t.id)}
@@ -432,6 +433,7 @@ function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
 interface ProjectTaskRowProps {
   task: Task;
   today: string;
+  tint: string;
   selectMode: boolean;
   selected: boolean;
   onToggleSelected: () => void;
@@ -440,6 +442,7 @@ interface ProjectTaskRowProps {
 function ProjectTaskRow({
   task,
   today,
+  tint,
   selectMode,
   selected,
   onToggleSelected,
@@ -449,6 +452,10 @@ function ProjectTaskRow({
 
   const overdue = task.due_date && !task.completed && task.due_date < today;
   const urgent = isDueOrOverdue(task.due_date, today, task.completed);
+
+  const checkboxStyle = task.completed
+    ? { backgroundColor: tint, borderColor: tint }
+    : { borderColor: tint };
 
   function onRowClick() {
     if (selectMode) onToggleSelected();
@@ -486,10 +493,9 @@ function ProjectTaskRow({
           toggle.mutate(task);
         }}
         disabled={toggle.isPending}
-        className={`focus-ring inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border transition-all duration-150 ease-out-soft ${
-          task.completed
-            ? "border-accent bg-accent text-white"
-            : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm"
+        style={checkboxStyle}
+        className={`focus-ring inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border-[1.5px] transition-all duration-150 ease-out-soft ${
+          task.completed ? "text-white" : "bg-white hover:shadow-sm"
         } disabled:opacity-50`}
       >
         {task.completed && (
