@@ -114,8 +114,8 @@ src/
 ### 5.1 Rolling Day Calendar Strip
 
 - Displays **today + the next N days** as vertical columns side by side, scrollable horizontally.
-- **N is responsive:** show 4 days (today + 3) on smaller desktop screens, 7 days (today + 6) on wider screens. Breakpoint suggestion: < 1280px → 4 columns, ≥ 1280px → 7 columns.
-- Each column header shows the weekday name and date (e.g. "Tuesday 13 May").
+- **N is responsive:** show 4 days (today + 3) on smaller desktop screens (640–1279px), and a user-chosen **3 or 5 days** on wider screens (≥ 1280px) — default 5. The wide-screen choice is exposed as a segmented toggle in the calendar header and persisted in `localStorage`. Phones (< 640px) show 3 days stacked vertically.
+- Each column header shows the date (e.g. "13 May") on top in small-caps letter-spaced type, and a larger label below: `Today` for the current column, `Tomorrow` for the next, and the weekday name (e.g. "Wednesday") beyond that.
 - Today's column is visually distinguished (slightly different background or stronger header).
 
 ### 5.2 Task Display Order Within a Day Column

@@ -40,8 +40,16 @@ function sortTasks(tasks: Task[], today: ISODate): Task[] {
   return [...pinned, ...regular, ...completed];
 }
 
+function dayLabel(isoDate: ISODate, today: ISODate, weekday: string): string {
+  const offset = diffInDays(isoDate, today);
+  if (offset === 0) return "Today";
+  if (offset === 1) return "Tomorrow";
+  return weekday;
+}
+
 export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
+  const label = dayLabel(isoDate, today, weekday);
   const sorted = sortTasks(tasks, today);
 
   return (
@@ -57,14 +65,14 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
             isToday ? "text-accent" : "text-stone-400"
           }`}
         >
-          {isToday ? "Today" : weekday}
+          {dayMonth}
         </div>
         <div
           className={`mt-1 text-[17px] tracking-tight ${
             isToday ? "font-semibold text-stone-900" : "font-medium text-stone-700"
           }`}
         >
-          {dayMonth}
+          {label}
         </div>
       </header>
 

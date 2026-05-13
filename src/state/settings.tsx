@@ -29,15 +29,30 @@ export const FONT_OPTIONS: readonly FontOption[] = [
 ];
 
 export const DEFAULT_FONT: FontChoice = "inter";
-const STORAGE_KEY = "nextdays:font";
+const FONT_STORAGE_KEY = "nextdays:font";
+
+export type DesktopDayCount = 3 | 5;
+export const DESKTOP_DAY_COUNT_OPTIONS: readonly DesktopDayCount[] = [3, 5];
+export const DEFAULT_DESKTOP_DAY_COUNT: DesktopDayCount = 5;
+const DESKTOP_DAY_COUNT_STORAGE_KEY = "nextdays:desktopDayCount";
 
 function readStoredFont(): FontChoice {
   if (typeof window === "undefined") return DEFAULT_FONT;
-  const raw = window.localStorage.getItem(STORAGE_KEY);
+  const raw = window.localStorage.getItem(FONT_STORAGE_KEY);
   if (raw && FONT_OPTIONS.some((o) => o.id === raw)) {
     return raw as FontChoice;
   }
   return DEFAULT_FONT;
+}
+
+function readStoredDesktopDayCount(): DesktopDayCount {
+  if (typeof window === "undefined") return DEFAULT_DESKTOP_DAY_COUNT;
+  const raw = window.localStorage.getItem(DESKTOP_DAY_COUNT_STORAGE_KEY);
+  const parsed = raw === null ? NaN : Number(raw);
+  if (DESKTOP_DAY_COUNT_OPTIONS.includes(parsed as DesktopDayCount)) {
+    return parsed as DesktopDayCount;
+  }
+  return DEFAULT_DESKTOP_DAY_COUNT;
 }
 
 function stackFor(choice: FontChoice): string {
@@ -47,12 +62,17 @@ function stackFor(choice: FontChoice): string {
 interface SettingsState {
   font: FontChoice;
   setFont: (next: FontChoice) => void;
+  desktopDayCount: DesktopDayCount;
+  setDesktopDayCount: (next: DesktopDayCount) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [font, setFontState] = useState<FontChoice>(() => readStoredFont());
+  const [desktopDayCount, setDesktopDayCountState] = useState<DesktopDayCount>(
+    () => readStoredDesktopDayCount(),
+  );
 
   useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
@@ -61,14 +81,26 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setFont = (next: FontChoice) => {
     setFontState(next);
     try {
-      window.localStorage.setItem(STORAGE_KEY, next);
+      window.localStorage.setItem(FONT_STORAGE_KEY, next);
     } catch {
       // localStorage can be unavailable (private mode, quota). Silent fallback —
       // the choice still applies for this session via state.
     }
   };
 
-  const value = useMemo(() => ({ font, setFont }), [font]);
+  const setDesktopDayCount = (next: DesktopDayCount) => {
+    setDesktopDayCountState(next);
+    try {
+      window.localStorage.setItem(DESKTOP_DAY_COUNT_STORAGE_KEY, String(next));
+    } catch {
+      // see setFont
+    }
+  };
+
+  const value = useMemo(
+    () => ({ font, setFont, desktopDayCount, setDesktopDayCount }),
+    [font, desktopDayCount],
+  );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
 
