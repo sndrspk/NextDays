@@ -16,7 +16,12 @@ import { useAuth } from "../../state/auth";
 import { useView } from "../../state/view";
 import ProjectForm from "./ProjectForm";
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps = {}) {
   const { view, setView } = useView();
   const projectsQuery = useProjects();
   const createProject = useCreateProject();
@@ -37,11 +42,36 @@ export default function Sidebar() {
   const activeListId = view.kind === "list" ? view.id : null;
 
   return (
-    <aside className="flex h-full w-64 flex-none flex-col overflow-y-auto border-r border-black/[0.06] bg-white/60 px-3 py-5 backdrop-blur-xl">
-      <div className="mb-7 px-2">
-        <h1 className="text-[15px] font-semibold tracking-tight text-stone-900">NextDays</h1>
-        <p className="text-[11px] text-stone-400">Keyboard-first daily focus</p>
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      <div
+        onClick={onMobileClose}
+        aria-hidden={!mobileOpen}
+        className={`fixed inset-0 z-40 bg-stone-900/20 backdrop-blur-[2px] transition-opacity duration-200 md:hidden ${
+          mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] flex-none flex-col overflow-y-auto border-r border-black/[0.06] bg-white/95 px-3 py-5 shadow-elevated backdrop-blur-xl transition-transform duration-200 ease-out-soft md:static md:z-auto md:w-64 md:max-w-none md:translate-x-0 md:bg-white/60 md:shadow-none ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="mb-5 flex items-start justify-between px-2 md:mb-7 md:block">
+          <div>
+            <h1 className="text-[15px] font-semibold tracking-tight text-stone-900">NextDays</h1>
+            <p className="text-[11px] text-stone-400">Keyboard-first daily focus</p>
+          </div>
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Close navigation"
+            className="focus-ring -mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 md:hidden"
+          >
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
 
       <button
         onClick={() => setView({ kind: "calendar" })}
@@ -180,7 +210,8 @@ export default function Sidebar() {
       )}
 
       <UserFooter />
-    </aside>
+      </aside>
+    </>
   );
 }
 

@@ -46,8 +46,8 @@ export default function TaskDetailPanel() {
       <aside
         role="dialog"
         aria-label="Task details"
-        className={`fixed inset-y-3 right-3 z-40 flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white/95 shadow-panel backdrop-blur-xl transition-transform duration-200 ease-out-soft ${
-          isOpen ? "translate-x-0" : "translate-x-[120%]"
+        className={`fixed inset-x-0 bottom-0 top-12 z-40 flex flex-col overflow-hidden rounded-t-2xl border border-black/[0.06] bg-white/95 shadow-panel backdrop-blur-xl transition-transform duration-200 ease-out-soft sm:inset-y-3 sm:inset-x-auto sm:right-3 sm:left-auto sm:w-[min(28rem,calc(100vw-1.5rem))] sm:rounded-2xl ${
+          isOpen ? "translate-y-0 sm:translate-x-0 sm:translate-y-0" : "translate-y-[110%] sm:translate-y-0 sm:translate-x-[120%]"
         }`}
       >
         {isOpen && taskQuery.data && (
@@ -104,7 +104,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
 
   return (
     <>
-      <header className="flex items-center justify-between border-b border-black/[0.05] bg-white/60 px-5 py-3 backdrop-blur-xl">
+      <header className="flex flex-none items-center justify-between border-b border-black/[0.05] bg-white/60 px-4 py-3 backdrop-blur-xl sm:px-5">
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">
           <span>Task</span>
           {isSaving && (
@@ -126,7 +126,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}

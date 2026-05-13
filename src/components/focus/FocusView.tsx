@@ -25,9 +25,11 @@ export default function FocusView() {
   const total = overdue.length + dueToday.length + otherToday.length;
 
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col px-10 py-8">
-      <header className="mb-6">
-        <h2 className="text-[26px] font-semibold tracking-tight text-stone-900">Focus</h2>
+    <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
+      <header className="mb-5 sm:mb-6">
+        <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
+          Focus
+        </h2>
         <p className="text-[12px] text-stone-500">What needs your attention today.</p>
       </header>
 
