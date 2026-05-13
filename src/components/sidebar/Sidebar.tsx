@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BackupPanel from "../settings/BackupPanel";
 import { useProjects } from "../../hooks/useProjects";
 import {
   useCreateProject,
@@ -218,6 +219,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 function UserFooter() {
   const { session, signOut } = useAuth();
   const email = session?.user?.email ?? "Signed in";
+  const [backupOpen, setBackupOpen] = useState(false);
   return (
     <div className="mt-auto pt-6">
       <div className="flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-2">
@@ -227,6 +229,17 @@ function UserFooter() {
         <span className="flex-1 truncate text-[11px] text-stone-600" title={email}>
           {email}
         </span>
+        <button
+          type="button"
+          onClick={() => setBackupOpen(true)}
+          aria-label="Backup and restore"
+          title="Backup and restore"
+          className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-slate-100 hover:text-stone-700"
+        >
+          <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M8 2v7M4.5 6.5L8 10l3.5-3.5M3 12.5h10" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
         <button
           type="button"
           onClick={() => signOut()}
@@ -239,6 +252,7 @@ function UserFooter() {
           </svg>
         </button>
       </div>
+      <BackupPanel open={backupOpen} onClose={() => setBackupOpen(false)} />
     </div>
   );
 }
