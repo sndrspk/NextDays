@@ -46,17 +46,11 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
 
   return (
     <section
-      className={`relative flex min-w-0 flex-1 flex-col border-b border-black/[0.05] px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0 ${
-        isToday ? "bg-gradient-to-b from-accent-50/40 via-white to-white" : "bg-white"
+      className={`relative flex min-w-0 flex-1 flex-col border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0 ${
+        isToday ? "bg-accent-50/40" : "bg-transparent"
       }`}
       data-date={isoDate}
     >
-      {isToday && (
-        <span
-          aria-hidden
-          className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent sm:inset-x-5"
-        />
-      )}
       <header className="mb-4">
         <div
           className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${

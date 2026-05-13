@@ -47,12 +47,12 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       <div
         onClick={onMobileClose}
         aria-hidden={!mobileOpen}
-        className={`fixed inset-0 z-40 bg-stone-900/20 backdrop-blur-[2px] transition-opacity duration-200 md:hidden ${
+        className={`fixed inset-0 z-40 bg-slate-900/15 transition-opacity duration-200 md:hidden ${
           mobileOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] flex-none flex-col overflow-y-auto border-r border-black/[0.06] bg-white/95 px-3 py-5 shadow-elevated backdrop-blur-xl transition-transform duration-200 ease-out-soft md:static md:z-auto md:w-64 md:max-w-none md:translate-x-0 md:bg-white/60 md:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] flex-none flex-col overflow-y-auto border-r border-slate-200/70 bg-white px-3 py-5 transition-transform duration-200 ease-out-soft md:static md:z-auto md:w-64 md:max-w-none md:translate-x-0 md:bg-white/40 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -65,7 +65,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
             type="button"
             onClick={onMobileClose}
             aria-label="Close navigation"
-            className="focus-ring -mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 md:hidden"
+            className="focus-ring -mr-1 inline-flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-slate-100 hover:text-stone-700 md:hidden"
           >
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75">
               <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
@@ -77,8 +77,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         onClick={() => setView({ kind: "calendar" })}
         className={`focus-ring mb-1 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
           view.kind === "calendar"
-            ? "bg-white text-stone-900 shadow-card"
-            : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
+            ? "bg-accent-50 text-accent-700"
+            : "text-stone-600 hover:bg-slate-100/70 hover:text-stone-900"
         }`}
       >
         <CalendarIcon active={view.kind === "calendar"} />
@@ -89,8 +89,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         onClick={() => setView({ kind: "focus" })}
         className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
           view.kind === "focus"
-            ? "bg-white text-stone-900 shadow-card"
-            : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
+            ? "bg-accent-50 text-accent-700"
+            : "text-stone-600 hover:bg-slate-100/70 hover:text-stone-900"
         }`}
       >
         <FocusIcon active={view.kind === "focus"} />
@@ -220,8 +220,8 @@ function UserFooter() {
   const email = session?.user?.email ?? "Signed in";
   return (
     <div className="mt-auto pt-6">
-      <div className="flex items-center gap-2 rounded-lg border border-black/[0.05] bg-white/70 px-2.5 py-2 shadow-card">
-        <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent">
+      <div className="flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-2">
+        <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent-100 text-[10px] font-semibold text-accent-700">
           {email.slice(0, 1).toUpperCase()}
         </div>
         <span className="flex-1 truncate text-[11px] text-stone-600" title={email}>
@@ -232,7 +232,7 @@ function UserFooter() {
           onClick={() => signOut()}
           aria-label="Sign out"
           title="Sign out"
-          className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-700"
+          className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-slate-100 hover:text-stone-700"
         >
           <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M9 3H4.5A1.5 1.5 0 003 4.5v7A1.5 1.5 0 004.5 13H9M11 5.5L13.5 8 11 10.5M6.5 8H13" strokeLinecap="round" strokeLinejoin="round" />
@@ -255,9 +255,9 @@ function AddButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
-      className="focus-ring flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12px] text-stone-400 transition-colors duration-150 hover:bg-white/70 hover:text-stone-700"
+      className="focus-ring flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12px] text-stone-400 transition-colors duration-150 hover:bg-slate-100/70 hover:text-stone-700"
     >
-      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-stone-200/70 text-[10px] text-stone-500">
+      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-slate-200/70 text-[10px] text-stone-500">
         +
       </span>
       {label}
@@ -278,8 +278,8 @@ function ListRow({ list, active, onOpen, onEdit, onDelete }: ListRowProps) {
     <div
       className={`group flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors duration-150 ease-out-soft ${
         active
-          ? "bg-white text-stone-900 shadow-card"
-          : "text-stone-700 hover:bg-white/70"
+          ? "bg-accent-50 text-accent-700"
+          : "text-stone-700 hover:bg-slate-100/70"
       }`}
     >
       <button
@@ -320,7 +320,7 @@ function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }
         if (!trimmed || pending) return;
         onSubmit(trimmed);
       }}
-      className="animate-fade-up rounded-xl border border-black/[0.06] bg-white p-2.5 shadow-card"
+      className="animate-fade-up rounded-xl border border-slate-200/80 bg-white p-2.5"
     >
       <input
         autoFocus
@@ -336,7 +336,7 @@ function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700"
+          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-slate-100 hover:text-stone-700"
         >
           Cancel
         </button>
@@ -365,8 +365,8 @@ function ProjectRow({ project, active, onOpen, onEdit, onDelete }: ProjectRowPro
     <div
       className={`group flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors duration-150 ease-out-soft ${
         active
-          ? "bg-white text-stone-900 shadow-card"
-          : "text-stone-700 hover:bg-white/70"
+          ? "bg-accent-50 text-accent-700"
+          : "text-stone-700 hover:bg-slate-100/70"
       }`}
     >
       <button
@@ -381,7 +381,7 @@ function ProjectRow({ project, active, onOpen, onEdit, onDelete }: ProjectRowPro
         />
         <span className={`truncate ${active ? "font-medium" : ""}`}>{project.name}</span>
         {!project.is_personal && (
-          <span className="rounded-full bg-stone-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
+          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
             work
           </span>
         )}
@@ -412,7 +412,7 @@ function IconButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-700"
+      className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-slate-100 hover:text-stone-700"
     >
       {children}
     </button>

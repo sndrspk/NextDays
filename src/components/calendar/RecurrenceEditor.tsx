@@ -158,7 +158,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
         missingDateHint="Set a start date above to make it recur."
       />
 
-      <div className="my-2.5 border-t border-black/[0.04]" />
+      <div className="my-2.5 border-t border-slate-200/60" />
 
       <RuleSection
         label="Due date"
@@ -174,7 +174,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
             type="button"
             onClick={save}
             disabled={busy || !canSave}
-            className="focus-ring rounded-md bg-accent px-3 py-1 text-[12px] font-medium text-white shadow-card transition hover:bg-accent/90 disabled:opacity-50"
+            className="focus-ring rounded-md bg-accent px-3 py-1 text-[12px] font-medium text-white transition hover:bg-accent-600 disabled:opacity-50"
           >
             {!startEnabled && !dueEnabled && template ? "Stop repeating" : "Save recurrence"}
           </button>
@@ -196,7 +196,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
 }
 
 const selectClass =
-  "focus-ring rounded-lg border border-black/[0.07] bg-white/80 px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-black/[0.12] focus:border-accent/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  "focus-ring rounded-lg border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 interface RuleSectionProps {
   label: string;

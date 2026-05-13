@@ -10,21 +10,27 @@ export default {
       },
       colors: {
         accent: {
-          DEFAULT: "#0a84ff",
-          50: "#eff8ff",
-          100: "#dbecff",
-          500: "#0a84ff",
-          600: "#0070e0",
-          700: "#0058b1",
+          DEFAULT: "#6366f1",
+          50: "#eef2ff",
+          100: "#e0e7ff",
+          500: "#6366f1",
+          600: "#4f46e5",
+          700: "#4338ca",
         },
-        canvas: "#f5f5f7",
+        canvas: "#f7f7fb",
+        ink: {
+          900: "#1f2330",
+          700: "#3a3f52",
+          500: "#6b7184",
+          400: "#9097ab",
+          300: "#b9bfcf",
+        },
       },
       boxShadow: {
-        card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06)",
-        elevated:
-          "0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(15, 23, 42, 0.12)",
-        panel:
-          "0 1px 2px rgba(15, 23, 42, 0.04), 0 24px 64px -16px rgba(15, 23, 42, 0.28)",
+        // Very subtle surfaces; the design now relies on thin borders, not shadow stacks.
+        card: "0 1px 1px rgba(31, 35, 48, 0.04)",
+        elevated: "0 1px 2px rgba(31, 35, 48, 0.05)",
+        panel: "0 10px 30px -12px rgba(31, 35, 48, 0.18)",
       },
       borderRadius: {
         xl: "0.875rem",

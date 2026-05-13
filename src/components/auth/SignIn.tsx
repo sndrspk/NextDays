@@ -41,7 +41,7 @@ export default function SignIn() {
 
         <form
           onSubmit={submit}
-          className="space-y-3 rounded-2xl border border-black/[0.06] bg-white/80 p-5 shadow-elevated backdrop-blur-xl"
+          className="space-y-3 rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-panel"
         >
           <label className="block">
             <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
@@ -55,7 +55,7 @@ export default function SignIn() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               disabled={status === "sending" || status === "sent"}
-              className="focus-ring w-full rounded-lg border border-black/[0.07] bg-white px-3 py-2 text-[14px] text-stone-800 placeholder:text-stone-300 transition-colors hover:border-black/[0.12] focus:border-accent/50 focus:outline-none disabled:opacity-60"
+              className="focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[14px] text-stone-800 placeholder:text-stone-300 transition-colors hover:border-slate-300 focus:border-accent/60 focus:outline-none disabled:opacity-60"
             />
           </label>
 

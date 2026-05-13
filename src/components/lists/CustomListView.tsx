@@ -43,19 +43,19 @@ export default function CustomListView({ listId }: CustomListViewProps) {
         <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
           {list.name}
         </h2>
-        <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500 shadow-card">
+        <span className="rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
           List
         </span>
       </header>
 
-      <div className="inline-flex w-fit gap-0.5 rounded-lg bg-stone-200/60 p-0.5 text-[12px]">
+      <div className="inline-flex w-fit gap-0.5 rounded-lg border border-slate-200/80 bg-white/60 p-0.5 text-[12px]">
         {(["active", "completed", "all"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`focus-ring rounded-md px-3 py-1 font-medium capitalize transition-all duration-150 ease-out-soft ${
               filter === f
-                ? "bg-white text-stone-900 shadow-card"
+                ? "bg-accent-50 text-accent-700"
                 : "text-stone-500 hover:text-stone-900"
             }`}
           >
@@ -64,7 +64,7 @@ export default function CustomListView({ listId }: CustomListViewProps) {
         ))}
       </div>
 
-      <div className="mt-4 flex flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
+      <div className="mt-4 flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95">
         <div className="flex-1 overflow-y-auto">
           {itemsQuery.isLoading ? (
             <p className="p-8 text-sm text-stone-400">Loading…</p>
@@ -74,7 +74,7 @@ export default function CustomListView({ listId }: CustomListViewProps) {
               <p className="text-xs text-stone-400">Add one below to get started.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-stone-100/80">
+            <ul className="divide-y divide-slate-100">
               {filtered.map((item) => (
                 <ItemRow key={item.id} item={item} />
               ))}
@@ -112,7 +112,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
 
   return (
     <li className="group">
-      <div className="flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80 sm:px-5">
+      <div className="flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50 sm:px-5">
         <button
           type="button"
           aria-label={item.completed ? "Mark item incomplete" : "Mark item complete"}
@@ -152,7 +152,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-label={expanded ? "Hide notes" : "Show notes"}
-          className={`rounded-md p-1 transition-all duration-150 hover:bg-stone-100 hover:text-stone-600 ${
+          className={`rounded-md p-1 transition-all duration-150 hover:bg-slate-100 hover:text-stone-600 ${
             expanded
               ? "text-stone-500 opacity-100"
               : "text-stone-300 opacity-0 group-hover:opacity-100"
@@ -167,7 +167,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
           aria-label="Delete item"
           onClick={() => del.mutate(item)}
           disabled={del.isPending}
-          className="rounded-md p-1 text-stone-300 opacity-0 transition-all duration-150 hover:bg-stone-100 hover:text-red-600 group-hover:opacity-100 disabled:opacity-50"
+          className="rounded-md p-1 text-stone-300 opacity-0 transition-all duration-150 hover:bg-slate-100 hover:text-red-600 group-hover:opacity-100 disabled:opacity-50"
         >
           <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3 4.5h10M6 4.5V3a1 1 0 011-1h2a1 1 0 011 1v1.5M4.5 4.5l.75 8.5a1 1 0 001 .92h3.5a1 1 0 001-.92l.75-8.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -182,7 +182,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
             onBlur={saveNotes}
             placeholder="Notes…"
             rows={2}
-            className="focus-ring w-full resize-y rounded-lg border border-black/[0.07] bg-stone-50/80 px-2.5 py-2 text-[12px] leading-relaxed text-stone-700 placeholder:text-stone-300 focus:border-accent/50 focus:bg-white focus:outline-none"
+            className="focus-ring w-full resize-y rounded-lg border border-slate-200/80 bg-slate-50/60 px-2.5 py-2 text-[12px] leading-relaxed text-stone-700 placeholder:text-stone-300 focus:border-accent/60 focus:bg-white focus:outline-none"
           />
         </div>
       )}
@@ -209,7 +209,7 @@ function AddItemRow({ listId }: { listId: UUID }) {
         e.preventDefault();
         submit();
       }}
-      className="flex items-center gap-3 border-t border-black/[0.05] bg-stone-50/40 px-4 py-3 sm:px-5"
+      className="flex items-center gap-3 border-t border-slate-200/70 bg-slate-50/40 px-4 py-3 sm:px-5"
     >
       <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full border border-dashed border-stone-300 text-[10px] text-stone-400">
         +
