@@ -64,16 +64,35 @@ export function useUpdateTaskTemplate() {
   });
 }
 
+interface DeleteTemplateInput {
+  id: UUID;
+  // When set, delete every uncompleted task tied to this template whose
+  // scheduled_date is strictly after this cutoff (today's ISO date in
+  // practice). The caller's current instance — scheduled today or earlier —
+  // is preserved; only future materialised occurrences are removed.
+  deleteFutureAfter?: ISODate;
+}
+
 export function useDeleteTaskTemplate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: UUID) => {
+    mutationFn: async ({ id, deleteFutureAfter }: DeleteTemplateInput) => {
+      if (deleteFutureAfter) {
+        const { error: delErr } = await supabase
+          .from("tasks")
+          .delete()
+          .eq("template_id", id)
+          .eq("completed", false)
+          .gt("scheduled_date", deleteFutureAfter);
+        if (delErr) throw delErr;
+      }
       const { error } = await supabase.from("task_templates").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["task_templates"] });
-      // Existing instances had template_id null'd by the FK; refresh task views too.
+      // Existing past/today instances had template_id null'd by the FK;
+      // future ones may have been deleted. Refresh task views either way.
       qc.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
