@@ -83,3 +83,44 @@ export function useToggleTaskCompleted() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 }
+
+export function useDeleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: UUID) => {
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
+export function useBulkCompleteTasks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, completed }: { ids: UUID[]; completed: boolean }) => {
+      if (ids.length === 0) return;
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          completed,
+          completed_at: completed ? new Date().toISOString() : null,
+        })
+        .in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}
+
+export function useBulkDeleteTasks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: UUID[]) => {
+      if (ids.length === 0) return;
+      const { error } = await supabase.from("tasks").delete().in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+  });
+}

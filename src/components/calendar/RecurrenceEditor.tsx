@@ -8,6 +8,7 @@ import {
 } from "../../hooks/useTaskTemplates";
 import { useUpdateTask } from "../../hooks/useTaskMutations";
 import { runRecurrenceGenerator } from "../../hooks/useRecurrenceGenerator";
+import { todayLocal, toISODate } from "../../lib/dates";
 import {
   buildRRule,
   NO_RECURRENCE,
@@ -109,9 +110,15 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
     updateTask.isPending;
 
   async function save() {
-    // Both rules off → stop repeating.
+    // Both rules off → stop repeating, and drop every future materialised
+    // instance so the calendar doesn't keep showing them.
     if (!startEnabled && !dueEnabled) {
-      if (template) await deleteTemplate.mutateAsync(template.id);
+      if (template) {
+        await deleteTemplate.mutateAsync({
+          id: template.id,
+          deleteFutureAfter: toISODate(todayLocal()),
+        });
+      }
       return;
     }
 

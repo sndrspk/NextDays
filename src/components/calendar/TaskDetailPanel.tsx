@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Task } from "../../types";
 import { useTask } from "../../hooks/useTasks";
 import { useProjects } from "../../hooks/useProjects";
-import { useUpdateTask } from "../../hooks/useTaskMutations";
+import { useDeleteTask, useUpdateTask } from "../../hooks/useTaskMutations";
 import { useSelection } from "../../state/selection";
 import RecurrenceEditor from "./RecurrenceEditor";
 
@@ -22,8 +22,17 @@ export default function TaskDetailPanel() {
   const taskQuery = useTask(selectedTaskId);
   const projectsQuery = useProjects();
   const update = useUpdateTask();
+  const del = useDeleteTask();
 
   const isOpen = selectedTaskId !== null;
+
+  function deleteCurrent() {
+    const task = taskQuery.data;
+    if (!task) return;
+    const label = task.title.trim() || "this task";
+    if (!window.confirm(`Delete "${label}"?`)) return;
+    del.mutate(task.id, { onSuccess: () => setSelectedTaskId(null) });
+  }
 
   useEffect(() => {
     if (!isOpen) return;
@@ -56,7 +65,9 @@ export default function TaskDetailPanel() {
             projects={projectsQuery.data ?? []}
             onClose={() => setSelectedTaskId(null)}
             onPatch={(patch) => update.mutate({ id: taskQuery.data!.id, patch })}
+            onDelete={deleteCurrent}
             isSaving={update.isPending}
+            isDeleting={del.isPending}
           />
         )}
         {isOpen && taskQuery.isLoading && (
@@ -74,10 +85,12 @@ interface PanelBodyProps {
   projects: { id: string; name: string; colour: string }[];
   onClose: () => void;
   onPatch: (patch: Partial<Task>) => void;
+  onDelete: () => void;
   isSaving: boolean;
+  isDeleting: boolean;
 }
 
-function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProps) {
+function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDeleting }: PanelBodyProps) {
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes ?? "");
   const [startDate, setStartDate] = useState(task.start_date ?? "");
@@ -214,6 +227,20 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
               {new Date(task.completed_at).toLocaleString()}
             </div>
           )}
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-md border border-red-200/70 bg-white px-2.5 py-1.5 text-[12px] font-medium text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 disabled:opacity-50"
+          >
+            <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M3 4.5h10M6 4.5V3a1 1 0 011-1h2a1 1 0 011 1v1.5M4.5 4.5l.75 8.5a1 1 0 001 .92h3.5a1 1 0 001-.92l.75-8.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {isDeleting ? "Deleting…" : "Delete task"}
+          </button>
         </div>
       </div>
     </>
