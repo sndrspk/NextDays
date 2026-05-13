@@ -43,7 +43,7 @@ export default function ProjectForm({
         if (!trimmed) return;
         onSubmit({ name: trimmed, colour, is_personal: isPersonal });
       }}
-      className="animate-fade-up space-y-3 rounded-xl border border-black/[0.06] bg-white p-3 shadow-card"
+      className="animate-fade-up space-y-3 rounded-xl border border-slate-200/80 bg-white p-3"
     >
       <input
         autoFocus
@@ -68,7 +68,7 @@ export default function ProjectForm({
         ))}
       </div>
 
-      <div className="inline-flex gap-0.5 rounded-lg bg-stone-200/60 p-0.5 text-[11px]">
+      <div className="inline-flex gap-0.5 rounded-lg border border-slate-200/80 bg-slate-50/60 p-0.5 text-[11px]">
         {(
           [
             { v: true, label: "Personal" },
@@ -81,7 +81,7 @@ export default function ProjectForm({
             onClick={() => setIsPersonal(opt.v)}
             className={`rounded-md px-2.5 py-0.5 font-medium transition-all duration-150 ease-out-soft ${
               isPersonal === opt.v
-                ? "bg-white text-stone-900 shadow-card"
+                ? "bg-white text-stone-900"
                 : "text-stone-500 hover:text-stone-900"
             }`}
           >
@@ -94,7 +94,7 @@ export default function ProjectForm({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700"
+          className="rounded-md px-2 py-1 text-stone-500 transition-colors hover:bg-slate-100 hover:text-stone-700"
         >
           Cancel
         </button>

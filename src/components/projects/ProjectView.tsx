@@ -46,7 +46,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
         <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
           {project.name}
         </h2>
-        <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500 shadow-card">
+        <span className="rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
           {project.is_personal ? "Personal" : "Work"}
         </span>
       </header>
@@ -56,7 +56,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
         <ProjectQuickAdd projectId={projectId} today={today} />
       </div>
 
-      <div className="flex-1 overflow-y-auto rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
+      <div className="flex-1 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/95">
         {tasksQuery.isLoading ? (
           <p className="p-8 text-sm text-stone-400">Loading…</p>
         ) : filtered.length === 0 ? (
@@ -71,7 +71,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
             }
           />
         ) : (
-          <ul className="divide-y divide-stone-100/80">
+          <ul className="divide-y divide-slate-100">
             {filtered.map((t) => (
               <ProjectTaskRow key={t.id} task={t} today={today} />
             ))}
@@ -91,14 +91,14 @@ function SegmentedFilter({
 }) {
   const items: Filter[] = ["active", "completed", "all"];
   return (
-    <div className="inline-flex w-fit gap-0.5 rounded-lg bg-stone-200/60 p-0.5 text-[12px]">
+    <div className="inline-flex w-fit gap-0.5 rounded-lg border border-slate-200/80 bg-white/60 p-0.5 text-[12px]">
       {items.map((f) => (
         <button
           key={f}
           onClick={() => onChange(f)}
           className={`focus-ring rounded-md px-3 py-1 font-medium capitalize transition-all duration-150 ease-out-soft ${
             value === f
-              ? "bg-white text-stone-900 shadow-card"
+              ? "bg-accent-50 text-accent-700"
               : "text-stone-500 hover:text-stone-900"
           }`}
         >
@@ -128,7 +128,7 @@ function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string 
         e.preventDefault();
         submit();
       }}
-      className="flex w-full items-center rounded-lg border border-stone-200 bg-white px-3 py-1.5 shadow-card focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/20 sm:w-72"
+      className="flex w-full items-center rounded-lg border border-slate-200/80 bg-white px-3 py-1.5 transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 sm:w-72"
     >
       <input
         value={title}
@@ -160,7 +160,7 @@ function ProjectTaskRow({ task, today }: { task: Task; today: string }) {
   return (
     <li
       onClick={() => setSelectedTaskId(task.id)}
-      className="group flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80 sm:px-5"
+      className="group flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50 sm:px-5"
     >
       <button
         type="button"

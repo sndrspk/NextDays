@@ -46,7 +46,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
 
   return (
     <li
-      className="group flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50"
+      className="group flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50"
       onClick={() => setSelectedTaskId(task.id)}
     >
       <button

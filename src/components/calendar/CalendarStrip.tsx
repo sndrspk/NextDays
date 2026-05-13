@@ -34,7 +34,7 @@ export default function CalendarStrip() {
   return (
     <div className="flex flex-col">
       {tasksQuery.error && (
-        <div className="mb-3 rounded-xl border border-red-200/70 bg-red-50/80 px-4 py-2.5 text-xs text-red-700 shadow-card backdrop-blur">
+        <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
           Failed to load tasks:{" "}
           {tasksQuery.error instanceof Error
             ? tasksQuery.error.message
@@ -42,7 +42,7 @@ export default function CalendarStrip() {
         </div>
       )}
 
-      <div className="flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-elevated sm:min-h-[70vh] sm:flex-row">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 sm:min-h-[70vh] sm:flex-row">
         {windowDates.map((date) => {
           const iso = toISODate(date);
           return (

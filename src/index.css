@@ -8,10 +8,9 @@ html, body, #root {
 
 body {
   @apply font-sans text-stone-900 antialiased;
-  background-color: #f5f5f7;
+  background-color: #eef2ff;
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(99, 102, 241, 0.06), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(14, 165, 233, 0.05), transparent 60%);
+    linear-gradient(170deg, #eef2ff 0%, #f1eefe 38%, #f7eefd 70%, #fdf4ff 100%);
   background-attachment: fixed;
   font-feature-settings: "cv11", "ss01", "ss03";
   -webkit-font-smoothing: antialiased;
@@ -46,16 +45,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
   *:hover > ::-webkit-scrollbar-thumb,
   *:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.18);
+    background-color: rgba(31, 35, 48, 0.18);
     background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.32) !important;
+    background-color: rgba(31, 35, 48, 0.32) !important;
   }
 }
 
-/* Slim, accent focus ring for interactive elements that opt in via `focus-ring`. */
+/* Slim accent focus ring for interactive elements that opt in via `focus-ring`. */
 .focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px #f5f5f7, 0 0 0 4px rgba(10, 132, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 0 4px rgba(99, 102, 241, 0.45);
 }
