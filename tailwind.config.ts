@@ -6,7 +6,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Inter Variable"', ...defaultTheme.fontFamily.sans],
+        // `--app-font-sans` is set on <html> by SettingsProvider; falls back to
+        // Inter when the variable hasn't been hydrated yet (first paint, SSR).
+        sans: [
+          'var(--app-font-sans, "Inter Variable")',
+          '"Inter Variable"',
+          ...defaultTheme.fontFamily.sans,
+        ],
       },
       colors: {
         accent: {

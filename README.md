@@ -13,7 +13,8 @@ Live app: <https://sndrspk.github.io/NextDays/> (single-owner, magic-link sign-i
 - **Custom lists** — lightweight checklists kept separate from calendar tasks.
 - **Focus view** — a single-page list of Overdue / Due today / Scheduled for today, with quick-add at the top.
 - **Recurring tasks** — independent start and due-date rules (Daily / Weekly / Monthly / Custom) with an Ends option; instances materialise 60 days ahead and a `↻` glyph marks them.
-- **Backup & restore** — export the full dataset to a versioned JSON file; import in Merge or Replace mode. Portable across accounts (re-stamps `user_id` from the current session).
+- **Settings screen** — picks the interface font (Inter / Public Sans / Instrument Sans) and houses backup & restore. Reached from the gear icon in the sidebar footer; the font choice persists in `localStorage` and applies app-wide.
+- **Backup & restore** — export the full dataset to a versioned JSON file; import in Merge or Replace mode. Portable across accounts (re-stamps `user_id` from the current session). Lives inside the Settings screen.
 - **Auth + per-row security** — Supabase magic-link sign-in for a single owner; every table has RLS scoped to `auth.uid()`.
 - **Mobile-aware UI** — off-canvas sidebar, bottom-sheet task panel, vertically stacked calendar on phones.
 

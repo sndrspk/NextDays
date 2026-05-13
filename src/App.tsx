@@ -5,19 +5,23 @@ import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
 import FocusView from "./components/focus/FocusView";
 import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
+import SettingsView from "./components/settings/SettingsView";
 import Sidebar from "./components/sidebar/Sidebar";
 import { useRecurrenceGenerator } from "./hooks/useRecurrenceGenerator";
 import { useRollover } from "./hooks/useRollover";
 import { supabaseConfigured } from "./lib/supabase";
 import { AuthProvider, useAuth } from "./state/auth";
 import { SelectionProvider } from "./state/selection";
+import { SettingsProvider } from "./state/settings";
 import { ViewProvider, useView } from "./state/view";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
+    <SettingsProvider>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
+    </SettingsProvider>
   );
 }
 
@@ -93,6 +97,8 @@ function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
       ? "Focus"
       : view.kind === "project"
       ? "Project"
+      : view.kind === "settings"
+      ? "Settings"
       : "List";
 
   return (
@@ -132,6 +138,10 @@ function MainView() {
 
   if (view.kind === "list") {
     return <CustomListView listId={view.id} />;
+  }
+
+  if (view.kind === "settings") {
+    return <SettingsView />;
   }
 
   return (

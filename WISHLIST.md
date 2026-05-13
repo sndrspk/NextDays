@@ -129,7 +129,7 @@ Go with (a) unless the user says otherwise.
   - `notification_hour int` (0-23, local).
   - `notification_timezone text` (IANA, e.g. `Europe/Amsterdam`).
   - `notifications_enabled bool`.
-- Settings UI: new "Settings" entry in the sidebar footer (next to sign-out) opening a small panel.
+- Settings UI: the dedicated `SettingsView` reached from the gear icon in the sidebar footer (shipped 0.0.21) is the home for this — add a "Notifications" panel alongside Appearance and Backup & Restore.
 - Edge Function `daily-discord-digest`:
   - Runs hourly via cron.
   - For each user whose `notifications_enabled = true` and whose local time is currently at `notification_hour`, query `tasks` where `scheduled_date = today_local && !completed`, format a message, POST to the webhook.
