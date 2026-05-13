@@ -44,6 +44,20 @@ export default function TaskCard({ task, today }: TaskCardProps) {
 
   const showBell = !task.completed && (u === "overdue" || u === "today" || u === "tomorrow");
 
+  const tint = project?.colour ?? null;
+  const checkboxStyle = tint
+    ? task.completed
+      ? { backgroundColor: tint, borderColor: tint }
+      : { borderColor: tint }
+    : undefined;
+  const checkboxClass = task.completed
+    ? tint
+      ? "text-white"
+      : "border-accent bg-accent text-white"
+    : tint
+    ? "bg-white hover:shadow-sm"
+    : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm";
+
   return (
     <li
       className="group flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50"
@@ -52,16 +66,14 @@ export default function TaskCard({ task, today }: TaskCardProps) {
       <button
         type="button"
         aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
+        title={project?.name}
         onClick={(e) => {
           e.stopPropagation();
           toggle.mutate(task);
         }}
         disabled={toggle.isPending}
-        className={`focus-ring mt-[3px] inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border transition-all duration-150 ease-out-soft ${
-          task.completed
-            ? "border-accent bg-accent text-white"
-            : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm"
-        } disabled:opacity-50`}
+        style={checkboxStyle}
+        className={`focus-ring mt-[3px] inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border-[1.5px] transition-all duration-150 ease-out-soft ${checkboxClass} disabled:opacity-50`}
       >
         {task.completed && (
           <svg
@@ -78,24 +90,14 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           </svg>
         )}
       </button>
-      <span className={`flex flex-1 items-start gap-1.5 text-[13px] leading-snug ${titleClass} ${weightClass}`}>
-        {project && (
-          <span
-            aria-hidden
-            title={project.name}
-            className="mt-[7px] inline-block h-1.5 w-1.5 flex-none rounded-full ring-1 ring-inset ring-black/5"
-            style={{ backgroundColor: project.colour }}
-          />
+      <span className={`flex-1 text-[13px] leading-snug ${titleClass} ${weightClass}`}>
+        {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
+        {task.title}
+        {task.template_id && (
+          <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
+            ↻
+          </span>
         )}
-        <span>
-          {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
-          {task.title}
-          {task.template_id && (
-            <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
-              ↻
-            </span>
-          )}
-        </span>
       </span>
     </li>
   );
