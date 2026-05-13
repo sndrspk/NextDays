@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import SignIn from "./components/auth/SignIn";
 import CalendarStrip from "./components/calendar/CalendarStrip";
 import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
@@ -48,25 +49,73 @@ function AuthGate() {
     return <SignIn />;
   }
 
-  return <AppShell />;
+  return (
+    <SelectionProvider>
+      <ViewProvider>
+        <AppShell />
+      </ViewProvider>
+    </SelectionProvider>
+  );
 }
 
 function AppShell() {
   useRollover();
   useRecurrenceGenerator();
+  const { view } = useView();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close the mobile drawer whenever the active view changes.
+  const viewKey = view.kind + ("id" in view ? `:${view.id}` : "");
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [viewKey]);
 
   return (
-    <SelectionProvider>
-      <ViewProvider>
-        <div className="flex h-full">
-          <Sidebar />
-          <main className="flex-1 overflow-hidden">
-            <MainView />
-          </main>
+    <div className="flex h-full">
+      <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
+      <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <MobileTopBar onOpenNav={() => setMobileNavOpen(true)} />
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <MainView />
         </div>
-        <TaskDetailPanel />
-      </ViewProvider>
-    </SelectionProvider>
+      </main>
+      <TaskDetailPanel />
+    </div>
+  );
+}
+
+function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
+  const { view } = useView();
+  const label =
+    view.kind === "calendar"
+      ? "Calendar"
+      : view.kind === "focus"
+      ? "Focus"
+      : view.kind === "project"
+      ? "Project"
+      : "List";
+
+  return (
+    <header className="flex flex-none items-center gap-3 border-b border-black/[0.06] bg-white/70 px-3 py-2.5 backdrop-blur-xl md:hidden">
+      <button
+        type="button"
+        onClick={onOpenNav}
+        aria-label="Open navigation"
+        className="focus-ring -ml-1 inline-flex h-9 w-9 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900"
+      >
+        <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.75">
+          <path d="M3 5h14M3 10h14M3 15h14" strokeLinecap="round" />
+        </svg>
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">
+          NextDays
+        </div>
+        <div className="truncate text-[14px] font-semibold tracking-tight text-stone-900">
+          {label}
+        </div>
+      </div>
+    </header>
   );
 }
 
@@ -86,7 +135,7 @@ function MainView() {
   }
 
   return (
-    <div className="h-full overflow-y-auto px-8 py-8 lg:px-10">
+    <div className="h-full overflow-y-auto px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
       <CalendarStrip />
     </div>
   );

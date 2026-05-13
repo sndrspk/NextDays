@@ -38,9 +38,11 @@ export default function CustomListView({ listId }: CustomListViewProps) {
   }
 
   return (
-    <div className="flex h-full flex-col px-10 py-8">
-      <header className="mb-6 flex items-center gap-3">
-        <h2 className="text-[26px] font-semibold tracking-tight text-stone-900">{list.name}</h2>
+    <div className="flex h-full flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
+      <header className="mb-5 flex flex-wrap items-center gap-2.5 sm:mb-6 sm:gap-3">
+        <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
+          {list.name}
+        </h2>
         <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500 shadow-card">
           List
         </span>
@@ -110,7 +112,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
 
   return (
     <li className="group">
-      <div className="flex items-center gap-3 px-5 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80">
+      <div className="flex items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80 sm:px-5">
         <button
           type="button"
           aria-label={item.completed ? "Mark item incomplete" : "Mark item complete"}
@@ -207,7 +209,7 @@ function AddItemRow({ listId }: { listId: UUID }) {
         e.preventDefault();
         submit();
       }}
-      className="flex items-center gap-3 border-t border-black/[0.05] bg-stone-50/40 px-5 py-3"
+      className="flex items-center gap-3 border-t border-black/[0.05] bg-stone-50/40 px-4 py-3 sm:px-5"
     >
       <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full border border-dashed border-stone-300 text-[10px] text-stone-400">
         +

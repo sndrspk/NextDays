@@ -42,7 +42,7 @@ export default function CalendarStrip() {
         </div>
       )}
 
-      <div className="flex min-h-[70vh] overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-elevated">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-elevated sm:min-h-[70vh] sm:flex-row">
         {windowDates.map((date) => {
           const iso = toISODate(date);
           return (

@@ -36,20 +36,22 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
   }
 
   return (
-    <div className="flex h-full flex-col px-10 py-8">
-      <header className="mb-6 flex items-center gap-3">
+    <div className="flex h-full flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
+      <header className="mb-5 flex flex-wrap items-center gap-2.5 sm:mb-6 sm:gap-3">
         <span
           aria-hidden
           className="inline-block h-3.5 w-3.5 rounded-full ring-2 ring-inset ring-black/[0.05]"
           style={{ backgroundColor: project.colour }}
         />
-        <h2 className="text-[26px] font-semibold tracking-tight text-stone-900">{project.name}</h2>
+        <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
+          {project.name}
+        </h2>
         <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500 shadow-card">
           {project.is_personal ? "Personal" : "Work"}
         </span>
       </header>
 
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SegmentedFilter value={filter} onChange={setFilter} />
         <ProjectQuickAdd projectId={projectId} today={today} />
       </div>
@@ -126,7 +128,7 @@ function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string 
         e.preventDefault();
         submit();
       }}
-      className="flex w-72 items-center rounded-lg border border-stone-200 bg-white px-3 py-1.5 shadow-card focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/20"
+      className="flex w-full items-center rounded-lg border border-stone-200 bg-white px-3 py-1.5 shadow-card focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/20 sm:w-72"
     >
       <input
         value={title}
@@ -158,7 +160,7 @@ function ProjectTaskRow({ task, today }: { task: Task; today: string }) {
   return (
     <li
       onClick={() => setSelectedTaskId(task.id)}
-      className="group flex cursor-pointer items-center gap-3 px-5 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80"
+      className="group flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors duration-150 ease-out-soft hover:bg-stone-50/80 sm:px-5"
     >
       <button
         type="button"
