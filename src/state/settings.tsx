@@ -36,6 +36,25 @@ export const DESKTOP_DAY_COUNT_OPTIONS: readonly DesktopDayCount[] = [3, 5];
 export const DEFAULT_DESKTOP_DAY_COUNT: DesktopDayCount = 5;
 const DESKTOP_DAY_COUNT_STORAGE_KEY = "nextdays:desktopDayCount";
 
+export type FontSize = "normal" | "larger" | "largest";
+
+export interface FontSizeOption {
+  id: FontSize;
+  label: string;
+  scale: number;
+}
+
+// Each step is +10%. At 1.20× the app still fits comfortably on a 360px-wide
+// phone (the calendar stacks vertically anyway), so mobile remains usable.
+export const FONT_SIZE_OPTIONS: readonly FontSizeOption[] = [
+  { id: "normal", label: "Normal", scale: 1 },
+  { id: "larger", label: "Larger", scale: 1.1 },
+  { id: "largest", label: "Largest", scale: 1.2 },
+];
+
+export const DEFAULT_FONT_SIZE: FontSize = "normal";
+const FONT_SIZE_STORAGE_KEY = "nextdays:fontSize";
+
 function readStoredFont(): FontChoice {
   if (typeof window === "undefined") return DEFAULT_FONT;
   const raw = window.localStorage.getItem(FONT_STORAGE_KEY);
@@ -55,8 +74,21 @@ function readStoredDesktopDayCount(): DesktopDayCount {
   return DEFAULT_DESKTOP_DAY_COUNT;
 }
 
+function readStoredFontSize(): FontSize {
+  if (typeof window === "undefined") return DEFAULT_FONT_SIZE;
+  const raw = window.localStorage.getItem(FONT_SIZE_STORAGE_KEY);
+  if (raw && FONT_SIZE_OPTIONS.some((o) => o.id === raw)) {
+    return raw as FontSize;
+  }
+  return DEFAULT_FONT_SIZE;
+}
+
 function stackFor(choice: FontChoice): string {
   return (FONT_OPTIONS.find((o) => o.id === choice) ?? FONT_OPTIONS[0]).stack;
+}
+
+function scaleFor(size: FontSize): number {
+  return (FONT_SIZE_OPTIONS.find((o) => o.id === size) ?? FONT_SIZE_OPTIONS[0]).scale;
 }
 
 interface SettingsState {
@@ -64,6 +96,8 @@ interface SettingsState {
   setFont: (next: FontChoice) => void;
   desktopDayCount: DesktopDayCount;
   setDesktopDayCount: (next: DesktopDayCount) => void;
+  fontSize: FontSize;
+  setFontSize: (next: FontSize) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -73,10 +107,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [desktopDayCount, setDesktopDayCountState] = useState<DesktopDayCount>(
     () => readStoredDesktopDayCount(),
   );
+  const [fontSize, setFontSizeState] = useState<FontSize>(() => readStoredFontSize());
 
   useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
   }, [font]);
+
+  useEffect(() => {
+    // CSS `zoom` on <html> proportionally scales typography, spacing, and hit
+    // targets across every component, including arbitrary `text-[Npx]` classes
+    // that wouldn't respond to a root font-size change. Mobile layouts still
+    // adapt because viewport-relative media queries fire before zoom is applied.
+    const scale = scaleFor(fontSize);
+    document.documentElement.style.setProperty("--app-font-scale", String(scale));
+    document.documentElement.style.setProperty("zoom", String(scale));
+  }, [fontSize]);
 
   const setFont = (next: FontChoice) => {
     setFontState(next);
@@ -97,9 +142,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setFontSize = (next: FontSize) => {
+    setFontSizeState(next);
+    try {
+      window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, next);
+    } catch {
+      // see setFont
+    }
+  };
+
   const value = useMemo(
-    () => ({ font, setFont, desktopDayCount, setDesktopDayCount }),
-    [font, desktopDayCount],
+    () => ({ font, setFont, desktopDayCount, setDesktopDayCount, fontSize, setFontSize }),
+    [font, desktopDayCount, fontSize],
   );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
