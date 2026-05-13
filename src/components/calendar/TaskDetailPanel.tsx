@@ -38,7 +38,7 @@ export default function TaskDetailPanel() {
     <>
       <div
         onClick={() => setSelectedTaskId(null)}
-        className={`fixed inset-0 z-30 bg-stone-900/15 backdrop-blur-[2px] transition-opacity duration-200 ${
+        className={`fixed inset-0 z-30 bg-slate-900/10 transition-opacity duration-200 ${
           isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden={!isOpen}
@@ -46,7 +46,7 @@ export default function TaskDetailPanel() {
       <aside
         role="dialog"
         aria-label="Task details"
-        className={`fixed inset-x-0 bottom-0 top-12 z-40 flex flex-col overflow-hidden rounded-t-2xl border border-black/[0.06] bg-white/95 shadow-panel backdrop-blur-xl transition-transform duration-200 ease-out-soft sm:inset-y-3 sm:inset-x-auto sm:right-3 sm:left-auto sm:w-[min(28rem,calc(100vw-1.5rem))] sm:rounded-2xl ${
+        className={`fixed inset-x-0 bottom-0 top-12 z-40 flex flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 bg-white shadow-panel transition-transform duration-200 ease-out-soft sm:inset-y-3 sm:inset-x-auto sm:right-3 sm:left-auto sm:w-[min(28rem,calc(100vw-1.5rem))] sm:rounded-2xl ${
           isOpen ? "translate-y-0 sm:translate-x-0 sm:translate-y-0" : "translate-y-[110%] sm:translate-y-0 sm:translate-x-[120%]"
         }`}
       >
@@ -100,11 +100,11 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
   }
 
   const inputClass =
-    "focus-ring w-full rounded-lg border border-black/[0.07] bg-white/80 px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-black/[0.12] focus:border-accent/50 focus:outline-none";
+    "focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none";
 
   return (
     <>
-      <header className="flex flex-none items-center justify-between border-b border-black/[0.05] bg-white/60 px-4 py-3 backdrop-blur-xl sm:px-5">
+      <header className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">
           <span>Task</span>
           {isSaving && (
@@ -118,7 +118,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="focus-ring rounded-md p-1.5 text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700"
+          className="focus-ring rounded-md p-1.5 text-stone-400 transition-colors hover:bg-slate-100 hover:text-stone-700"
         >
           <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.75">
             <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
@@ -204,7 +204,7 @@ function PanelBody({ task, projects, onClose, onPatch, isSaving }: PanelBodyProp
           />
         </Field>
 
-        <div className="mt-6 space-y-0.5 border-t border-black/[0.05] pt-4 text-[11px] text-stone-400">
+        <div className="mt-6 space-y-0.5 border-t border-slate-200/70 pt-4 text-[11px] text-stone-400">
           <div>
             <span className="text-stone-500">Scheduled</span> · {task.scheduled_date}
           </div>

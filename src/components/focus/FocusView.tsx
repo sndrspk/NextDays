@@ -76,11 +76,11 @@ function Section({
         <span className={`text-[10px] font-semibold uppercase tracking-[0.14em] ${labelClass}`}>
           {label}
         </span>
-        <span className="rounded-full bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-500">
+        <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-500">
           {tasks.length}
         </span>
       </div>
-      <ul className="rounded-2xl border border-black/[0.06] bg-white px-2 py-1.5 shadow-card">
+      <ul className="rounded-2xl border border-slate-200/80 bg-white/95 px-2 py-1.5">
         {tasks.map((t) => (
           <TaskCard key={t.id} task={t} today={today} />
         ))}
@@ -108,7 +108,7 @@ function FocusQuickAdd({ today }: { today: ISODate }) {
         e.preventDefault();
         submit();
       }}
-      className="flex w-full items-center rounded-xl border border-stone-200 bg-white px-3.5 py-2 shadow-card focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/20"
+      className="flex w-full items-center rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20"
     >
       <input
         value={title}

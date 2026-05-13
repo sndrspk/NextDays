@@ -27,7 +27,7 @@ export default function QuickAdd({ scheduledDate }: QuickAddProps) {
         e.preventDefault();
         submit();
       }}
-      className="group/quick mt-4 -mx-1 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-stone-50 focus-within:bg-stone-50"
+      className="group/quick mt-4 -mx-1 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-slate-50 focus-within:bg-slate-50"
     >
       <input
         value={title}
