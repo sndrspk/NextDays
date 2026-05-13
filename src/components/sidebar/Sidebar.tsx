@@ -1,5 +1,4 @@
 import { useState } from "react";
-import BackupPanel from "../settings/BackupPanel";
 import { useProjects } from "../../hooks/useProjects";
 import {
   useCreateProject,
@@ -218,8 +217,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
 function UserFooter() {
   const { session, signOut } = useAuth();
+  const { setView } = useView();
   const email = session?.user?.email ?? "Signed in";
-  const [backupOpen, setBackupOpen] = useState(false);
   return (
     <div className="mt-auto pt-6">
       <div className="flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-2">
@@ -231,13 +230,17 @@ function UserFooter() {
         </span>
         <button
           type="button"
-          onClick={() => setBackupOpen(true)}
-          aria-label="Backup and restore"
-          title="Backup and restore"
+          onClick={() => setView({ kind: "settings" })}
+          aria-label="Settings"
+          title="Settings"
           className="rounded-md p-1 text-stone-400 transition-colors duration-150 hover:bg-slate-100 hover:text-stone-700"
         >
           <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M8 2v7M4.5 6.5L8 10l3.5-3.5M3 12.5h10" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="8" cy="8" r="1.75" />
+            <path
+              d="M13 8a5 5 0 00-.08-.88l1.3-1.02-1-1.73-1.55.55a5 5 0 00-1.52-.88L9.9 2.4h-2l-.25 1.64a5 5 0 00-1.52.88l-1.55-.55-1 1.73L4.88 7.12A5 5 0 004.8 8c0 .3.03.59.08.88L3.58 9.9l1 1.73 1.55-.55c.45.36.96.66 1.52.88L7.9 13.6h2l.25-1.64a5 5 0 001.52-.88l1.55.55 1-1.73-1.3-1.02c.05-.29.08-.58.08-.88z"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
         <button
@@ -252,7 +255,6 @@ function UserFooter() {
           </svg>
         </button>
       </div>
-      <BackupPanel open={backupOpen} onClose={() => setBackupOpen(false)} />
     </div>
   );
 }
