@@ -1,4 +1,10 @@
-import { FONT_OPTIONS, useSettings, type FontChoice } from "../../state/settings";
+import {
+  FONT_OPTIONS,
+  FONT_SIZE_OPTIONS,
+  useSettings,
+  type FontChoice,
+  type FontSize,
+} from "../../state/settings";
 import BackupSection from "./BackupSection";
 
 export default function SettingsView() {
@@ -16,6 +22,13 @@ export default function SettingsView() {
       <div className="flex-1 space-y-8 overflow-y-auto pb-10">
         <Panel title="Appearance" subtitle="The font used everywhere in the app.">
           <FontPicker />
+        </Panel>
+
+        <Panel
+          title="Text size"
+          subtitle="Scale every text and control proportionally."
+        >
+          <FontSizePicker />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">
@@ -120,5 +133,58 @@ function FontOptionRow({
         </span>
       )}
     </label>
+  );
+}
+
+function FontSizePicker() {
+  const { fontSize, setFontSize } = useSettings();
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Text size"
+      className="inline-flex rounded-lg border border-slate-200/80 bg-white p-0.5"
+    >
+      {FONT_SIZE_OPTIONS.map((opt) => (
+        <FontSizeOptionButton
+          key={opt.id}
+          id={opt.id}
+          label={opt.label}
+          selected={fontSize === opt.id}
+          onSelect={() => setFontSize(opt.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FontSizeOptionButton({
+  id,
+  label,
+  selected,
+  onSelect,
+}: {
+  id: FontSize;
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  // Preview each option in its own visual scale so the difference is visible
+  // without committing to it. `normal` is 13px, `larger` ~14.3px, `largest` ~15.6px.
+  const previewSize = id === "normal" ? 13 : id === "larger" ? 14.3 : 15.6;
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={`focus-ring rounded-md px-3 py-1.5 transition-colors ${
+        selected
+          ? "bg-accent-50 text-accent-700"
+          : "text-stone-600 hover:text-stone-900"
+      }`}
+      style={{ fontSize: `${previewSize}px` }}
+    >
+      {label}
+    </button>
   );
 }
