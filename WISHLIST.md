@@ -189,7 +189,7 @@ The subscription list lives in a per-user Supabase table so it follows the accou
 
 `src/lib/ics.ts`:
 - `parseIcs(text: string, calendarId: string): IcsEvent[]` — uses `ical.js` (Mozilla). Expands RRULEs into concrete instances spanning `today - 1d → today + 60d` so the calendar strip and future columns have data. Drops cancelled events. Detects all-day via `VALUE=DATE` on `DTSTART`.
-- `fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]>` — `fetch(url)` → parse. Network or CORS failures throw with a friendly message; the hook surfaces them inline (no toasts in this app).
+- `fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]>` — calls the `fetch-ics` Supabase Edge Function via `supabase.functions.invoke`, because virtually every public ICS host (Google, iCloud, Outlook, Fastmail) refuses cross-origin browser fetches. The function proxies the GET server-side and returns `{ text }`. Errors surface inline in the Settings panel.
 - `loadCachedEvents(calendarId)` / `writeCachedEvents(calendarId, events)` — localStorage read/write with shape validation.
 - `eventsForDate(events, isoDate)` — predicate used by `DayColumn` / `FocusView`.
 - `formatEventTime(event)` — `"09:30"` for timed, `""` for all-day.
@@ -240,9 +240,9 @@ The "Inbox zero" empty state only fires when both tasks and events are empty.
 
 Now that the subscription list is account-scoped, `exportAll()` includes the `ics_calendars` rows and `importBackup()` restores them alongside the rest of the data. The envelope keeps `schema_version: 1` and `ics_calendars` is treated as **optional** so older v1 backups taken before this table existed still import cleanly — they just don't carry any calendar rows.
 
-#### Known caveats (call out in the Settings panel)
+#### Known caveats
 
-- **CORS:** Many calendar providers don't send `Access-Control-Allow-Origin: *` on their secret ICS URLs. Google's `basic.ics` form does work. Outlook / iCloud often don't — when they fail the row shows the error message.
+- **Edge Function deploy:** `fetch-ics` must be deployed (`supabase functions deploy fetch-ics`) before any calendar will load. The client surfaces a clear "isn't deployed yet" error if invocation fails with a not-found.
 - **RRULE limits:** `ical.js` handles standard RFC 5545. Exotic rules (BYSETPOS combinations, complex EXDATE chains) may not expand perfectly; we generate 60 days ahead so any glitch becomes visible quickly.
 - **Time zones:** Timed events render in the browser's local time zone. All-day events stay tied to their original date (no UTC shift).
 

@@ -1,6 +1,7 @@
 import ICAL from "ical.js";
 import type { IcsCalendarRow, ISODate } from "../types";
 import { addDays, todayLocal, toISODate } from "./dates";
+import { supabase } from "./supabase";
 
 // Backwards-compat alias for the rest of the app that imports IcsCalendar
 // from this module. The canonical shape is the Postgres row.
@@ -132,18 +133,32 @@ export function parseIcs(text: string, calendarId: string): IcsEvent[] {
   return out;
 }
 
+// Most public .ics endpoints don't send CORS headers, so we route the fetch
+// through the `fetch-ics` Supabase Edge Function. The user's JWT is sent
+// automatically via the supabase client — only signed-in members of this
+// project can use the proxy.
 export async function fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]> {
-  let res: Response;
-  try {
-    res = await fetch(cal.url, { redirect: "follow" });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`Couldn't reach the calendar (${message}). The provider may block cross-origin requests.`);
+  const { data, error } = await supabase.functions.invoke<{
+    text?: string;
+    error?: string;
+  }>("fetch-ics", { body: { url: cal.url } });
+
+  if (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    if (/Function not found|404|not.*deploy/i.test(detail)) {
+      throw new Error(
+        "The fetch-ics Edge Function isn't deployed yet. Run `supabase functions deploy fetch-ics`.",
+      );
+    }
+    throw new Error(`Couldn't reach the calendar: ${detail}`);
   }
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  if (data?.error) {
+    throw new Error(data.error);
   }
-  const text = await res.text();
+  const text = data?.text ?? "";
+  if (!text) {
+    throw new Error("Empty response from the calendar.");
+  }
   return parseIcs(text, cal.id);
 }
 
