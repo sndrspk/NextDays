@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { ISODate } from "../../types";
 import { useCreateTask } from "../../hooks/useTaskMutations";
+import { useProjects } from "../../hooks/useProjects";
+import { parseTaskTitle } from "../../lib/parseTaskTitle";
 
 interface QuickAddProps {
   scheduledDate: ISODate;
@@ -9,12 +11,20 @@ interface QuickAddProps {
 export default function QuickAdd({ scheduledDate }: QuickAddProps) {
   const [title, setTitle] = useState("");
   const create = useCreateTask();
+  const projectsQuery = useProjects();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
+    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
+    if (!parsed.title) return;
     create.mutate(
-      { title: trimmed, scheduled_date: scheduledDate },
+      {
+        title: parsed.title,
+        scheduled_date: scheduledDate,
+        project_id: parsed.project_id,
+        tags: parsed.tags,
+      },
       {
         onSuccess: () => setTitle(""),
       },

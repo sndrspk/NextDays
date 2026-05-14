@@ -11,33 +11,30 @@ interface DayColumnProps {
   tasks: Task[];
 }
 
-function sortTasks(tasks: Task[], today: ISODate): Task[] {
-  const pinned: Task[] = [];
-  const regular: Task[] = [];
-  const completed: Task[] = [];
-
-  for (const t of tasks) {
-    if (t.completed) {
-      completed.push(t);
-      continue;
-    }
-    if (t.due_date) {
-      const d = diffInDays(t.due_date, today);
-      if (d <= 1) {
-        pinned.push(t);
-        continue;
-      }
-    }
-    regular.push(t);
+// Sort: completed tasks sink to the bottom. Active tasks are ordered by
+// (a) earliest due_date first (tasks with no due_date go last), then
+// (b) latest scheduled_date first, then by sort_order as a tiebreaker.
+export function compareActiveTasks(a: Task, b: Task): number {
+  if (a.due_date !== b.due_date) {
+    if (!a.due_date) return 1;
+    if (!b.due_date) return -1;
+    return a.due_date < b.due_date ? -1 : 1;
   }
+  if (a.scheduled_date !== b.scheduled_date) {
+    return a.scheduled_date < b.scheduled_date ? 1 : -1;
+  }
+  return a.sort_order - b.sort_order;
+}
 
-  pinned.sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
-  regular.sort((a, b) => a.sort_order - b.sort_order);
+function sortTasks(tasks: Task[]): Task[] {
+  const active: Task[] = [];
+  const completed: Task[] = [];
+  for (const t of tasks) (t.completed ? completed : active).push(t);
+  active.sort(compareActiveTasks);
   completed.sort(
     (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
   );
-
-  return [...pinned, ...regular, ...completed];
+  return [...active, ...completed];
 }
 
 function dayLabel(isoDate: ISODate, today: ISODate, weekday: string): string {
@@ -50,7 +47,7 @@ function dayLabel(isoDate: ISODate, today: ISODate, weekday: string): string {
 export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
-  const sorted = sortTasks(tasks, today);
+  const sorted = sortTasks(tasks);
 
   return (
     <section

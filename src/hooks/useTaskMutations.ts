@@ -20,18 +20,25 @@ interface CreateTaskInput {
   title: string;
   scheduled_date: ISODate;
   project_id?: UUID | null;
+  tags?: string[];
 }
 
 export function useCreateTask() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, scheduled_date, project_id }: CreateTaskInput): Promise<Task> => {
+    mutationFn: async ({
+      title,
+      scheduled_date,
+      project_id,
+      tags,
+    }: CreateTaskInput): Promise<Task> => {
       const { data, error } = await supabase
         .from("tasks")
         .insert({
           title,
           scheduled_date,
           project_id: project_id ?? null,
+          tags: tags && tags.length > 0 ? tags : [],
           sort_order: Math.floor(Date.now() / 1000),
         })
         .select()

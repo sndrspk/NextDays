@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { useFocusTasks } from "../../hooks/useFocusTasks";
 import { useCreateTask } from "../../hooks/useTaskMutations";
+import { useProjects } from "../../hooks/useProjects";
+import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import TaskCard from "../calendar/TaskCard";
+import { compareActiveTasks } from "../calendar/DayColumn";
 import type { ISODate, Task } from "../../types";
 
 export default function FocusView() {
@@ -19,6 +22,9 @@ export default function FocusView() {
       else if (t.scheduled_date === today) otherToday.push(t);
       // Anything else shouldn't be here given the query filter; ignore.
     }
+    overdue.sort(compareActiveTasks);
+    dueToday.sort(compareActiveTasks);
+    otherToday.sort(compareActiveTasks);
     return { overdue, dueToday, otherToday };
   }, [tasks, today]);
 
@@ -92,12 +98,20 @@ function Section({
 function FocusQuickAdd({ today }: { today: ISODate }) {
   const [title, setTitle] = useState("");
   const create = useCreateTask();
+  const projectsQuery = useProjects();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
+    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
+    if (!parsed.title) return;
     create.mutate(
-      { title: trimmed, scheduled_date: today },
+      {
+        title: parsed.title,
+        scheduled_date: today,
+        project_id: parsed.project_id,
+        tags: parsed.tags,
+      },
       { onSuccess: () => setTitle("") },
     );
   }
