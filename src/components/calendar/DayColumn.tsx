@@ -1,3 +1,4 @@
+import { useDroppable } from "@dnd-kit/core";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
 import TaskCard from "./TaskCard";
@@ -49,10 +50,17 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
   const label = dayLabel(isoDate, today, weekday);
   const sorted = sortTasks(tasks);
 
+  const { setNodeRef, isOver } = useDroppable({ id: `day:${isoDate}` });
+
   return (
     <section
-      className={`relative flex min-w-0 flex-1 flex-col border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0 ${
-        isToday ? "bg-accent-50/40" : "bg-transparent"
+      ref={setNodeRef}
+      className={`relative flex min-w-0 flex-1 flex-col border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0 transition-colors duration-100 ${
+        isOver
+          ? "bg-accent-100/60"
+          : isToday
+          ? "bg-accent-50/40"
+          : "bg-transparent"
       }`}
       data-date={isoDate}
     >

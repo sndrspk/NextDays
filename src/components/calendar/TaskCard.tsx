@@ -1,3 +1,5 @@
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, isDueOrOverdue } from "../../lib/dates";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
@@ -29,6 +31,11 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     : undefined;
   const u = urgency(task.due_date, today, task.completed);
 
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+    data: { task },
+  });
+
   const urgent = isDueOrOverdue(task.due_date, today, task.completed);
   const titleClass = task.completed
     ? "text-stone-400 line-through"
@@ -58,10 +65,20 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     ? "bg-white hover:shadow-sm"
     : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm";
 
+  const dragStyle = transform
+    ? { transform: CSS.Transform.toString(transform), zIndex: 50 }
+    : undefined;
+
   return (
     <li
-      className="group flex cursor-pointer items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50"
-      onClick={() => setSelectedTaskId(task.id)}
+      ref={setNodeRef}
+      style={dragStyle}
+      className={`group flex cursor-grab items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50 active:cursor-grabbing ${
+        isDragging ? "opacity-40" : ""
+      }`}
+      onClick={() => !isDragging && setSelectedTaskId(task.id)}
+      {...listeners}
+      {...attributes}
     >
       <button
         type="button"

@@ -90,7 +90,7 @@ Go with (a) unless the user says otherwise.
 
 ---
 
-## 4. Drag-and-drop tasks between calendar days — **M**
+## 4. Drag-and-drop tasks between calendar days — **M** — ✅ shipped (0.0.26)
 
 **Goal:** Drag a task card from one day column and drop it onto another day; `tasks.scheduled_date` updates to the drop target's date. Should feel native — a slight lift on grab, a drop-zone highlight on the target column, optimistic update on drop.
 
@@ -226,7 +226,7 @@ Rollover guarantees that overdue tasks have `scheduled_date = today`, so in prac
 | 1 | Bold overdue / due-today tasks | **S** | ✅ 0.0.12 |
 | 2 | Quick-add from Project view | **S** | ✅ 0.0.12 |
 | 3 | Recurring start / due dates | **M–L** | ✅ 0.0.12 |
-| 4 | Drag-and-drop in calendar | **M** | open |
+| 4 | Drag-and-drop in calendar | **M** | ✅ 0.0.26 |
 | 5 | Daily Discord digest | **M** | open |
 | 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | open |
 | 7 | "Focus" view (overdue / due today / scheduled today) | **S** | ✅ 0.0.15 |
