@@ -14,6 +14,8 @@ import {
 import { useDayCount } from "../../hooks/useDayCount";
 import { useTasks } from "../../hooks/useTasks";
 import { useMoveTask } from "../../hooks/useMoveTask";
+import { useExternalEvents } from "../../hooks/useExternalEvents";
+import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { addDays, buildDayWindow, todayLocal, toISODate } from "../../lib/dates";
 import {
   DESKTOP_DAY_COUNT_OPTIONS,
@@ -28,6 +30,9 @@ export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const calendarsQuery = useIcsCalendars();
+  const icsCalendars = calendarsQuery.data ?? [];
+  const { byDate: eventsByDate } = useExternalEvents();
 
   const { today, windowDates, windowStart, windowEndExclusive } = useMemo(() => {
     const start = todayLocal();
@@ -112,6 +117,8 @@ export default function CalendarStrip() {
                 isToday={iso === today}
                 today={today}
                 tasks={tasksByDate.get(iso) ?? []}
+                events={eventsByDate.get(iso) ?? []}
+                calendars={icsCalendars}
               />
             );
           })}

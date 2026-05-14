@@ -2,15 +2,23 @@ import { useMemo, useState } from "react";
 import { useFocusTasks } from "../../hooks/useFocusTasks";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
+import { useExternalEvents } from "../../hooks/useExternalEvents";
+import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import TaskCard from "../calendar/TaskCard";
+import EventCard from "../calendar/EventCard";
 import { compareActiveTasks } from "../calendar/DayColumn";
 import type { ISODate, Task } from "../../types";
+import type { IcsEvent } from "../../lib/ics";
 
 export default function FocusView() {
   const query = useFocusTasks();
   const today = query.data?.today ?? "";
   const tasks = query.data?.tasks ?? [];
+  const calendarsQuery = useIcsCalendars();
+  const icsCalendars = calendarsQuery.data ?? [];
+  const { byDate: eventsByDate } = useExternalEvents();
+  const todaysEvents = today ? eventsByDate.get(today as ISODate) ?? [] : [];
 
   const { overdue, dueToday, otherToday } = useMemo(() => {
     const overdue: Task[] = [];
@@ -28,7 +36,7 @@ export default function FocusView() {
     return { overdue, dueToday, otherToday };
   }, [tasks, today]);
 
-  const total = overdue.length + dueToday.length + otherToday.length;
+  const total = overdue.length + dueToday.length + otherToday.length + todaysEvents.length;
 
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
@@ -50,6 +58,7 @@ export default function FocusView() {
           <>
             <Section label="Overdue" tone="overdue" tasks={overdue} today={today} />
             <Section label="Due today" tone="today" tasks={dueToday} today={today} />
+            <EventsSection events={todaysEvents} calendars={icsCalendars} />
             <Section label="Scheduled for today" tone="default" tasks={otherToday} today={today} />
           </>
         )}
@@ -89,6 +98,38 @@ function Section({
       <ul className="rounded-2xl border border-slate-200/80 bg-white/95 px-2 py-1.5">
         {tasks.map((t) => (
           <TaskCard key={t.id} task={t} today={today} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function EventsSection({
+  events,
+  calendars,
+}: {
+  events: IcsEvent[];
+  calendars: { id: string; colour: string }[];
+}) {
+  if (events.length === 0) return null;
+  const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
+  return (
+    <section>
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+          Calendar events today
+        </span>
+        <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-500">
+          {events.length}
+        </span>
+      </div>
+      <ul className="space-y-1 rounded-2xl border border-slate-200/80 bg-white/95 px-2 py-1.5">
+        {events.map((ev) => (
+          <EventCard
+            key={ev.id}
+            event={ev}
+            colour={colourByCalendar.get(ev.calendarId) ?? "#64748b"}
+          />
         ))}
       </ul>
     </section>

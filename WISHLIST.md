@@ -144,39 +144,124 @@ Go with (a) unless the user says otherwise.
 
 ---
 
-## 6. Read-only Google Calendar (and friends) overlay — **L**
+## 6. Read-only Google Calendar (and friends) overlay — **L** — Path A in progress
 
-**Goal:** Events from my Google Calendar (and ideally any ICS-compatible source) appear in the calendar strip alongside my tasks, read-only. I see them so I can plan around them; I can't tick them off or edit them.
+**Goal:** Events from my calendars (Google, iCloud, Outlook, Fastmail, …) appear in the day columns alongside my tasks, read-only. Tasks remain the focus; events are visual reminders so I can plan around them.
 
-**Two paths, both worth knowing:**
+### Path A — client-side ICS subscription (this implementation)
 
-**Path A — ICS subscription (start here):**
-- Almost every calendar service (Google, Apple iCloud, Outlook, Fastmail) lets you publish a calendar as a secret `.ics` URL.
-- User pastes the URL into Settings; we store it on `app_settings.ics_urls text[]`.
-- A Supabase Edge Function fetches each URL on a cron (every ~15 min), parses with `ical.js` or `node-ical`, and upserts into a new `external_events` table: `{ id, source_url, uid, title, start_at, end_at, all_day, fetched_at }`.
-- Client subscribes via a new `useExternalEvents(dateRange)` hook and renders them as a distinct visual style in `DayColumn` (e.g. a slim coloured chip with a 🗓 icon, no checkbox, click does nothing or opens a read-only popover with location/notes).
-- Pros: works for every calendar service in one stroke. No OAuth.
-- Cons: 15-min lag, can't write back, depends on user generating the secret URL.
+The original WISHLIST proposed a Supabase Edge Function + new `external_events` table. After consultation with the user we decided to ship a simpler **client-side fetch + cache** version first — zero new server infra, no migration, no cron. The trade-off is that the calendar provider must allow CORS on its secret ICS URL (Google's `calendar.google.com/calendar/ical/.../basic.ics` does; iCloud and Outlook typically do not — those will need Path B or a proxy later).
 
-**Path B — Google Calendar OAuth:**
-- Set up a Google Cloud project, enable Calendar API, OAuth consent screen, store refresh tokens server-side (Edge Function + service-role-only table `google_oauth_tokens`).
-- Sync API token refresh + incremental sync (`syncToken`).
-- Pros: real-time-ish, can extend later (e.g. block out a day from tasks).
-- Cons: substantial scaffolding for very little extra benefit over (A) for a read-only use case.
+#### Data model & storage
 
-**Recommendation:** ship Path A first. Only build Path B if (a) we want to render events as they're created without a 15-min delay, or (b) we eventually want write-back.
+The subscription list lives in a per-user Supabase table so it follows the account across devices. Parsed event payloads stay in `localStorage` because they're just network output — re-derivable from the URL on first paint.
 
-**Implementation notes (Path A):**
-- Migration: `supabase/migrations/0005_external_events.sql` with the table above + RLS scoped to `user_id` + an index on `(user_id, start_at)`.
-- Edge Function `sync-ics`: fetch URL, parse, expand recurring events for the next 60 days, upsert by `(source_url, uid, start_at)`, delete rows older than today.
-- UI: events sit in `DayColumn` above the task list with a small left border in a calendar-specific colour. Clicking opens a tiny popover with title / time / location. They never move on rollover and never have checkboxes.
-- Decide whether they count as "stuff for today" in the Discord digest (item 5). Probably yes, as a separate "Today's events" section.
+- **Supabase table `ics_calendars`** (migration `0006_ics_calendars.sql`):
+  ```sql
+  create table ics_calendars (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null default auth.uid()
+      references auth.users(id) on delete cascade,
+    url text not null,
+    name text not null,
+    colour text not null,
+    created_at timestamptz not null default now()
+  );
+  ```
+  RLS enabled; per-command policies scoped to `auth.uid() = user_id`. Explicit GRANTs to `anon` (select) and `authenticated` / `service_role` (full CRUD) to comply with the Data API change from migration 0005.
+- **`nextdays:icsCalendarCache:<calendarId>`** — most recent parsed result:
+  ```ts
+  type IcsCache = { fetchedAt: string; events: IcsEvent[] }
+  type IcsEvent = {
+    id: string;            // `${calendarId}::${uid}::${startAt}`
+    calendarId: string;
+    uid: string;
+    title: string;
+    startAt: string;       // ISO 8601 (UTC for timed, YYYY-MM-DD for all-day)
+    endAt: string;
+    allDay: boolean;
+    location?: string;
+  }
+  ```
+  TTL = 15 minutes. Cache is rehydrated on app load so the strip paints immediately; a background refresh runs if stale.
 
-**Manual test plan:**
-- Add a Google Calendar secret ICS URL in settings → within 15 min, events appear in the right columns.
-- Add a recurring event on Google's side → expanded instances show up.
-- Remove the URL → events disappear on next sync.
-- Add an Outlook ICS URL alongside Google → both render with distinguishable colours.
+#### Library
+
+`src/lib/ics.ts`:
+- `parseIcs(text: string, calendarId: string): IcsEvent[]` — uses `ical.js` (Mozilla). Expands RRULEs into concrete instances spanning `today - 1d → today + 60d` so the calendar strip and future columns have data. Drops cancelled events. Detects all-day via `VALUE=DATE` on `DTSTART`.
+- `fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]>` — `fetch(url)` → parse. Network or CORS failures throw with a friendly message; the hook surfaces them inline (no toasts in this app).
+- `loadCachedEvents(calendarId)` / `writeCachedEvents(calendarId, events)` — localStorage read/write with shape validation.
+- `eventsForDate(events, isoDate)` — predicate used by `DayColumn` / `FocusView`.
+- `formatEventTime(event)` — `"09:30"` for timed, `""` for all-day.
+
+#### Hooks
+
+`src/hooks/useIcsCalendars.ts` exposes the CRUD over the new table:
+- `useIcsCalendars()` — `useQuery` (`queryKey: ["icsCalendars"]`) ordered by `created_at` ascending.
+- `useCreateIcsCalendar()` / `useUpdateIcsCalendar()` / `useDeleteIcsCalendar()` — all invalidate `["icsCalendars"]`. Delete also clears the local cache entry for that calendar.
+
+`src/hooks/useExternalEvents.ts`:
+- Reads the calendar list from `useIcsCalendars()`.
+- For each calendar runs a TanStack Query (`queryKey: ["icsCalendar", calendar.id, calendar.url]`, `staleTime: 15 * 60_000`):
+  - Initial data comes from `loadCachedEvents` so the UI paints synchronously.
+  - `queryFn` calls `fetchIcsCalendar`; on success writes to cache.
+- Returns:
+  - `events: IcsEvent[]` (flattened across calendars, sorted)
+  - `byDate: Map<ISODate, IcsEvent[]>` for O(1) lookup per day
+  - `errors: Array<{ calendarId: string; message: string }>` so Settings can show a per-row warning
+- Manual refresh handled by `qc.invalidateQueries({ queryKey: ["icsCalendar"] })`.
+
+#### Calendar display
+
+- New component `src/components/calendar/EventCard.tsx`:
+  - Renders above the task list inside `DayColumn` (events always go before tasks per the user's request).
+  - Card: rounded-md with `background: <colour>20` (12.5% alpha hex suffix) + thin left border `4px solid <colour>` + `text-[12px]`.
+  - Timed event: small monospace `09:30` prefix in the calendar colour, then title.
+  - All-day event: title only, no time prefix.
+  - Non-interactive (`pointer-events-none` is too aggressive — just no `onClick`/no hover state).
+- `DayColumn` accepts an `events: IcsEvent[]` prop and renders them in a `<ul>` ahead of the tasks `<ul>`, separated by a 6px gap. Empty event list collapses cleanly.
+- `CalendarStrip` calls `useExternalEvents()` once and passes `byDate.get(iso) ?? []` per column.
+- Events sort: all-day first, then by `startAt` ascending.
+
+#### Focus screen
+
+`FocusView` gains a new section, rendered **above** "Scheduled for today" only, listing today's calendar events (all-day + timed, sorted as above). When there are no events today the section is hidden entirely — matches the existing pattern for empty sections in this view. Uses the same `EventCard` so styling stays in sync.
+
+The "Inbox zero" empty state only fires when both tasks and events are empty.
+
+#### Settings panel
+
+`src/components/settings/IcsCalendarsSection.tsx`, slotted between **Tags** and **Backup & Restore** in `SettingsView`:
+- **Add form** at the top — URL input (required) + name input (optional; defaults to the host or to the first calendar's `X-WR-CALNAME` if we can parse it after a successful fetch) + a colour swatch grid (reuses `PROJECT_COLOURS`) + an Add button. Submit triggers `addIcsCalendar` and an immediate fetch.
+- **List** of existing calendars — each row shows: colour swatch (click → palette popover to change), name (click → inline edit), URL (truncated, monospace, click-to-reveal full), last-synced timestamp or error message, a refresh button, and a trash button (with `window.confirm`).
+- No drag-reorder; first-added is first-shown.
+
+#### Backup & Restore interaction
+
+Now that the subscription list is account-scoped, `exportAll()` includes the `ics_calendars` rows and `importBackup()` restores them alongside the rest of the data. The envelope keeps `schema_version: 1` and `ics_calendars` is treated as **optional** so older v1 backups taken before this table existed still import cleanly — they just don't carry any calendar rows.
+
+#### Known caveats (call out in the Settings panel)
+
+- **CORS:** Many calendar providers don't send `Access-Control-Allow-Origin: *` on their secret ICS URLs. Google's `basic.ics` form does work. Outlook / iCloud often don't — when they fail the row shows the error message.
+- **RRULE limits:** `ical.js` handles standard RFC 5545. Exotic rules (BYSETPOS combinations, complex EXDATE chains) may not expand perfectly; we generate 60 days ahead so any glitch becomes visible quickly.
+- **Time zones:** Timed events render in the browser's local time zone. All-day events stay tied to their original date (no UTC shift).
+
+#### Manual test plan
+
+- Add a Google Calendar secret ICS URL → events appear in the right day columns within ~1s; refresh the page → still there (cached).
+- Add a colour, switch it → all that calendar's events repaint with the new tint.
+- Add an event on Google's side → wait 15 min or hit the refresh button → it shows up.
+- Add an event with a daily recurrence → instances appear across every day in the strip.
+- Today has 2 events → Focus view shows them in a new section above "Scheduled for today"; if today has none, the section is hidden.
+- Remove a calendar → its events disappear from strip and Focus immediately.
+- Add an URL that returns 404 / blocked by CORS → row in Settings shows the error; other calendars keep working.
+- Backup → restore on a fresh browser → ICS list does **not** carry over (by design).
+
+### Path B — Google Calendar OAuth (future)
+
+Set up a Google Cloud project, enable Calendar API, OAuth consent screen, store refresh tokens server-side (Edge Function + service-role-only table `google_oauth_tokens`). Sync API token refresh + incremental sync (`syncToken`).
+
+Pros: real-time-ish, can extend later (e.g. block out a day from tasks). Cons: substantial scaffolding for very little extra benefit over Path A for a read-only use case. Only build Path B if (a) we want to render events as they're created without delay, (b) we want to render iCloud/Outlook calendars that don't allow CORS, or (c) we eventually want write-back.
 
 ---
 
@@ -228,7 +313,7 @@ Rollover guarantees that overdue tasks have `scheduled_date = today`, so in prac
 | 3 | Recurring start / due dates | **M–L** | ✅ 0.0.12 |
 | 4 | Drag-and-drop in calendar | **M** | ✅ 0.0.26 |
 | 5 | Daily Discord digest | **M** | open |
-| 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | open |
+| 6 | Read-only calendar overlay (ICS first, Google OAuth later) | **L** | Path A in progress |
 | 7 | "Focus" view (overdue / due today / scheduled today) | **S** | ✅ 0.0.15 |
 
 Tackle them roughly in that order — items 1 and 2 are quick wins that improve daily use; 3 and 4 are the next big UX leaps; 5 and 6 require server-side scaffolding (Edge Functions, cron) and should probably share that groundwork. Item 7 is another quick win and a natural follow-up to items 1 and 3.

@@ -1,7 +1,9 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
+import type { IcsCalendar, IcsEvent } from "../../lib/ics";
 import TaskCard from "./TaskCard";
+import EventCard from "./EventCard";
 import QuickAdd from "./QuickAdd";
 
 interface DayColumnProps {
@@ -10,6 +12,8 @@ interface DayColumnProps {
   isToday: boolean;
   today: ISODate;
   tasks: Task[];
+  events?: IcsEvent[];
+  calendars?: IcsCalendar[];
 }
 
 // Sort: completed tasks sink to the bottom. Active tasks are ordered by
@@ -45,10 +49,19 @@ function dayLabel(isoDate: ISODate, today: ISODate, weekday: string): string {
   return weekday;
 }
 
-export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayColumnProps) {
+export default function DayColumn({
+  date,
+  isoDate,
+  isToday,
+  today,
+  tasks,
+  events = [],
+  calendars = [],
+}: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
   const sorted = sortTasks(tasks);
+  const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
 
   const { setNodeRef, isOver } = useDroppable({ id: `day:${isoDate}` });
 
@@ -80,6 +93,18 @@ export default function DayColumn({ date, isoDate, isToday, today, tasks }: DayC
           {label}
         </div>
       </header>
+
+      {events.length > 0 && (
+        <ul className="mb-2 space-y-1">
+          {events.map((ev) => (
+            <EventCard
+              key={ev.id}
+              event={ev}
+              colour={colourByCalendar.get(ev.calendarId) ?? "#64748b"}
+            />
+          ))}
+        </ul>
+      )}
 
       <ul className="flex-1 space-y-0.5">
         {sorted.map((t) => (

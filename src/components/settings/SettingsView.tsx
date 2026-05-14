@@ -7,6 +7,7 @@ import {
 } from "../../state/settings";
 import BackupSection from "./BackupSection";
 import TagsSection from "./TagsSection";
+import IcsCalendarsSection from "./IcsCalendarsSection";
 
 export default function SettingsView() {
   return (
@@ -37,6 +38,13 @@ export default function SettingsView() {
           subtitle="Rename or delete tags. Changes apply to every task and recurrence template using the tag."
         >
           <TagsSection />
+        </Panel>
+
+        <Panel
+          title="Calendar feeds"
+          subtitle="Subscribe to read-only .ics calendars. Events show up in your day columns and focus view."
+        >
+          <IcsCalendarsSection />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">
