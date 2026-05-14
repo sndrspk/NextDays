@@ -239,6 +239,13 @@ export function formatEventTime(event: IcsEvent): string {
   return `${hh}:${mm}`;
 }
 
+// All-day events stay visible for the full day they span (endAt is exclusive
+// midnight of the next day). Timed events disappear once endAt has passed.
+export function isPastEvent(event: IcsEvent, now: number = Date.now()): boolean {
+  if (event.allDay) return false;
+  return new Date(event.endAt).getTime() <= now;
+}
+
 export function tintBackground(colour: string): string {
   // Append a low-alpha hex byte so the colour reads as a translucent fill.
   // Works for #rrggbb inputs (PROJECT_COLOURS are all 6-digit hex).
