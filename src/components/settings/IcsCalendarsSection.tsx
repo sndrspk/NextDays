@@ -47,9 +47,9 @@ export default function IcsCalendarsSection() {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] text-stone-400">
-          Synced across every device signed in to this account. Requires the
-          provider to allow cross-origin requests (Google's public ICS works;
-          iCloud and Outlook often don't).
+          Synced across every device signed in to this account. Calendars are
+          fetched via the <code className="text-stone-500">fetch-ics</code>{" "}
+          Supabase Edge Function, so any ICS host works.
         </p>
         {calendars.length > 0 && (
           <button
