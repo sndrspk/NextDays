@@ -10,6 +10,7 @@ import EventCard from "../calendar/EventCard";
 import { compareActiveTasks } from "../calendar/DayColumn";
 import type { ISODate, Task } from "../../types";
 import type { IcsEvent } from "../../lib/ics";
+import { isPastEvent } from "../../lib/ics";
 
 export default function FocusView() {
   const query = useFocusTasks();
@@ -18,7 +19,9 @@ export default function FocusView() {
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
-  const todaysEvents = today ? eventsByDate.get(today as ISODate) ?? [] : [];
+  const todaysEvents = (today ? eventsByDate.get(today as ISODate) ?? [] : []).filter(
+    (ev) => !isPastEvent(ev),
+  );
 
   const { overdue, dueToday, otherToday } = useMemo(() => {
     const overdue: Task[] = [];

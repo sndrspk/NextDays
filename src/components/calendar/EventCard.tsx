@@ -18,10 +18,7 @@ export default function EventCard({ event, colour }: EventCardProps) {
       title={event.location ? `${event.title} — ${event.location}` : event.title}
     >
       {time && (
-        <span
-          className="font-mono text-[11px] font-medium"
-          style={{ color: colour }}
-        >
+        <span className="font-mono text-[11px] font-medium text-stone-800">
           {time}
         </span>
       )}
