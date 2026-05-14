@@ -39,10 +39,10 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     : "text-stone-800";
   const weightClass = urgent ? "font-semibold" : "";
 
-  const bellClass =
+  const urgencyMarkClass =
     u === "overdue" ? "text-red-500" : u === "today" || u === "tomorrow" ? "text-orange-500" : "";
 
-  const showBell = !task.completed && (u === "overdue" || u === "today" || u === "tomorrow");
+  const showUrgencyMark = !task.completed && (u === "overdue" || u === "today" || u === "tomorrow");
 
   const tint = project?.colour ?? null;
   const checkboxStyle = tint
@@ -91,7 +91,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
         )}
       </button>
       <span className={`flex-1 text-[13px] leading-snug ${titleClass} ${weightClass}`}>
-        {showBell && <span className={`mr-1 ${bellClass}`}>🔔</span>}
+        {showUrgencyMark && <span className={`mr-0.5 font-bold ${urgencyMarkClass}`}>!</span>}
         {task.title}
         {task.template_id && (
           <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
