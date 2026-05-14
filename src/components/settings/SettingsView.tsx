@@ -6,6 +6,7 @@ import {
   type FontSize,
 } from "../../state/settings";
 import BackupSection from "./BackupSection";
+import TagsSection from "./TagsSection";
 
 export default function SettingsView() {
   return (
@@ -29,6 +30,13 @@ export default function SettingsView() {
           subtitle="Scale every text and control proportionally."
         >
           <FontSizePicker />
+        </Panel>
+
+        <Panel
+          title="Tags"
+          subtitle="Rename or delete tags. Changes apply to every task and recurrence template using the tag."
+        >
+          <TagsSection />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">

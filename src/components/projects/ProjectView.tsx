@@ -8,6 +8,7 @@ import {
   useToggleTaskCompleted,
 } from "../../hooks/useTaskMutations";
 import { isDueOrOverdue, todayLocal, toISODate } from "../../lib/dates";
+import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useSelection } from "../../state/selection";
 import type { Task, UUID } from "../../types";
 
@@ -392,12 +393,20 @@ function BulkActionBar({
 function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string }) {
   const [title, setTitle] = useState("");
   const create = useCreateTask();
+  const projectsQuery = useProjects();
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
+    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
+    if (!parsed.title) return;
     create.mutate(
-      { title: trimmed, scheduled_date: today, project_id: projectId },
+      {
+        title: parsed.title,
+        scheduled_date: today,
+        project_id: parsed.project_id ?? projectId,
+        tags: parsed.tags,
+      },
       { onSuccess: () => setTitle("") },
     );
   }
