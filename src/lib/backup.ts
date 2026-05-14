@@ -2,6 +2,7 @@ import { supabase } from "./supabase";
 import type {
   CustomList,
   CustomListItem,
+  IcsCalendarRow,
   Project,
   Task,
   TaskTemplate,
@@ -18,6 +19,7 @@ export interface BackupEnvelope {
   tasks: Task[];
   custom_lists: CustomList[];
   custom_list_items: CustomListItem[];
+  ics_calendars?: IcsCalendarRow[];
 }
 
 export interface BackupCounts {
@@ -26,6 +28,7 @@ export interface BackupCounts {
   tasks: number;
   custom_lists: number;
   custom_list_items: number;
+  ics_calendars: number;
 }
 
 export type ImportMode = "merge" | "replace";
@@ -39,15 +42,16 @@ function stripUserId<T extends Record<string, unknown>>(row: T): T {
 }
 
 export async function exportAll(): Promise<BackupEnvelope> {
-  const [projects, templates, tasks, lists, items] = await Promise.all([
+  const [projects, templates, tasks, lists, items, calendars] = await Promise.all([
     supabase.from("projects").select("*"),
     supabase.from("task_templates").select("*"),
     supabase.from("tasks").select("*"),
     supabase.from("custom_lists").select("*"),
     supabase.from("custom_list_items").select("*"),
+    supabase.from("ics_calendars").select("*"),
   ]);
 
-  for (const r of [projects, templates, tasks, lists, items]) {
+  for (const r of [projects, templates, tasks, lists, items, calendars]) {
     if (r.error) throw r.error;
   }
 
@@ -60,6 +64,7 @@ export async function exportAll(): Promise<BackupEnvelope> {
     tasks: (tasks.data ?? []) as Task[],
     custom_lists: (lists.data ?? []) as CustomList[],
     custom_list_items: (items.data ?? []) as CustomListItem[],
+    ics_calendars: (calendars.data ?? []) as IcsCalendarRow[],
   };
 }
 
@@ -86,6 +91,7 @@ export function countBackup(envelope: BackupEnvelope): BackupCounts {
     tasks: envelope.tasks.length,
     custom_lists: envelope.custom_lists.length,
     custom_list_items: envelope.custom_list_items.length,
+    ics_calendars: envelope.ics_calendars?.length ?? 0,
   };
 }
 
@@ -138,6 +144,7 @@ async function wipeAll(): Promise<void> {
     "tasks",
     "task_templates",
     "projects",
+    "ics_calendars",
   ] as const;
   for (const table of tablesInOrder) {
     const { error } = await supabase.from(table).delete().neq("id", SENTINEL_ID);
@@ -179,5 +186,10 @@ export async function importBackup(
   await upsertRows("tasks", envelope.tasks, mode);
   await upsertRows("custom_lists", envelope.custom_lists, mode);
   await upsertRows("custom_list_items", envelope.custom_list_items, mode);
+  // ics_calendars is optional in the envelope so v1 backups taken before this
+  // table existed still import cleanly.
+  if (envelope.ics_calendars) {
+    await upsertRows("ics_calendars", envelope.ics_calendars, mode);
+  }
   return countBackup(envelope);
 }

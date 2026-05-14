@@ -1,13 +1,10 @@
 import ICAL from "ical.js";
-import type { ISODate } from "../types";
+import type { IcsCalendarRow, ISODate } from "../types";
 import { addDays, todayLocal, toISODate } from "./dates";
 
-export interface IcsCalendar {
-  id: string;
-  url: string;
-  name: string;
-  colour: string;
-}
+// Backwards-compat alias for the rest of the app that imports IcsCalendar
+// from this module. The canonical shape is the Postgres row.
+export type IcsCalendar = IcsCalendarRow;
 
 export interface IcsEvent {
   id: string;

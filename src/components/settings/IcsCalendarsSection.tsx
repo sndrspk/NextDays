@@ -1,11 +1,25 @@
 import { useState } from "react";
-import { useSettings } from "../../state/settings";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
+import {
+  useCreateIcsCalendar,
+  useDeleteIcsCalendar,
+  useIcsCalendars,
+  useUpdateIcsCalendar,
+} from "../../hooks/useIcsCalendars";
 import { PROJECT_COLOURS, DEFAULT_PROJECT_COLOUR } from "../../lib/projectColours";
-import type { IcsCalendar } from "../../lib/ics";
+import type { IcsCalendarRow } from "../../types";
+
+function deriveCalendarName(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "Calendar";
+  }
+}
 
 export default function IcsCalendarsSection() {
-  const { icsCalendars } = useSettings();
+  const calendarsQuery = useIcsCalendars();
+  const calendars = calendarsQuery.data ?? [];
   const { errors, fetchedAt, isFetching, refresh } = useExternalEvents();
 
   const errorByCalendar = new Map(errors.map((e) => [e.calendarId, e.message]));
@@ -14,9 +28,13 @@ export default function IcsCalendarsSection() {
     <div className="space-y-4">
       <AddCalendarForm />
 
-      {icsCalendars.length > 0 && (
+      {calendarsQuery.isLoading && calendars.length === 0 && (
+        <p className="text-[12px] text-stone-500">Loading calendars…</p>
+      )}
+
+      {calendars.length > 0 && (
         <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white">
-          {icsCalendars.map((cal) => (
+          {calendars.map((cal) => (
             <CalendarRow
               key={cal.id}
               calendar={cal}
@@ -29,11 +47,11 @@ export default function IcsCalendarsSection() {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-[11px] text-stone-400">
-          Stored locally on this device — not included in backups. Requires the
+          Synced across every device signed in to this account. Requires the
           provider to allow cross-origin requests (Google's public ICS works;
           iCloud and Outlook often don't).
         </p>
-        {icsCalendars.length > 0 && (
+        {calendars.length > 0 && (
           <button
             type="button"
             onClick={refresh}
@@ -49,7 +67,7 @@ export default function IcsCalendarsSection() {
 }
 
 function AddCalendarForm() {
-  const { addIcsCalendar } = useSettings();
+  const create = useCreateIcsCalendar();
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [colour, setColour] = useState<string>(DEFAULT_PROJECT_COLOUR);
@@ -69,10 +87,23 @@ function AddCalendarForm() {
       return;
     }
     setError(null);
-    addIcsCalendar({ url: trimmed, name: name.trim() || undefined, colour });
-    setUrl("");
-    setName("");
-    setColour(DEFAULT_PROJECT_COLOUR);
+    create.mutate(
+      {
+        url: trimmed,
+        name: name.trim() || deriveCalendarName(trimmed),
+        colour,
+      },
+      {
+        onSuccess: () => {
+          setUrl("");
+          setName("");
+          setColour(DEFAULT_PROJECT_COLOUR);
+        },
+        onError: (err) => {
+          setError(err instanceof Error ? err.message : String(err));
+        },
+      },
+    );
   }
 
   return (
@@ -83,23 +114,26 @@ function AddCalendarForm() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://calendar.example.com/feed.ics"
-          className="focus-ring flex-1 rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
+          disabled={create.isPending}
+          className="focus-ring flex-1 rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50"
         />
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (optional)"
-          className="focus-ring rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none sm:w-44"
+          disabled={create.isPending}
+          className="focus-ring rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50 sm:w-44"
         />
       </div>
       <div className="flex items-center gap-3">
         <ColourSwatches selected={colour} onSelect={setColour} />
         <button
           type="submit"
-          className="focus-ring rounded-md bg-accent px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-accent-700"
+          disabled={create.isPending}
+          className="focus-ring rounded-md bg-accent px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-accent-700 disabled:opacity-50"
         >
-          Add calendar
+          {create.isPending ? "Adding…" : "Add calendar"}
         </button>
       </div>
       {error && <p className="text-[11px] text-red-600">{error}</p>}
@@ -142,11 +176,12 @@ function CalendarRow({
   error,
   fetchedAt,
 }: {
-  calendar: IcsCalendar;
+  calendar: IcsCalendarRow;
   error?: string;
   fetchedAt?: string;
 }) {
-  const { updateIcsCalendar, removeIcsCalendar } = useSettings();
+  const update = useUpdateIcsCalendar();
+  const remove = useDeleteIcsCalendar();
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(calendar.name);
   const [showColour, setShowColour] = useState(false);
@@ -155,7 +190,7 @@ function CalendarRow({
   function commitName() {
     const next = nameDraft.trim();
     if (next && next !== calendar.name) {
-      updateIcsCalendar(calendar.id, { name: next });
+      update.mutate({ id: calendar.id, patch: { name: next } });
     } else {
       setNameDraft(calendar.name);
     }
@@ -164,8 +199,10 @@ function CalendarRow({
 
   function onDelete() {
     if (!window.confirm(`Remove calendar "${calendar.name}"?`)) return;
-    removeIcsCalendar(calendar.id);
+    remove.mutate(calendar.id);
   }
+
+  const pending = update.isPending || remove.isPending;
 
   return (
     <li className="flex flex-col gap-2 px-4 py-3 text-[13px]">
@@ -218,7 +255,8 @@ function CalendarRow({
         <button
           type="button"
           onClick={onDelete}
-          className="focus-ring rounded-md border border-red-200/70 bg-white px-2 py-1 text-[11px] font-medium text-red-600 transition-colors hover:bg-red-50"
+          disabled={pending}
+          className="focus-ring rounded-md border border-red-200/70 bg-white px-2 py-1 text-[11px] font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
         >
           Remove
         </button>
@@ -229,7 +267,7 @@ function CalendarRow({
           <ColourSwatches
             selected={calendar.colour}
             onSelect={(c) => {
-              updateIcsCalendar(calendar.id, { colour: c });
+              update.mutate({ id: calendar.id, patch: { colour: c } });
               setShowColour(false);
             }}
           />

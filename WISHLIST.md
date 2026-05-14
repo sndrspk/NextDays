@@ -154,12 +154,21 @@ The original WISHLIST proposed a Supabase Edge Function + new `external_events` 
 
 #### Data model & storage
 
-Everything lives in `localStorage`; nothing touches Supabase.
+The subscription list lives in a per-user Supabase table so it follows the account across devices. Parsed event payloads stay in `localStorage` because they're just network output — re-derivable from the URL on first paint.
 
-- **`nextdays:icsCalendars`** — `IcsCalendar[]` managed by `SettingsProvider`:
-  ```ts
-  type IcsCalendar = { id: string; url: string; name: string; colour: string }
+- **Supabase table `ics_calendars`** (migration `0006_ics_calendars.sql`):
+  ```sql
+  create table ics_calendars (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null default auth.uid()
+      references auth.users(id) on delete cascade,
+    url text not null,
+    name text not null,
+    colour text not null,
+    created_at timestamptz not null default now()
+  );
   ```
+  RLS enabled; per-command policies scoped to `auth.uid() = user_id`. Explicit GRANTs to `anon` (select) and `authenticated` / `service_role` (full CRUD) to comply with the Data API change from migration 0005.
 - **`nextdays:icsCalendarCache:<calendarId>`** — most recent parsed result:
   ```ts
   type IcsCache = { fetchedAt: string; events: IcsEvent[] }
@@ -185,21 +194,15 @@ Everything lives in `localStorage`; nothing touches Supabase.
 - `eventsForDate(events, isoDate)` — predicate used by `DayColumn` / `FocusView`.
 - `formatEventTime(event)` — `"09:30"` for timed, `""` for all-day.
 
-#### Settings state
+#### Hooks
 
-`SettingsProvider` (`src/state/settings.tsx`) is extended with:
-- `icsCalendars: IcsCalendar[]`
-- `addIcsCalendar({ url, name?, colour })` → assigns an id, persists, returns the new calendar
-- `updateIcsCalendar(id, partial)`
-- `removeIcsCalendar(id)` → also clears that calendar's cache entry
-
-No new provider — settings already wraps the app above auth.
-
-#### Hook
+`src/hooks/useIcsCalendars.ts` exposes the CRUD over the new table:
+- `useIcsCalendars()` — `useQuery` (`queryKey: ["icsCalendars"]`) ordered by `created_at` ascending.
+- `useCreateIcsCalendar()` / `useUpdateIcsCalendar()` / `useDeleteIcsCalendar()` — all invalidate `["icsCalendars"]`. Delete also clears the local cache entry for that calendar.
 
 `src/hooks/useExternalEvents.ts`:
-- Reads `icsCalendars` from settings.
-- For each calendar runs a TanStack Query (`queryKey: ["icsCalendar", calendar.id]`, `staleTime: 15 * 60_000`):
+- Reads the calendar list from `useIcsCalendars()`.
+- For each calendar runs a TanStack Query (`queryKey: ["icsCalendar", calendar.id, calendar.url]`, `staleTime: 15 * 60_000`):
   - Initial data comes from `loadCachedEvents` so the UI paints synchronously.
   - `queryFn` calls `fetchIcsCalendar`; on success writes to cache.
 - Returns:
@@ -235,7 +238,7 @@ The "Inbox zero" empty state only fires when both tasks and events are empty.
 
 #### Backup & Restore interaction
 
-`exportAll()` / `importBackup()` operate on Supabase rows only. ICS settings live in `localStorage`, so they're intentionally **not** part of the backup envelope — the URL list is a per-device subscription preference. Document this in the Settings panel via a small subnote ("Stored locally on this device").
+Now that the subscription list is account-scoped, `exportAll()` includes the `ics_calendars` rows and `importBackup()` restores them alongside the rest of the data. The envelope keeps `schema_version: 1` and `ics_calendars` is treated as **optional** so older v1 backups taken before this table existed still import cleanly — they just don't carry any calendar rows.
 
 #### Known caveats (call out in the Settings panel)
 

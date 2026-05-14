@@ -3,7 +3,7 @@ import { useFocusTasks } from "../../hooks/useFocusTasks";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
-import { useSettings } from "../../state/settings";
+import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
@@ -15,7 +15,8 @@ export default function FocusView() {
   const query = useFocusTasks();
   const today = query.data?.today ?? "";
   const tasks = query.data?.tasks ?? [];
-  const { icsCalendars } = useSettings();
+  const calendarsQuery = useIcsCalendars();
+  const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
   const todaysEvents = today ? eventsByDate.get(today as ISODate) ?? [] : [];
 

@@ -58,3 +58,11 @@ export interface CustomListItem {
   sort_order: number;
   created_at: ISOTimestamp;
 }
+
+export interface IcsCalendarRow {
+  id: UUID;
+  url: string;
+  name: string;
+  colour: string;
+  created_at: ISOTimestamp;
+}

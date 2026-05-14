@@ -275,6 +275,9 @@ function summary(c: BackupCounts): string {
   if (c.custom_list_items > 0) {
     parts.push(`${c.custom_list_items} item${c.custom_list_items === 1 ? "" : "s"}`);
   }
+  if (c.ics_calendars > 0) {
+    parts.push(`${c.ics_calendars} calendar${c.ics_calendars === 1 ? "" : "s"}`);
+  }
   return parts.join(", ");
 }
 

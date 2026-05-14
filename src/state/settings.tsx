@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { DEFAULT_PROJECT_COLOUR } from "../lib/projectColours";
-import { clearCachedEvents, type IcsCalendar } from "../lib/ics";
 
 export type FontChoice = "inter" | "public-sans" | "instrument-sans";
 
@@ -57,8 +55,6 @@ export const FONT_SIZE_OPTIONS: readonly FontSizeOption[] = [
 export const DEFAULT_FONT_SIZE: FontSize = "normal";
 const FONT_SIZE_STORAGE_KEY = "nextdays:fontSize";
 
-const ICS_CALENDARS_STORAGE_KEY = "nextdays:icsCalendars";
-
 function readStoredFont(): FontChoice {
   if (typeof window === "undefined") return DEFAULT_FONT;
   const raw = window.localStorage.getItem(FONT_STORAGE_KEY);
@@ -87,44 +83,6 @@ function readStoredFontSize(): FontSize {
   return DEFAULT_FONT_SIZE;
 }
 
-function readStoredIcsCalendars(): IcsCalendar[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(ICS_CALENDARS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (c): c is IcsCalendar =>
-          !!c &&
-          typeof c === "object" &&
-          typeof (c as IcsCalendar).id === "string" &&
-          typeof (c as IcsCalendar).url === "string" &&
-          typeof (c as IcsCalendar).name === "string" &&
-          typeof (c as IcsCalendar).colour === "string",
-      )
-      .map((c) => ({ id: c.id, url: c.url, name: c.name, colour: c.colour }));
-  } catch {
-    return [];
-  }
-}
-
-function newCalendarId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `cal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function deriveCalendarName(url: string): string {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "Calendar";
-  }
-}
-
 function stackFor(choice: FontChoice): string {
   return (FONT_OPTIONS.find((o) => o.id === choice) ?? FONT_OPTIONS[0]).stack;
 }
@@ -140,10 +98,6 @@ interface SettingsState {
   setDesktopDayCount: (next: DesktopDayCount) => void;
   fontSize: FontSize;
   setFontSize: (next: FontSize) => void;
-  icsCalendars: IcsCalendar[];
-  addIcsCalendar: (input: { url: string; name?: string; colour?: string }) => IcsCalendar;
-  updateIcsCalendar: (id: string, partial: Partial<Omit<IcsCalendar, "id">>) => void;
-  removeIcsCalendar: (id: string) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -154,9 +108,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     () => readStoredDesktopDayCount(),
   );
   const [fontSize, setFontSizeState] = useState<FontSize>(() => readStoredFontSize());
-  const [icsCalendars, setIcsCalendarsState] = useState<IcsCalendar[]>(() =>
-    readStoredIcsCalendars(),
-  );
 
   useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
@@ -200,62 +151,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const persistIcsCalendars = (next: IcsCalendar[]) => {
-    setIcsCalendarsState(next);
-    try {
-      window.localStorage.setItem(ICS_CALENDARS_STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // see setFont
-    }
-  };
-
-  const addIcsCalendar = ({
-    url,
-    name,
-    colour,
-  }: {
-    url: string;
-    name?: string;
-    colour?: string;
-  }): IcsCalendar => {
-    const cal: IcsCalendar = {
-      id: newCalendarId(),
-      url: url.trim(),
-      name: (name ?? "").trim() || deriveCalendarName(url),
-      colour: colour ?? DEFAULT_PROJECT_COLOUR,
-    };
-    persistIcsCalendars([...icsCalendars, cal]);
-    return cal;
-  };
-
-  const updateIcsCalendar = (
-    id: string,
-    partial: Partial<Omit<IcsCalendar, "id">>,
-  ) => {
-    persistIcsCalendars(
-      icsCalendars.map((c) => (c.id === id ? { ...c, ...partial } : c)),
-    );
-  };
-
-  const removeIcsCalendar = (id: string) => {
-    clearCachedEvents(id);
-    persistIcsCalendars(icsCalendars.filter((c) => c.id !== id));
-  };
-
   const value = useMemo(
-    () => ({
-      font,
-      setFont,
-      desktopDayCount,
-      setDesktopDayCount,
-      fontSize,
-      setFontSize,
-      icsCalendars,
-      addIcsCalendar,
-      updateIcsCalendar,
-      removeIcsCalendar,
-    }),
-    [font, desktopDayCount, fontSize, icsCalendars],
+    () => ({ font, setFont, desktopDayCount, setDesktopDayCount, fontSize, setFontSize }),
+    [font, desktopDayCount, fontSize],
   );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

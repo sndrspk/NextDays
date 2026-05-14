@@ -6,11 +6,10 @@ import {
   fetchIcsCalendar,
   loadCachedEvents,
   writeCachedEvents,
-  type IcsCalendar,
   type IcsEvent,
 } from "../lib/ics";
-import type { ISODate } from "../types";
-import { useSettings } from "../state/settings";
+import type { IcsCalendarRow, ISODate } from "../types";
+import { useIcsCalendars } from "./useIcsCalendars";
 
 export interface ExternalEventsState {
   events: IcsEvent[];
@@ -22,7 +21,8 @@ export interface ExternalEventsState {
 }
 
 export function useExternalEvents(): ExternalEventsState {
-  const { icsCalendars } = useSettings();
+  const calendarsQuery = useIcsCalendars();
+  const icsCalendars = calendarsQuery.data ?? [];
   const qc = useQueryClient();
 
   const queries = useQueries({
@@ -55,7 +55,7 @@ export function useExternalEvents(): ExternalEventsState {
     let isFetching = false;
 
     queries.forEach((q, i) => {
-      const cal: IcsCalendar | undefined = icsCalendars[i];
+      const cal: IcsCalendarRow | undefined = icsCalendars[i];
       if (!cal) return;
       if (q.isFetching) isFetching = true;
       if (q.error) {
