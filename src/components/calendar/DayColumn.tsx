@@ -15,6 +15,7 @@ interface DayColumnProps {
   tasks: Task[];
   events?: IcsEvent[];
   calendars?: IcsCalendar[];
+  showCompleted?: boolean;
 }
 
 // Sort: completed tasks sink to the bottom. Active tasks are ordered by
@@ -58,10 +59,12 @@ export default function DayColumn({
   tasks,
   events = [],
   calendars = [],
+  showCompleted = true,
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
-  const sorted = sortTasks(tasks);
+  const filtered = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+  const sorted = sortTasks(filtered);
   const visibleEvents = events.filter((ev) => !isPastEvent(ev));
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
 
