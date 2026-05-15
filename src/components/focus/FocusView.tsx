@@ -39,7 +39,7 @@ export default function FocusView() {
     return { overdue, dueToday, otherToday };
   }, [tasks, today]);
 
-  const total = overdue.length + dueToday.length + otherToday.length + todaysEvents.length;
+  const total = overdue.length + dueToday.length + otherToday.length;
 
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
@@ -49,6 +49,8 @@ export default function FocusView() {
         </h2>
         <p className="text-[12px] text-stone-500">What needs your attention today.</p>
       </header>
+
+      <EventsSection events={todaysEvents} calendars={icsCalendars} />
 
       {today && <FocusQuickAdd today={today} />}
 
@@ -61,7 +63,6 @@ export default function FocusView() {
           <>
             <Section label="Overdue" tone="overdue" tasks={overdue} today={today} />
             <Section label="Due today" tone="today" tasks={dueToday} today={today} />
-            <EventsSection events={todaysEvents} calendars={icsCalendars} />
             <Section label="Scheduled for today" tone="default" tasks={otherToday} today={today} />
           </>
         )}
@@ -117,7 +118,7 @@ function EventsSection({
   if (events.length === 0) return null;
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
   return (
-    <section>
+    <section className="mb-4">
       <div className="mb-2 flex items-center gap-2 px-1">
         <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
           Calendar events today
