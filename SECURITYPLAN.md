@@ -210,7 +210,7 @@ breakage.
 
 ---
 
-## 7. Account-deletion safety — MEDIUM
+## 7. Account-deletion safety — MEDIUM ✅
 
 **Why:** All tables `ON DELETE CASCADE` from `auth.users`. A wrong click in
 Supabase dashboard / a future "Delete account" button / a Supabase support op
@@ -237,7 +237,7 @@ nukes everything irrecoverably.
 
 ---
 
-## 8. ICS parsing DoS hardening — MEDIUM
+## 8. ICS parsing DoS hardening — MEDIUM ✅
 
 **Why:** `src/lib/ics.ts` caps recurrence expansion per event but has no global
 cap, and parses on the main thread — a hostile (or just unusually large)

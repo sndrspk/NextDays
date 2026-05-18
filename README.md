@@ -61,6 +61,14 @@ Other scripts:
 
 `vite.config.ts` sets `base` to `/NextDays/` when `GITHUB_ACTIONS` is set, and `/` locally. The workflow also copies `index.html` to `404.html` so the SPA handles client-side routes after a hard refresh.
 
+## Data safety
+
+NextDays stores everything in your Supabase project. **Deleting your Supabase account cascades through every owned row and cannot be undone** — there is no in-app trash or server-side snapshot. The JSON backup is the user's responsibility:
+
+- Export regularly from **Settings → Backup & Restore** (or the "Download backup now" button under **Account safety**, which is rendered above it).
+- Keep the file off the Supabase project (cloud drive, USB stick, anywhere).
+- The export is portable across accounts — `user_id` is re-stamped from the current session on import, so you can restore into a fresh Supabase account if needed.
+
 ## Deeper documentation
 
 - [`CLAUDE.md`](CLAUDE.md) — working agreements, repo layout, schema notes, milestone status, and Supabase/auth specifics.
