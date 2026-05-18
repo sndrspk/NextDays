@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // Minimal ambient declaration so we don't pull @types/node just for this.
 declare const process: { env: Record<string, string | undefined> };
@@ -47,7 +48,7 @@ const cspPlugin = (): Plugin => ({
 
 export default defineConfig({
   base,
-  plugins: [react(), cspPlugin()],
+  plugins: [react(), tailwindcss(), cspPlugin()],
   server: {
     port: 5173,
   },
