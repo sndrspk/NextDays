@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import { devError } from "../lib/log";
 import { todayLocal, toISODate } from "../lib/dates";
 import {
   horizonEnd,
@@ -29,7 +30,7 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
     .from("task_templates")
     .select("*");
   if (tErr) {
-    console.error("Recurrence templates fetch failed:", tErr);
+    devError("Recurrence templates fetch failed:", tErr);
     return;
   }
   if (!templates || templates.length === 0) return;
@@ -42,7 +43,7 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
     .gte("scheduled_date", today)
     .lte("scheduled_date", horizon);
   if (eErr) {
-    console.error("Recurrence existing-instances fetch failed:", eErr);
+    devError("Recurrence existing-instances fetch failed:", eErr);
     return;
   }
 
@@ -82,7 +83,7 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
         continue;
       }
     } catch (err) {
-      console.error(`Recurrence parse failed for template ${tpl.id}:`, err);
+      devError(`Recurrence parse failed for template ${tpl.id}:`, err);
       continue;
     }
 
@@ -121,7 +122,7 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
 
   const { error: insErr } = await supabase.from("tasks").insert(toInsert);
   if (insErr) {
-    console.error("Recurrence insert failed:", insErr);
+    devError("Recurrence insert failed:", insErr);
     return;
   }
 

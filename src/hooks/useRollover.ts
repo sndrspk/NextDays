@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import { devError } from "../lib/log";
 import { todayLocal, toISODate } from "../lib/dates";
 import type { Project, Task } from "../types";
 
@@ -31,7 +32,7 @@ export function useRollover() {
         .eq("completed", false)
         .lt("scheduled_date", todayISO);
       if (fetchErr) {
-        console.error("Rollover fetch failed:", fetchErr);
+        devError("Rollover fetch failed:", fetchErr);
         return;
       }
       if (!stale || stale.length === 0) return;
@@ -47,7 +48,7 @@ export function useRollover() {
           .select("*")
           .in("id", projectIds);
         if (projErr) {
-          console.error("Rollover projects fetch failed:", projErr);
+          devError("Rollover projects fetch failed:", projErr);
           return;
         }
         for (const p of projects ?? []) projectById.set(p.id, p as Project);
@@ -65,7 +66,7 @@ export function useRollover() {
         .update({ scheduled_date: todayISO })
         .in("id", idsToRoll);
       if (updateErr) {
-        console.error("Rollover update failed:", updateErr);
+        devError("Rollover update failed:", updateErr);
         return;
       }
 

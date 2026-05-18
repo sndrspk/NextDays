@@ -45,11 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // email that already exists in auth.users can request a magic link.
         // The owner is created once via the Supabase dashboard
         // (Authentication → Users → Add user). See CLAUDE.md.
+        //
+        // emailRedirectTo is pinned to VITE_APP_URL when set so the magic
+        // link always lands back at the canonical app origin, regardless of
+        // where the sign-in form was opened. We fall back to the live
+        // origin only when the env var is unset (local dev convenience).
+        const configuredAppUrl = import.meta.env.VITE_APP_URL?.trim();
+        const emailRedirectTo = configuredAppUrl
+          ? configuredAppUrl
+          : window.location.origin + window.location.pathname;
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
             shouldCreateUser: false,
-            emailRedirectTo: window.location.origin + window.location.pathname,
+            emailRedirectTo,
           },
         });
         if (error) throw error;

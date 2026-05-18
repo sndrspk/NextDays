@@ -262,7 +262,7 @@ calendar blocks the UI.
 
 ---
 
-## 9. Console-leak gating — LOW
+## 9. Console-leak gating — LOW ✅
 
 **Why:** Hooks log raw Supabase error objects, which can include row IDs and
 internal messages.
@@ -277,7 +277,7 @@ internal messages.
 
 ---
 
-## 10. Magic-link redirect lock-down — LOW
+## 10. Magic-link redirect lock-down — LOW ✅
 
 **Why:** `emailRedirectTo` currently uses `window.location.origin` + path, which
 means anywhere the app is hosted (or a misconfigured Supabase redirect allow-list)
@@ -297,7 +297,7 @@ could become a redirect target.
 
 ---
 
-## 11. Verify Vite / plugin major versions — LOW
+## 11. Verify Vite / plugin major versions — LOW ✅
 
 **Why:** Audit flagged `vite` and `@vitejs/plugin-react` majors as unusually high.
 
