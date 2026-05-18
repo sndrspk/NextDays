@@ -5,6 +5,7 @@ import {
   type FontChoice,
   type FontSize,
 } from "../../state/settings";
+import AccountSafetySection from "./AccountSafetySection";
 import BackupSection from "./BackupSection";
 import TagsSection from "./TagsSection";
 import IcsCalendarsSection from "./IcsCalendarsSection";
@@ -45,6 +46,13 @@ export default function SettingsView() {
           subtitle="Subscribe to read-only .ics calendars. Events show up in your day columns and focus view."
         >
           <IcsCalendarsSection />
+        </Panel>
+
+        <Panel
+          title="Account safety"
+          subtitle="Account deletion in Supabase wipes everything irrecoverably. Always export first."
+        >
+          <AccountSafetySection />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">

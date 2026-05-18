@@ -1,22 +1,19 @@
-import ICAL from "ical.js";
 import type { IcsCalendarRow, ISODate } from "../types";
-import { addDays, todayLocal, toISODate } from "./dates";
+import { toISODate } from "./dates";
+import { parseIcs, type IcsEvent } from "./icsParse";
+import IcsParserWorker from "../workers/icsParser.worker?worker";
+import type { ParseResponse } from "../workers/icsParser.worker";
 import { supabase } from "./supabase";
 
 // Backwards-compat alias for the rest of the app that imports IcsCalendar
 // from this module. The canonical shape is the Postgres row.
 export type IcsCalendar = IcsCalendarRow;
 
-export interface IcsEvent {
-  id: string;
-  calendarId: string;
-  uid: string;
-  title: string;
-  startAt: string;
-  endAt: string;
-  allDay: boolean;
-  location?: string;
-}
+// Re-exports so existing callers (`import { parseIcs, IcsEvent } from "./ics"`)
+// keep working — the pure parser now lives in ./icsParse so it can be loaded
+// from a worker without dragging in the Supabase client.
+export { parseIcs };
+export type { IcsEvent };
 
 interface IcsCache {
   fetchedAt: string;
@@ -24,113 +21,51 @@ interface IcsCache {
 }
 
 const CACHE_KEY_PREFIX = "nextdays:icsCalendarCache:";
-const EXPANSION_DAYS_PAST = 1;
-const EXPANSION_DAYS_FUTURE = 60;
 export const ICS_STALE_MS = 15 * 60 * 1000;
+const PARSE_TIMEOUT_MS = 5_000;
 
-function jsDateToISOString(date: Date): string {
-  return date.toISOString();
-}
-
-function timeToISODate(time: ICAL.Time): ISODate {
-  // All-day Times have isDate=true; toJSDate() returns midnight in floating tz,
-  // so we read the date components directly to avoid a timezone shift.
-  const y = String(time.year).padStart(4, "0");
-  const m = String(time.month).padStart(2, "0");
-  const d = String(time.day).padStart(2, "0");
-  return `${y}-${m}-${d}` as ISODate;
-}
-
-function makeEventId(calendarId: string, uid: string, startAt: string): string {
-  return `${calendarId}::${uid}::${startAt}`;
-}
-
-function buildEvent(
+// Parse off the main thread. The worker is one-shot — created on demand,
+// terminated on either resolution or timeout, so a runaway parse can't leak.
+// The 5s timeout bounds even the cap-bail path (`IcsTooLargeError` from
+// `icsParse`) so a pathological feed can't lock the UI.
+export function parseIcsInWorker(
+  text: string,
   calendarId: string,
-  uid: string,
-  summary: string,
-  location: string | undefined,
-  start: ICAL.Time,
-  end: ICAL.Time,
-): IcsEvent {
-  const allDay = start.isDate;
-  const startAt = allDay ? timeToISODate(start) : jsDateToISOString(start.toJSDate());
-  const endAt = allDay ? timeToISODate(end) : jsDateToISOString(end.toJSDate());
-  return {
-    id: makeEventId(calendarId, uid, startAt),
-    calendarId,
-    uid,
-    title: summary || "(no title)",
-    startAt,
-    endAt,
-    allDay,
-    location: location || undefined,
-  };
-}
+): Promise<IcsEvent[]> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const worker = new IcsParserWorker();
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      worker.terminate();
+      reject(
+        new Error(
+          `Parsing this calendar took longer than ${PARSE_TIMEOUT_MS / 1000}s and was aborted.`,
+        ),
+      );
+    }, PARSE_TIMEOUT_MS);
 
-export function parseIcs(text: string, calendarId: string): IcsEvent[] {
-  const jcal = ICAL.parse(text);
-  const root = new ICAL.Component(jcal);
-  const vevents = root.getAllSubcomponents("vevent");
+    worker.onmessage = (event: MessageEvent<ParseResponse>) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      worker.terminate();
+      const data = event.data;
+      if (data.ok) resolve(data.events);
+      else reject(new Error(data.error));
+    };
 
-  const today = todayLocal();
-  const rangeStartJs = addDays(today, -EXPANSION_DAYS_PAST);
-  const rangeEndJs = addDays(today, EXPANSION_DAYS_FUTURE + 1);
-  const rangeStart = ICAL.Time.fromJSDate(rangeStartJs, false);
-  const rangeEnd = ICAL.Time.fromJSDate(rangeEndJs, false);
+    worker.onerror = (event: ErrorEvent) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      worker.terminate();
+      reject(new Error(event.message || "Failed to parse the calendar."));
+    };
 
-  const out: IcsEvent[] = [];
-
-  for (const ve of vevents) {
-    const status = ve.getFirstPropertyValue("status");
-    if (typeof status === "string" && status.toUpperCase() === "CANCELLED") continue;
-
-    const event = new ICAL.Event(ve);
-    const uid = event.uid ?? "no-uid";
-    const summary = event.summary ?? "";
-    const location = event.location || undefined;
-
-    if (!event.startDate) continue;
-
-    if (!event.isRecurring()) {
-      const start = event.startDate;
-      const end = event.endDate ?? start;
-      const startJs = start.toJSDate();
-      if (startJs < rangeStartJs || startJs > rangeEndJs) continue;
-      out.push(buildEvent(calendarId, uid, summary, location, start, end));
-      continue;
-    }
-
-    const iterator = event.iterator();
-    let safety = 1000;
-    while (safety-- > 0) {
-      const next = iterator.next();
-      if (!next) break;
-      if (next.compare(rangeEnd) > 0) break;
-      if (next.compare(rangeStart) < 0) continue;
-      try {
-        const details = event.getOccurrenceDetails(next);
-        out.push(
-          buildEvent(
-            calendarId,
-            uid,
-            details.item.summary ?? summary,
-            details.item.location || location,
-            details.startDate,
-            details.endDate,
-          ),
-        );
-      } catch {
-        // skip occurrences we can't resolve (rare exception edge cases)
-      }
-    }
-  }
-
-  out.sort((a, b) => {
-    if (a.allDay !== b.allDay) return a.allDay ? -1 : 1;
-    return a.startAt < b.startAt ? -1 : a.startAt > b.startAt ? 1 : 0;
+    worker.postMessage({ text, calendarId });
   });
-  return out;
 }
 
 // Most public .ics endpoints don't send CORS headers, so we route the fetch
@@ -159,7 +94,7 @@ export async function fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]> {
   if (!text) {
     throw new Error("Empty response from the calendar.");
   }
-  return parseIcs(text, cal.id);
+  return parseIcsInWorker(text, cal.id);
 }
 
 function cacheKey(calendarId: string): string {
