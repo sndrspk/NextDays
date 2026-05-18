@@ -111,6 +111,11 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 ## Security plan
 
 Audit remediation is tracked in `SECURITYPLAN.md`. Each numbered item ships as its own PR off `main`. Update both `SECURITYPLAN.md` (tick the box) and `VERSIONS.md` per landed item.
+- [x] Security #1 — Revoke anon SELECT on private user-data tables. New migration `supabase/migrations/0007_revoke_anon_grants.sql` strips `anon` table privileges on `projects`, `tasks`, `custom_lists`, `custom_list_items`, and `ics_calendars` (RLS already blocked anonymous reads — this is defense-in-depth so a future policy mistake doesn't become anonymous exfiltration). `authenticated` and `service_role` grants are re-asserted in the same migration for idempotence. Schema-level USAGE on `public` is kept so PostgREST introspection still works. `task_templates` is not touched here — it has no `anon` grant in the first place (and no `authenticated` grant either, which is a separate problem tracked as SECURITYPLAN item #6).
+
+## Security plan
+
+Audit remediation is tracked in `SECURITYPLAN.md`. Each numbered item ships as its own PR off `main` (e.g. item #1 → `claude/security-01-revoke-anon-grants`). Update both `SECURITYPLAN.md` (tick the box) and `VERSIONS.md` per landed item.
 
 ## Backlog
 
