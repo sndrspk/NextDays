@@ -6,6 +6,11 @@
 // a JSON envelope. The client invokes it through the authenticated Supabase
 // client, so the user's JWT is required — the function isn't an open proxy.
 //
+// SSRF hardening lives in `./safe-fetch.ts` (URL allow-list, DNS
+// pre-resolution against private/reserved ranges, manual redirect handling
+// with per-hop re-validation, 10s timeout, 5 MiB body cap, content-type
+// allow-list + VCALENDAR sniff). The handler here is the thin glue.
+//
 // Deploy with:
 //   supabase functions deploy fetch-ics
 //
@@ -14,6 +19,7 @@
 
 // @ts-ignore  Deno-only import
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { safeFetch, SafeFetchError } from "./safe-fetch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,35 +55,14 @@ serve(async (req: Request) => {
     return jsonResponse({ error: "Missing `url` in body." }, 400);
   }
 
-  let target: URL;
   try {
-    target = new URL(rawUrl);
-  } catch {
-    return jsonResponse({ error: "Invalid URL." }, 400);
-  }
-  // Basic SSRF guard: only public http(s).
-  if (target.protocol !== "http:" && target.protocol !== "https:") {
-    return jsonResponse({ error: "Only http(s) URLs are allowed." }, 400);
-  }
-
-  let upstream: Response;
-  try {
-    upstream = await fetch(target.toString(), {
-      redirect: "follow",
-      headers: { "User-Agent": "NextDays/1.0 (+https://github.com/sndrspk/NextDays)" },
-    });
+    const text = await safeFetch(rawUrl);
+    return jsonResponse({ text });
   } catch (err) {
+    if (err instanceof SafeFetchError) {
+      return jsonResponse({ error: err.message }, err.status);
+    }
     const message = err instanceof Error ? err.message : String(err);
     return jsonResponse({ error: `Couldn't reach the calendar: ${message}` }, 502);
   }
-
-  if (!upstream.ok) {
-    return jsonResponse(
-      { error: `Provider returned HTTP ${upstream.status} ${upstream.statusText}` },
-      502,
-    );
-  }
-
-  const text = await upstream.text();
-  return jsonResponse({ text });
 });
