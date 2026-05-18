@@ -15,6 +15,13 @@ updates:
         update-types:
           - minor
           - patch
+    # Don't auto-PR major bumps. They almost always need a config or API
+    # migration (tailwindcss 3→4 broke the build, typescript 5→6 risked the
+    # type tree). Run `npm outdated` manually and upgrade majors deliberately.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: "/"
@@ -24,3 +31,9 @@ updates:
     labels:
       - dependencies
       - github-actions
+    # Same policy as npm: action majors often change inputs / outputs, so
+    # bump them manually after reading the release notes.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
