@@ -25,11 +25,15 @@ import {
 import type { Task } from "../../types";
 import DayColumn from "./DayColumn";
 import TaskCard from "./TaskCard";
+import CompletedToggle from "../common/CompletedToggle";
 
 export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  // Default: completed tasks visible on Calendar. Resets to true on every refresh
+  // (intentionally not persisted — see CLAUDE.md).
+  const [showCompleted, setShowCompleted] = useState(true);
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
@@ -93,8 +97,11 @@ export default function CalendarStrip() {
       onDragEnd={handleDragEnd}
     >
       <div className="flex flex-col">
-        <div className="mb-3 hidden justify-end xl:flex">
-          <DayCountToggle />
+        <div className="mb-3 flex items-center justify-end gap-2">
+          <CompletedToggle showCompleted={showCompleted} onChange={setShowCompleted} />
+          <div className="hidden xl:block">
+            <DayCountToggle />
+          </div>
         </div>
 
         {tasksQuery.error && (
@@ -119,6 +126,7 @@ export default function CalendarStrip() {
                 tasks={tasksByDate.get(iso) ?? []}
                 events={eventsByDate.get(iso) ?? []}
                 calendars={icsCalendars}
+                showCompleted={showCompleted}
               />
             );
           })}

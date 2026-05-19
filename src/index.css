@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Load the existing v3-style JS config (theme.extend etc.). v4 supports this
+   for projects that haven't migrated their config to CSS @theme blocks yet. */
+@config "../tailwind.config.ts";
 
 html, body, #root {
   height: 100%;

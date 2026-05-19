@@ -12,6 +12,7 @@ Live app: <https://sndrspk.github.io/NextDays/> (single-owner, magic-link sign-i
 - **Projects** — coloured projects with a Personal/Work flag; per-project view with text search, tag filters, and bulk select (complete / mark active / delete). Project colour tints the task circle.
 - **Custom lists** — lightweight checklists kept separate from calendar tasks.
 - **Focus view** — a single-page list of Overdue / Due today / Scheduled for today, with quick-add at the top.
+- **Show / hide completed** — a header toggle on both the Calendar and Focus screens flips struck-through completed tasks between visible and hidden. The toggle has two sides: a stricken-through "T" icon (visible) and an empty side (hidden). Defaults reset on every refresh — completed tasks are visible on the Calendar and hidden on Focus.
 - **Recurring tasks** — independent start and due-date rules (Daily / Weekly / Monthly / Custom) with an Ends option; instances materialise 60 days ahead and a `↻` glyph marks them.
 - **Settings screen** — picks the interface font (Inter / Public Sans / Instrument Sans) and houses backup & restore. Reached from the gear icon in the sidebar footer; the font choice persists in `localStorage` and applies app-wide.
 - **Backup & restore** — export the full dataset to a versioned JSON file; import in Merge or Replace mode. Portable across accounts (re-stamps `user_id` from the current session). Lives inside the Settings screen.
@@ -59,6 +60,14 @@ Other scripts:
 - `VITE_SUPABASE_ANON_KEY`
 
 `vite.config.ts` sets `base` to `/NextDays/` when `GITHUB_ACTIONS` is set, and `/` locally. The workflow also copies `index.html` to `404.html` so the SPA handles client-side routes after a hard refresh.
+
+## Data safety
+
+NextDays stores everything in your Supabase project. **Deleting your Supabase account cascades through every owned row and cannot be undone** — there is no in-app trash or server-side snapshot. The JSON backup is the user's responsibility:
+
+- Export regularly from **Settings → Backup & Restore** (or the "Download backup now" button under **Account safety**, which is rendered above it).
+- Keep the file off the Supabase project (cloud drive, USB stick, anywhere).
+- The export is portable across accounts — `user_id` is re-stamped from the current session on import, so you can restore into a fresh Supabase account if needed.
 
 ## Deeper documentation
 

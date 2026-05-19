@@ -6,6 +6,11 @@
 // a JSON envelope. The client invokes it through the authenticated Supabase
 // client, so the user's JWT is required — the function isn't an open proxy.
 //
+// SSRF hardening lives in `./safe-fetch.ts` (URL allow-list, DNS
+// pre-resolution against private/reserved ranges, manual redirect handling
+// with per-hop re-validation, 10s timeout, 5 MiB body cap, content-type
+// allow-list + VCALENDAR sniff). The handler here is the thin glue.
+//
 // Deploy with:
 //   supabase functions deploy fetch-ics
 //
@@ -14,6 +19,7 @@
 
 // @ts-ignore  Deno-only import
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { safeFetch, SafeFetchError } from "./safe-fetch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,4 +86,14 @@ serve(async (req: Request) => {
 
   const text = await upstream.text();
   return jsonResponse({ text });
+  try {
+    const text = await safeFetch(rawUrl);
+    return jsonResponse({ text });
+  } catch (err) {
+    if (err instanceof SafeFetchError) {
+      return jsonResponse({ error: err.message }, err.status);
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    return jsonResponse({ error: `Couldn't reach the calendar: ${message}` }, 502);
+  }
 });

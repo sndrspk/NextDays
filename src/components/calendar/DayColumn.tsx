@@ -2,6 +2,7 @@ import { useDroppable } from "@dnd-kit/core";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
 import type { IcsCalendar, IcsEvent } from "../../lib/ics";
+import { isPastEvent } from "../../lib/ics";
 import TaskCard from "./TaskCard";
 import EventCard from "./EventCard";
 import QuickAdd from "./QuickAdd";
@@ -14,6 +15,7 @@ interface DayColumnProps {
   tasks: Task[];
   events?: IcsEvent[];
   calendars?: IcsCalendar[];
+  showCompleted?: boolean;
 }
 
 // Sort: completed tasks sink to the bottom. Active tasks are ordered by
@@ -57,10 +59,13 @@ export default function DayColumn({
   tasks,
   events = [],
   calendars = [],
+  showCompleted = true,
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
-  const sorted = sortTasks(tasks);
+  const filtered = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+  const sorted = sortTasks(filtered);
+  const visibleEvents = events.filter((ev) => !isPastEvent(ev));
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
 
   const { setNodeRef, isOver } = useDroppable({ id: `day:${isoDate}` });
@@ -94,9 +99,9 @@ export default function DayColumn({
         </div>
       </header>
 
-      {events.length > 0 && (
+      {visibleEvents.length > 0 && (
         <ul className="mb-2 space-y-1">
-          {events.map((ev) => (
+          {visibleEvents.map((ev) => (
             <EventCard
               key={ev.id}
               event={ev}

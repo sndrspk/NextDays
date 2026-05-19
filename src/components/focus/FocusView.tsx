@@ -8,44 +8,69 @@ import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
 import { compareActiveTasks } from "../calendar/DayColumn";
+import CompletedToggle from "../common/CompletedToggle";
 import type { ISODate, Task } from "../../types";
 import type { IcsEvent } from "../../lib/ics";
+import { isPastEvent } from "../../lib/ics";
+
+function partitionAndSort(tasks: Task[]): Task[] {
+  const active: Task[] = [];
+  const completed: Task[] = [];
+  for (const t of tasks) (t.completed ? completed : active).push(t);
+  active.sort(compareActiveTasks);
+  completed.sort(
+    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
+  );
+  return [...active, ...completed];
+}
 
 export default function FocusView() {
   const query = useFocusTasks();
   const today = query.data?.today ?? "";
   const tasks = query.data?.tasks ?? [];
+  // Default: completed tasks hidden on Focus. Resets to false on every refresh
+  // (intentionally not persisted — see CLAUDE.md).
+  const [showCompleted, setShowCompleted] = useState(false);
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
-  const todaysEvents = today ? eventsByDate.get(today as ISODate) ?? [] : [];
+  const todaysEvents = (today ? eventsByDate.get(today as ISODate) ?? [] : []).filter(
+    (ev) => !isPastEvent(ev),
+  );
 
   const { overdue, dueToday, otherToday } = useMemo(() => {
     const overdue: Task[] = [];
     const dueToday: Task[] = [];
     const otherToday: Task[] = [];
-    for (const t of tasks) {
+    const source = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+    for (const t of source) {
       if (t.due_date && t.due_date < today) overdue.push(t);
       else if (t.due_date && t.due_date === today) dueToday.push(t);
       else if (t.scheduled_date === today) otherToday.push(t);
       // Anything else shouldn't be here given the query filter; ignore.
     }
-    overdue.sort(compareActiveTasks);
-    dueToday.sort(compareActiveTasks);
-    otherToday.sort(compareActiveTasks);
-    return { overdue, dueToday, otherToday };
-  }, [tasks, today]);
+    return {
+      overdue: partitionAndSort(overdue),
+      dueToday: partitionAndSort(dueToday),
+      otherToday: partitionAndSort(otherToday),
+    };
+  }, [tasks, today, showCompleted]);
 
-  const total = overdue.length + dueToday.length + otherToday.length + todaysEvents.length;
+  const total = overdue.length + dueToday.length + otherToday.length;
 
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
-      <header className="mb-5 sm:mb-6">
-        <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
-          Focus
-        </h2>
-        <p className="text-[12px] text-stone-500">What needs your attention today.</p>
+      <header className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
+        <div>
+          <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
+            Focus
+          </h2>
+          <p className="text-[12px] text-stone-500">What needs your attention today.</p>
+        </div>
+        <CompletedToggle showCompleted={showCompleted} onChange={setShowCompleted} />
       </header>
+
+      <EventsSection events={todaysEvents} calendars={icsCalendars} />
 
       {today && <FocusQuickAdd today={today} />}
 
@@ -58,7 +83,6 @@ export default function FocusView() {
           <>
             <Section label="Overdue" tone="overdue" tasks={overdue} today={today} />
             <Section label="Due today" tone="today" tasks={dueToday} today={today} />
-            <EventsSection events={todaysEvents} calendars={icsCalendars} />
             <Section label="Scheduled for today" tone="default" tasks={otherToday} today={today} />
           </>
         )}
@@ -114,7 +138,7 @@ function EventsSection({
   if (events.length === 0) return null;
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
   return (
-    <section>
+    <section className="mb-4">
       <div className="mb-2 flex items-center gap-2 px-1">
         <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
           Calendar events today

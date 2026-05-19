@@ -5,6 +5,7 @@ import {
   type FontChoice,
   type FontSize,
 } from "../../state/settings";
+import AccountSafetySection from "./AccountSafetySection";
 import BackupSection from "./BackupSection";
 import TagsSection from "./TagsSection";
 import IcsCalendarsSection from "./IcsCalendarsSection";
@@ -53,6 +54,10 @@ export default function SettingsView() {
           subtitle="Move all uncompleted past tasks to today (or next Monday for work tasks if today is a weekend)."
         >
           <RolloverSection />
+          title="Account safety"
+          subtitle="Account deletion in Supabase wipes everything irrecoverably. Always export first."
+        >
+          <AccountSafetySection />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">
