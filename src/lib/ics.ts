@@ -1,5 +1,5 @@
 import type { IcsCalendarRow, ISODate } from "../types";
-import { addDays, todayLocal, toISODate } from "./dates";
+import { toISODate } from "./dates";
 import { parseIcs, type IcsEvent } from "./icsParse";
 import IcsParserWorker from "../workers/icsParser.worker?worker";
 import type { ParseResponse } from "../workers/icsParser.worker";
@@ -94,7 +94,6 @@ export async function fetchIcsCalendar(cal: IcsCalendar): Promise<IcsEvent[]> {
   if (!text) {
     throw new Error("Empty response from the calendar.");
   }
-  return parseIcs(text, cal.id);
   return parseIcsInWorker(text, cal.id);
 }
 

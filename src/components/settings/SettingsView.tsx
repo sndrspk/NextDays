@@ -54,6 +54,9 @@ export default function SettingsView() {
           subtitle="Move all uncompleted past tasks to today (or next Monday for work tasks if today is a weekend)."
         >
           <RolloverSection />
+        </Panel>
+
+        <Panel
           title="Account safety"
           subtitle="Account deletion in Supabase wipes everything irrecoverably. Always export first."
         >

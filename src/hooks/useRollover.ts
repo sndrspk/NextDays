@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase, supabaseConfigured } from "../lib/supabase";
-import { devError } from "../lib/log";
 import { todayLocal, toISODate, addDays } from "../lib/dates";
 import type { Project, Task } from "../types";
 
@@ -46,7 +45,7 @@ export async function runRollover(qc: ReturnType<typeof import("@tanstack/react-
   const todayISO = toISODate(today);
 
   // Fetch all uncompleted tasks with a scheduled_date in the past
-  const {  stale, error: fetchErr } = await supabase
+  const { data: stale, error: fetchErr } = await supabase
     .from("tasks")
     .select("*")
     .eq("completed", false)
@@ -64,7 +63,7 @@ export async function runRollover(qc: ReturnType<typeof import("@tanstack/react-
   );
   const projectById = new Map<string, Project>();
   if (projectIds.length > 0) {
-    const {  projects, error: projErr } = await supabase
+    const { data: projects, error: projErr } = await supabase
       .from("projects")
       .select("*")
       .in("id", projectIds);
@@ -140,26 +139,6 @@ export function useRollover() {
         now.getMonth(),
         now.getDate() + 1,
         0, 0, 5, // 5 seconds after midnight to be safe
-    if (!supabaseConfigured || ranRef.current) return;
-    ranRef.current = true;
-
-    (async () => {
-      const today = todayLocal();
-      const todayISO = toISODate(today);
-
-      const { data: stale, error: fetchErr } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("completed", false)
-        .lt("scheduled_date", todayISO);
-      if (fetchErr) {
-        devError("Rollover fetch failed:", fetchErr);
-        return;
-      }
-      if (!stale || stale.length === 0) return;
-
-      const projectIds = Array.from(
-        new Set(stale.map((t) => t.project_id).filter((id): id is string => Boolean(id))),
       );
       const msUntilMidnight = tomorrow.getTime() - now.getTime();
 
@@ -196,37 +175,6 @@ export function useManualRollover() {
     }
     // Reset back to idle after 4 seconds
     setTimeout(() => setStatus("idle"), 4000);
-      const projectById = new Map<string, Project>();
-      if (projectIds.length > 0) {
-        const { data: projects, error: projErr } = await supabase
-          .from("projects")
-          .select("*")
-          .in("id", projectIds);
-        if (projErr) {
-          devError("Rollover projects fetch failed:", projErr);
-          return;
-        }
-        for (const p of projects ?? []) projectById.set(p.id, p as Project);
-      }
-
-      const todayDow = today.getDay();
-      const idsToRoll = (stale as Task[])
-        .filter((t) => shouldRollToday(t, projectById, todayDow))
-        .map((t) => t.id);
-
-      if (idsToRoll.length === 0) return;
-
-      const { error: updateErr } = await supabase
-        .from("tasks")
-        .update({ scheduled_date: todayISO })
-        .in("id", idsToRoll);
-      if (updateErr) {
-        devError("Rollover update failed:", updateErr);
-        return;
-      }
-
-      qc.invalidateQueries({ queryKey: ["tasks"] });
-    })();
   }, [qc]);
 
   return { trigger, status, count };
