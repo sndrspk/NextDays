@@ -8,6 +8,7 @@ import {
 import BackupSection from "./BackupSection";
 import TagsSection from "./TagsSection";
 import IcsCalendarsSection from "./IcsCalendarsSection";
+import { useManualRollover } from "../../hooks/useRollover";
 
 export default function SettingsView() {
   return (
@@ -45,6 +46,13 @@ export default function SettingsView() {
           subtitle="Subscribe to read-only .ics calendars. Events show up in your day columns and focus view."
         >
           <IcsCalendarsSection />
+        </Panel>
+
+        <Panel
+          title="Rollover"
+          subtitle="Move all uncompleted past tasks to today (or next Monday for work tasks if today is a weekend)."
+        >
+          <RolloverSection />
         </Panel>
 
         <Panel title="Backup & Restore" subtitle="Export or restore your full dataset.">
@@ -202,5 +210,43 @@ function FontSizeOptionButton({
     >
       {label}
     </button>
+  );
+}
+
+function RolloverSection() {
+  const { trigger, status, count } = useManualRollover();
+
+  const buttonLabel =
+    status === "running"
+      ? "Rolling over…"
+      : status === "done"
+        ? count === 0
+          ? "Nothing to roll over ✓"
+          : `Rolled over ${count} task${count === 1 ? "" : "s"} ✓`
+        : status === "error"
+          ? "Error — try again"
+          : "Roll over now";
+
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <p className="text-[12px] text-stone-500">
+        The app rolls over tasks automatically each day on first load. Use this
+        button if you left the app open overnight and tasks haven't moved yet.
+      </p>
+      <button
+        type="button"
+        disabled={status === "running"}
+        onClick={trigger}
+        className={`focus-ring shrink-0 rounded-lg px-3.5 py-2 text-[12px] font-medium transition-colors ${
+          status === "done"
+            ? "bg-green-50 text-green-700"
+            : status === "error"
+              ? "bg-red-50 text-red-700"
+              : "bg-accent-50 text-accent-700 hover:bg-accent-100 disabled:opacity-50"
+        }`}
+      >
+        {buttonLabel}
+      </button>
+    </div>
   );
 }
