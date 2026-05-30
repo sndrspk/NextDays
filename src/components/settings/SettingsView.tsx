@@ -9,6 +9,7 @@ import AccountSafetySection from "./AccountSafetySection";
 import BackupSection from "./BackupSection";
 import TagsSection from "./TagsSection";
 import IcsCalendarsSection from "./IcsCalendarsSection";
+import NotificationSection from "./NotificationSection";
 import { useManualRollover } from "../../hooks/useRollover";
 
 export default function SettingsView() {
@@ -47,6 +48,13 @@ export default function SettingsView() {
           subtitle="Subscribe to read-only .ics calendars. Events show up in your day columns and focus view."
         >
           <IcsCalendarsSection />
+        </Panel>
+
+        <Panel
+          title="Notifications"
+          subtitle="Receive a daily Discord DM with your overdue, due-today, and scheduled-today tasks."
+        >
+          <NotificationSection />
         </Panel>
 
         <Panel

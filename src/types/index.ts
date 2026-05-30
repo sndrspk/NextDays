@@ -66,3 +66,14 @@ export interface IcsCalendarRow {
   colour: string;
   created_at: ISOTimestamp;
 }
+
+export interface NotificationSettings {
+  id: UUID;
+  discord_enabled: boolean;
+  discord_user_id: string | null;
+  /** Hour of day (0–23) in the user's stored timezone to send the DM. */
+  notification_hour: number;
+  timezone: string;
+  created_at: ISOTimestamp;
+  updated_at: ISOTimestamp;
+}
