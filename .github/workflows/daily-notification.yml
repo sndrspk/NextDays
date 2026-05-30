@@ -1,0 +1,26 @@
+name: Daily Discord notification
+
+# Fires every hour on the :00 minute. The edge function checks whether the
+# current hour (in each user's stored timezone) matches their saved
+# notification_hour, so only the right user(s) actually get a DM.
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: # allow manual test runs from the Actions tab
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call send-daily-notification edge function
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST \
+            "${{ secrets.VITE_SUPABASE_URL }}/functions/v1/send-daily-notification" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json")
+          cat /tmp/response.json
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "Edge function returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
