@@ -87,7 +87,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
       <button
         onClick={() => setView({ kind: "focus" })}
-        className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
+        className={`focus-ring mb-1 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
           view.kind === "focus"
             ? "bg-accent-50 text-accent-700"
             : "text-stone-600 hover:bg-slate-100/70 hover:text-stone-900"
@@ -95,6 +95,18 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       >
         <FocusIcon active={view.kind === "focus"} />
         Focus
+      </button>
+
+      <button
+        onClick={() => setView({ kind: "addTask" })}
+        className={`focus-ring mb-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors duration-150 ease-out-soft ${
+          view.kind === "addTask"
+            ? "bg-accent-50 text-accent-700"
+            : "text-stone-600 hover:bg-slate-100/70 hover:text-stone-900"
+        }`}
+      >
+        <PlusIcon active={view.kind === "addTask"} />
+        Add task
       </button>
 
       <SectionHeader>Projects</SectionHeader>
@@ -460,6 +472,21 @@ function FocusIcon({ active }: { active?: boolean }) {
     >
       <circle cx="8" cy="8" r="5.5" />
       <circle cx="8" cy="8" r="2.5" />
+    </svg>
+  );
+}
+
+function PlusIcon({ active }: { active?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={`h-3.5 w-3.5 ${active ? "text-accent" : "text-stone-500"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <circle cx="8" cy="8" r="5.5" />
+      <path d="M5.5 8h5M8 5.5v5" strokeLinecap="round" />
     </svg>
   );
 }

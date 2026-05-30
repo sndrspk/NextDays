@@ -21,6 +21,9 @@ interface CreateTaskInput {
   scheduled_date: ISODate;
   project_id?: UUID | null;
   tags?: string[];
+  notes?: string | null;
+  start_date?: ISODate | null;
+  due_date?: ISODate | null;
 }
 
 export function useCreateTask() {
@@ -31,6 +34,9 @@ export function useCreateTask() {
       scheduled_date,
       project_id,
       tags,
+      notes,
+      start_date,
+      due_date,
     }: CreateTaskInput): Promise<Task> => {
       const { data, error } = await supabase
         .from("tasks")
@@ -39,6 +45,9 @@ export function useCreateTask() {
           scheduled_date,
           project_id: project_id ?? null,
           tags: tags && tags.length > 0 ? tags : [],
+          notes: notes ?? null,
+          start_date: start_date ?? null,
+          due_date: due_date ?? null,
           sort_order: Math.floor(Date.now() / 1000),
         })
         .select()

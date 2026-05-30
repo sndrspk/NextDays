@@ -7,7 +7,8 @@ export type View =
   | { kind: "focus" }
   | { kind: "project"; id: UUID }
   | { kind: "list"; id: UUID }
-  | { kind: "settings" };
+  | { kind: "settings" }
+  | { kind: "addTask" };
 
 interface ViewState {
   view: View;
