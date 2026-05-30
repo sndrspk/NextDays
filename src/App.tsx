@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SignIn from "./components/auth/SignIn";
+import AddTaskView from "./components/calendar/AddTaskView";
 import CalendarStrip from "./components/calendar/CalendarStrip";
 import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
 import FocusView from "./components/focus/FocusView";
@@ -99,6 +100,8 @@ function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
       ? "Project"
       : view.kind === "settings"
       ? "Settings"
+      : view.kind === "addTask"
+      ? "Add task"
       : "List";
 
   return (
@@ -142,6 +145,10 @@ function MainView() {
 
   if (view.kind === "settings") {
     return <SettingsView />;
+  }
+
+  if (view.kind === "addTask") {
+    return <AddTaskView />;
   }
 
   return (
