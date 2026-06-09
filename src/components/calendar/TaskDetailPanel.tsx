@@ -4,6 +4,7 @@ import { useTask } from "../../hooks/useTasks";
 import { useProjects } from "../../hooks/useProjects";
 import { useDeleteTask, useUpdateTask } from "../../hooks/useTaskMutations";
 import { useSelection } from "../../state/selection";
+import { todayLocal, toISODate } from "../../lib/dates";
 import RecurrenceEditor from "./RecurrenceEditor";
 
 function parseTags(input: string): string[] {
@@ -97,6 +98,7 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
   const [dueDate, setDueDate] = useState(task.due_date ?? "");
   const [tags, setTags] = useState(formatTags(task.tags));
   const [projectId, setProjectId] = useState(task.project_id ?? "");
+  const [soon, setSoon] = useState(task.soon);
 
   useEffect(() => {
     setTitle(task.title);
@@ -105,6 +107,7 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
     setDueDate(task.due_date ?? "");
     setTags(formatTags(task.tags));
     setProjectId(task.project_id ?? "");
+    setSoon(task.soon);
   }, [task.id]);
 
   function saveIfChanged<K extends keyof Task>(field: K, next: Task[K]) {
@@ -112,8 +115,30 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
     onPatch({ [field]: next } as Partial<Task>);
   }
 
+  function toggleSoon(checked: boolean) {
+    setSoon(checked);
+    if (checked) {
+      setStartDate("");
+      setDueDate("");
+      onPatch({
+        soon: true,
+        scheduled_date: null,
+        start_date: null,
+        due_date: null,
+      });
+    } else {
+      const today = toISODate(todayLocal());
+      onPatch({
+        soon: false,
+        scheduled_date: today,
+      });
+    }
+  }
+
   const inputClass =
     "focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none";
+  const disabledInputClass =
+    "w-full rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
 
   return (
     <>
@@ -159,23 +184,51 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
           />
         </Field>
 
+        <label className="mb-5 flex cursor-pointer items-center gap-2.5">
+          <span
+            role="switch"
+            aria-checked={soon}
+            tabIndex={0}
+            onClick={() => toggleSoon(!soon)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleSoon(!soon);
+              }
+            }}
+            className={`relative inline-flex h-5 w-9 flex-none items-center rounded-full transition-colors duration-150 ${
+              soon ? "bg-accent" : "bg-slate-200"
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-150 ${
+                soon ? "translate-x-[18px]" : "translate-x-[3px]"
+              }`}
+            />
+          </span>
+          <span className="text-[13px] font-medium text-stone-700">Soon</span>
+          <span className="text-[11px] text-stone-400">No dates — just on the radar</span>
+        </label>
+
         <div className="grid grid-cols-2 gap-3">
           <Field label="Start date">
             <input
               type="date"
-              value={startDate}
+              value={soon ? "" : startDate}
               onChange={(e) => setStartDate(e.target.value)}
               onBlur={() => saveIfChanged("start_date", startDate === "" ? null : startDate)}
-              className={inputClass}
+              disabled={soon}
+              className={soon ? disabledInputClass : inputClass}
             />
           </Field>
           <Field label="Due date">
             <input
               type="date"
-              value={dueDate}
+              value={soon ? "" : dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               onBlur={() => saveIfChanged("due_date", dueDate === "" ? null : dueDate)}
-              className={inputClass}
+              disabled={soon}
+              className={soon ? disabledInputClass : inputClass}
             />
           </Field>
         </div>
@@ -199,7 +252,7 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
           </select>
         </Field>
 
-        <RecurrenceEditor task={task} />
+        {!soon && <RecurrenceEditor task={task} />}
 
         <Field label="Tags">
           <input
@@ -219,7 +272,8 @@ function PanelBody({ task, projects, onClose, onPatch, onDelete, isSaving, isDel
 
         <div className="mt-6 space-y-0.5 border-t border-slate-200/70 pt-4 text-[11px] text-stone-400">
           <div>
-            <span className="text-stone-500">Scheduled</span> · {task.scheduled_date}
+            <span className="text-stone-500">Scheduled</span> ·{" "}
+            {task.soon ? "Soon" : task.scheduled_date}
           </div>
           {task.completed && task.completed_at && (
             <div>

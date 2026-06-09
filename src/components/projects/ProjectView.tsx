@@ -533,7 +533,7 @@ function ProjectTaskRow({
         )}
       </span>
       <span className={`text-[11px] ${overdue ? "font-medium text-red-600" : "text-stone-400"}`}>
-        {task.scheduled_date}
+        {task.soon ? "Soon" : task.scheduled_date}
       </span>
     </li>
   );

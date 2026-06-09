@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSettings } from "../state/settings";
 
-// Three responsive tiers:
-// - phones (< 640px) → 3 days, stacked vertically by CalendarStrip
-// - tablets / small laptops (640–1279px) → 4 days, horizontal
-// - wide screens (≥ 1280px) → user-chosen 3 or 5 days, horizontal
 const WIDE_QUERY = "(min-width: 1280px)";
 const MID_QUERY = "(min-width: 640px)";
 const MID_COUNT = 4;
 const NARROW_COUNT = 3;
+const WIDE_COUNT = 3;
 
 type Tier = "wide" | "mid" | "narrow";
 
@@ -20,7 +16,6 @@ function currentTier(): Tier {
 }
 
 export function useDayCount(): number {
-  const { desktopDayCount } = useSettings();
   const [tier, setTier] = useState<Tier>(currentTier);
 
   useEffect(() => {
@@ -35,7 +30,7 @@ export function useDayCount(): number {
     };
   }, []);
 
-  if (tier === "wide") return desktopDayCount;
+  if (tier === "wide") return WIDE_COUNT;
   if (tier === "mid") return MID_COUNT;
   return NARROW_COUNT;
 }

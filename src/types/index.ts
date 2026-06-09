@@ -6,7 +6,7 @@ export interface Task {
   id: UUID;
   title: string;
   notes: string | null;
-  scheduled_date: ISODate;
+  scheduled_date: ISODate | null;
   start_date: ISODate | null;
   due_date: ISODate | null;
   completed: boolean;
@@ -16,6 +16,7 @@ export interface Task {
   sort_order: number;
   created_at: ISOTimestamp;
   template_id: UUID | null;
+  soon: boolean;
 }
 
 // At least one of {start_rrule, start_dtstart} or {due_rrule, due_dtstart}

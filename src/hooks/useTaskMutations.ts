@@ -13,17 +13,19 @@ type TaskUpdate = Partial<
     | "project_id"
     | "tags"
     | "template_id"
+    | "soon"
   >
 >;
 
 interface CreateTaskInput {
   title: string;
-  scheduled_date: ISODate;
+  scheduled_date?: ISODate | null;
   project_id?: UUID | null;
   tags?: string[];
   notes?: string | null;
   start_date?: ISODate | null;
   due_date?: ISODate | null;
+  soon?: boolean;
 }
 
 export function useCreateTask() {
@@ -37,18 +39,21 @@ export function useCreateTask() {
       notes,
       start_date,
       due_date,
+      soon,
     }: CreateTaskInput): Promise<Task> => {
+      const isSoon = soon === true;
       const { data, error } = await supabase
         .from("tasks")
         .insert({
           title,
-          scheduled_date,
+          scheduled_date: isSoon ? null : (scheduled_date ?? null),
           project_id: project_id ?? null,
           tags: tags && tags.length > 0 ? tags : [],
           notes: notes ?? null,
-          start_date: start_date ?? null,
-          due_date: due_date ?? null,
+          start_date: isSoon ? null : (start_date ?? null),
+          due_date: isSoon ? null : (due_date ?? null),
           sort_order: Math.floor(Date.now() / 1000),
+          soon: isSoon,
         })
         .select()
         .single();

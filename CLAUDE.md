@@ -127,6 +127,8 @@ The dev build includes a temporary "Smoke" panel that creates, lists, and delete
 
 Audit remediation is tracked in `SECURITYPLAN.md`. Each numbered item shipped as its own PR off `main` (items #1–#11 landed). Update both `SECURITYPLAN.md` (tick the box) and `VERSIONS.md` per landed item.
 
+- [x] Soon tasks — New "Soon" toggle on tasks. When enabled, all dates (scheduled, start, due) are cleared and the task lives in a dateless state. Migration `0011_soon.sql` adds `tasks.soon boolean NOT NULL DEFAULT false` and makes `scheduled_date` nullable. On **Calendar**, the 5-day desktop option is removed — desktop is now always 3 days + a "Soon" column on the right. Drag-and-drop works both ways: drop a scheduled task onto Soon to un-schedule it, drop a Soon task onto a day column to schedule it (`scheduled_date = target, soon = false`). On **Focus**, a "Soon" section (accent-coloured label) appears below "Scheduled for today". Task detail panel and Add Task form both show a toggle with greyed-out/disabled date inputs when Soon is on. `useSoonTasks` hook fetches `soon = true` tasks. Soon tasks are excluded from rollover (null `scheduled_date`), recurrence generation, and the daily notification. `ProjectView` shows "Soon" label instead of a date for soon tasks. Backup/restore works automatically since the `Task` type includes `soon`.
+
 ## Backlog
 
 Post-M7.5 feature ideas live in `WISHLIST.md`, each written out as an actionable spec with a rough S/M/L size. Pick the next milestone from there in consultation with the user.
