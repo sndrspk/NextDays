@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFocusTasks } from "../../hooks/useFocusTasks";
+import { useSoonTasks } from "../../hooks/useSoonTasks";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
@@ -24,12 +25,23 @@ function partitionAndSort(tasks: Task[]): Task[] {
   return [...active, ...completed];
 }
 
+function sortBySortOrder(tasks: Task[]): Task[] {
+  const active: Task[] = [];
+  const completed: Task[] = [];
+  for (const t of tasks) (t.completed ? completed : active).push(t);
+  active.sort((a, b) => a.sort_order - b.sort_order);
+  completed.sort(
+    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
+  );
+  return [...active, ...completed];
+}
+
 export default function FocusView() {
   const query = useFocusTasks();
+  const soonQuery = useSoonTasks();
   const today = query.data?.today ?? "";
   const tasks = query.data?.tasks ?? [];
-  // Default: completed tasks hidden on Focus. Resets to false on every refresh
-  // (intentionally not persisted — see CLAUDE.md).
+  const soonTasks = soonQuery.data ?? [];
   const [showCompleted, setShowCompleted] = useState(false);
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
@@ -38,7 +50,7 @@ export default function FocusView() {
     (ev) => !isPastEvent(ev),
   );
 
-  const { overdue, dueToday, otherToday } = useMemo(() => {
+  const { overdue, dueToday, otherToday, soonFiltered } = useMemo(() => {
     const overdue: Task[] = [];
     const dueToday: Task[] = [];
     const otherToday: Task[] = [];
@@ -47,16 +59,17 @@ export default function FocusView() {
       if (t.due_date && t.due_date < today) overdue.push(t);
       else if (t.due_date && t.due_date === today) dueToday.push(t);
       else if (t.scheduled_date === today) otherToday.push(t);
-      // Anything else shouldn't be here given the query filter; ignore.
     }
+    const soonSource = showCompleted ? soonTasks : soonTasks.filter((t) => !t.completed);
     return {
       overdue: partitionAndSort(overdue),
       dueToday: partitionAndSort(dueToday),
       otherToday: partitionAndSort(otherToday),
+      soonFiltered: sortBySortOrder(soonSource),
     };
-  }, [tasks, today, showCompleted]);
+  }, [tasks, soonTasks, today, showCompleted]);
 
-  const total = overdue.length + dueToday.length + otherToday.length;
+  const total = overdue.length + dueToday.length + otherToday.length + soonFiltered.length;
 
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
@@ -84,6 +97,7 @@ export default function FocusView() {
             <Section label="Overdue" tone="overdue" tasks={overdue} today={today} />
             <Section label="Due today" tone="today" tasks={dueToday} today={today} />
             <Section label="Scheduled for today" tone="default" tasks={otherToday} today={today} />
+            <Section label="Soon" tone="soon" tasks={soonFiltered} today={today} />
           </>
         )}
       </div>
@@ -98,7 +112,7 @@ function Section({
   today,
 }: {
   label: string;
-  tone: "overdue" | "today" | "default";
+  tone: "overdue" | "today" | "default" | "soon";
   tasks: Task[];
   today: ISODate;
 }) {
@@ -108,6 +122,8 @@ function Section({
       ? "text-red-600"
       : tone === "today"
       ? "text-orange-600"
+      : tone === "soon"
+      ? "text-accent-600"
       : "text-stone-500";
   return (
     <section>

@@ -49,7 +49,7 @@ export async function runRecurrenceGenerator(qc: QueryClient): Promise<void> {
 
   const existingByTemplate = new Map<string, Set<string>>();
   for (const row of (existing ?? []) as Pick<Task, "template_id" | "scheduled_date">[]) {
-    if (!row.template_id) continue;
+    if (!row.template_id || !row.scheduled_date) continue;
     const set = existingByTemplate.get(row.template_id) ?? new Set();
     set.add(row.scheduled_date);
     existingByTemplate.set(row.template_id, set);

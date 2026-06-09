@@ -28,6 +28,8 @@ export function compareActiveTasks(a: Task, b: Task): number {
     return a.due_date < b.due_date ? -1 : 1;
   }
   if (a.scheduled_date !== b.scheduled_date) {
+    if (!a.scheduled_date) return 1;
+    if (!b.scheduled_date) return -1;
     return a.scheduled_date < b.scheduled_date ? 1 : -1;
   }
   return a.sort_order - b.sort_order;

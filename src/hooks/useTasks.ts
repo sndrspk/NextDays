@@ -21,7 +21,7 @@ export function useTasks(windowStart: ISODate, windowEndExclusive: ISODate) {
       // a future day in the calendar window. PostgREST can't compare two
       // columns in a URL filter, so we filter here.
       return ((data ?? []) as Task[]).filter(
-        (t) => !t.start_date || t.start_date <= t.scheduled_date,
+        (t) => !t.start_date || (t.scheduled_date && t.start_date <= t.scheduled_date),
       );
     },
   });

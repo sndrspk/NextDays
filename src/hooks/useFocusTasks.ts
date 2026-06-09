@@ -21,7 +21,7 @@ export function useFocusTasks() {
         .order("sort_order", { ascending: true });
       if (error) throw error;
       const filtered = ((data ?? []) as Task[]).filter(
-        (t) => !t.start_date || t.start_date <= t.scheduled_date,
+        (t) => !t.start_date || (t.scheduled_date && t.start_date <= t.scheduled_date),
       );
       return { today, tasks: filtered };
     },
