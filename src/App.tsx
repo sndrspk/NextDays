@@ -132,7 +132,11 @@ function MainView() {
   const { view } = useView();
 
   if (view.kind === "focus") {
-    return <FocusView />;
+    return (
+      <div className="h-full overflow-y-auto">
+        <FocusView />
+      </div>
+    );
   }
 
   if (view.kind === "project") {
