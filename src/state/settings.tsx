@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-export type FontChoice = "inter" | "public-sans" | "instrument-sans";
+export type FontChoice = "inter" | "public-sans" | "instrument-sans" | "hanken-grotesk" | "rethink-sans";
 
 export interface FontOption {
   id: FontChoice;
@@ -25,6 +25,18 @@ export const FONT_OPTIONS: readonly FontOption[] = [
     label: "Instrument Sans",
     stack:
       '"Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif',
+  },
+  {
+    id: "hanken-grotesk",
+    label: "Hanken Grotesk",
+    stack:
+      '"Hanken Grotesk Variable", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif',
+  },
+  {
+    id: "rethink-sans",
+    label: "Rethink Sans",
+    stack:
+      '"Rethink Sans Variable", "Rethink Sans", ui-sans-serif, system-ui, sans-serif',
   },
 ];
 
