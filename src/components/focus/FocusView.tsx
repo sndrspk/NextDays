@@ -72,6 +72,7 @@ export default function FocusView() {
   const total = overdue.length + dueToday.length + otherToday.length + soonFiltered.length;
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="mx-auto max-w-2xl px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
       <header className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
         <div>
@@ -101,6 +102,7 @@ export default function FocusView() {
           </>
         )}
       </div>
+    </div>
     </div>
   );
 }
