@@ -72,7 +72,7 @@ export default function FocusView() {
   const total = overdue.length + dueToday.length + otherToday.length + soonFiltered.length;
 
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
+    <div className="mx-auto max-w-2xl px-4 py-5 sm:px-8 sm:py-8 lg:px-10">
       <header className="mb-5 flex items-start justify-between gap-3 sm:mb-6">
         <div>
           <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
@@ -87,7 +87,7 @@ export default function FocusView() {
 
       {today && <FocusQuickAdd today={today} />}
 
-      <div className="mt-5 flex-1 space-y-6 overflow-y-auto">
+      <div className="mt-5 space-y-6">
         {query.isLoading ? (
           <p className="text-sm text-stone-400">Loading…</p>
         ) : total === 0 ? (
