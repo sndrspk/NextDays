@@ -12,6 +12,7 @@ interface CarryFields {
   projectId: UUID | "";
   tags: string;
   notes: string;
+  soon: boolean;
 }
 
 function parseTagsInput(input: string): string[] {
@@ -36,10 +37,10 @@ export default function AddTaskView() {
   const [dueDate, setDueDate] = useState("");
   const [projectId, setProjectId] = useState<UUID | "">("");
   const [tags, setTags] = useState("");
+  const [soon, setSoon] = useState(false);
   const [carryFields, setCarryFields] = useState(false);
   const [carry, setCarry] = useState<CarryFields | null>(null);
 
-  // When carry is set, hydrate non-title fields from it.
   useEffect(() => {
     if (!carry) return;
     setScheduledDate(carry.scheduledDate);
@@ -48,14 +49,13 @@ export default function AddTaskView() {
     setProjectId(carry.projectId);
     setTags(carry.tags);
     setNotes(carry.notes);
+    setSoon(carry.soon);
   }, [carry]);
 
-  // Focus the title input on mount and whenever the form is re-armed.
   useEffect(() => {
     titleRef.current?.focus();
   }, [carry]);
 
-  // Escape closes the view (only if nothing has been typed in the title).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -75,25 +75,27 @@ export default function AddTaskView() {
       setDueDate("");
       setProjectId("");
       setTags("");
+      setSoon(false);
     }
   }
 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
-    if (!scheduledDate) return;
+    if (!soon && !scheduledDate) return;
 
     const parsedTags = parseTagsInput(tags);
 
     create.mutate(
       {
         title: trimmed,
-        scheduled_date: scheduledDate,
+        scheduled_date: soon ? null : scheduledDate,
         project_id: projectId === "" ? null : projectId,
         tags: parsedTags,
         notes: notes.trim() === "" ? null : notes,
-        start_date: startDate === "" ? null : startDate,
-        due_date: dueDate === "" ? null : dueDate,
+        start_date: soon ? null : (startDate === "" ? null : startDate),
+        due_date: soon ? null : (dueDate === "" ? null : dueDate),
+        soon,
       },
       {
         onSuccess: () => {
@@ -105,6 +107,7 @@ export default function AddTaskView() {
               projectId,
               tags,
               notes,
+              soon,
             });
             reset(true);
           } else {
@@ -117,6 +120,8 @@ export default function AddTaskView() {
 
   const inputClass =
     "focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none";
+  const disabledInputClass =
+    "w-full rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
 
   return (
     <div className="h-full overflow-y-auto">
@@ -167,30 +172,59 @@ export default function AddTaskView() {
             />
           </Field>
 
+          <label className="mb-5 flex cursor-pointer items-center gap-2.5">
+            <span
+              role="switch"
+              aria-checked={soon}
+              tabIndex={0}
+              onClick={() => setSoon(!soon)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSoon(!soon);
+                }
+              }}
+              className={`relative inline-flex h-5 w-9 flex-none items-center rounded-full transition-colors duration-150 ${
+                soon ? "bg-accent" : "bg-slate-200"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-150 ${
+                  soon ? "translate-x-[18px]" : "translate-x-[3px]"
+                }`}
+              />
+            </span>
+            <span className="text-[13px] font-medium text-stone-700">Soon</span>
+            <span className="text-[11px] text-stone-400">No dates — just on the radar</span>
+          </label>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field label="Scheduled date">
               <input
                 type="date"
-                value={scheduledDate}
+                value={soon ? "" : scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                required
-                className={inputClass}
+                required={!soon}
+                disabled={soon}
+                className={soon ? disabledInputClass : inputClass}
               />
             </Field>
             <Field label="Start date">
               <input
                 type="date"
-                value={startDate}
+                value={soon ? "" : startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className={inputClass}
+                disabled={soon}
+                className={soon ? disabledInputClass : inputClass}
               />
             </Field>
             <Field label="Due date">
               <input
                 type="date"
-                value={dueDate}
+                value={soon ? "" : dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className={inputClass}
+                disabled={soon}
+                className={soon ? disabledInputClass : inputClass}
               />
             </Field>
           </div>

@@ -13,17 +13,14 @@ import {
 } from "@dnd-kit/core";
 import { useDayCount } from "../../hooks/useDayCount";
 import { useTasks } from "../../hooks/useTasks";
+import { useSoonTasks } from "../../hooks/useSoonTasks";
 import { useMoveTask } from "../../hooks/useMoveTask";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
 import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { addDays, buildDayWindow, todayLocal, toISODate } from "../../lib/dates";
-import {
-  DESKTOP_DAY_COUNT_OPTIONS,
-  useSettings,
-  type DesktopDayCount,
-} from "../../state/settings";
 import type { Task } from "../../types";
 import DayColumn from "./DayColumn";
+import SoonColumn from "./SoonColumn";
 import TaskCard from "./TaskCard";
 import CompletedToggle from "../common/CompletedToggle";
 
@@ -31,8 +28,6 @@ export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  // Default: completed tasks visible on Calendar. Resets to true on every refresh
-  // (intentionally not persisted — see CLAUDE.md).
   const [showCompleted, setShowCompleted] = useState(true);
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
@@ -50,10 +45,12 @@ export default function CalendarStrip() {
   }, [dayCount]);
 
   const tasksQuery = useTasks(windowStart, windowEndExclusive);
+  const soonQuery = useSoonTasks();
 
   const tasksByDate = useMemo(() => {
     const map = new Map<string, Task[]>();
     for (const t of tasksQuery.data ?? []) {
+      if (!t.scheduled_date) continue;
       const list = map.get(t.scheduled_date) ?? [];
       list.push(t);
       map.set(t.scheduled_date, list);
@@ -81,10 +78,17 @@ export default function CalendarStrip() {
     if (!task) return;
 
     const overId = over.id as string;
-    if (!overId.startsWith("day:")) return;
-    const targetDate = overId.slice(4); // strip "day:" prefix
 
-    if (targetDate === task.scheduled_date) return; // same column — no-op
+    if (overId === "soon") {
+      if (task.soon) return;
+      moveTask.mutate({ task, targetDate: "soon", windowStart, windowEndExclusive });
+      return;
+    }
+
+    if (!overId.startsWith("day:")) return;
+    const targetDate = overId.slice(4);
+
+    if (targetDate === task.scheduled_date && !task.soon) return;
 
     moveTask.mutate({ task, targetDate, windowStart, windowEndExclusive });
   }
@@ -99,9 +103,6 @@ export default function CalendarStrip() {
       <div className="flex flex-col">
         <div className="mb-3 flex items-center justify-end gap-2">
           <CompletedToggle showCompleted={showCompleted} onChange={setShowCompleted} />
-          <div className="hidden xl:block">
-            <DayCountToggle />
-          </div>
         </div>
 
         {tasksQuery.error && (
@@ -130,6 +131,11 @@ export default function CalendarStrip() {
               />
             );
           })}
+          <SoonColumn
+            tasks={soonQuery.data ?? []}
+            today={today}
+            showCompleted={showCompleted}
+          />
         </div>
 
         {tasksQuery.isLoading && (
@@ -145,36 +151,5 @@ export default function CalendarStrip() {
         ) : null}
       </DragOverlay>
     </DndContext>
-  );
-}
-
-function DayCountToggle() {
-  const { desktopDayCount, setDesktopDayCount } = useSettings();
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Number of days"
-      className="inline-flex w-fit gap-0.5 rounded-lg border border-slate-200/80 bg-white/60 p-0.5 text-[12px]"
-    >
-      {DESKTOP_DAY_COUNT_OPTIONS.map((n: DesktopDayCount) => {
-        const selected = desktopDayCount === n;
-        return (
-          <button
-            key={n}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            onClick={() => setDesktopDayCount(n)}
-            className={`focus-ring rounded-md px-3 py-1 font-medium transition-all duration-150 ease-out-soft ${
-              selected
-                ? "bg-accent-50 text-accent-700"
-                : "text-stone-500 hover:text-stone-900"
-            }`}
-          >
-            {n} days
-          </button>
-        );
-      })}
-    </div>
   );
 }

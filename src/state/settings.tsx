@@ -31,9 +31,9 @@ export const FONT_OPTIONS: readonly FontOption[] = [
 export const DEFAULT_FONT: FontChoice = "inter";
 const FONT_STORAGE_KEY = "nextdays:font";
 
-export type DesktopDayCount = 3 | 5;
-export const DESKTOP_DAY_COUNT_OPTIONS: readonly DesktopDayCount[] = [3, 5];
-export const DEFAULT_DESKTOP_DAY_COUNT: DesktopDayCount = 5;
+export type DesktopDayCount = 3;
+export const DESKTOP_DAY_COUNT_OPTIONS: readonly DesktopDayCount[] = [3];
+export const DEFAULT_DESKTOP_DAY_COUNT: DesktopDayCount = 3;
 const DESKTOP_DAY_COUNT_STORAGE_KEY = "nextdays:desktopDayCount";
 
 export type FontSize = "normal" | "larger" | "largest";
@@ -65,12 +65,6 @@ function readStoredFont(): FontChoice {
 }
 
 function readStoredDesktopDayCount(): DesktopDayCount {
-  if (typeof window === "undefined") return DEFAULT_DESKTOP_DAY_COUNT;
-  const raw = window.localStorage.getItem(DESKTOP_DAY_COUNT_STORAGE_KEY);
-  const parsed = raw === null ? NaN : Number(raw);
-  if (DESKTOP_DAY_COUNT_OPTIONS.includes(parsed as DesktopDayCount)) {
-    return parsed as DesktopDayCount;
-  }
   return DEFAULT_DESKTOP_DAY_COUNT;
 }
 

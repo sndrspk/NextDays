@@ -4,7 +4,7 @@ import type { ISODate, Task, UUID } from "../types";
 
 interface MoveTaskInput {
   task: Task;
-  targetDate: ISODate;
+  targetDate: ISODate | "soon";
   windowStart: ISODate;
   windowEndExclusive: ISODate;
 }
@@ -13,11 +13,26 @@ export function useMoveTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ task, targetDate }: MoveTaskInput): Promise<Task> => {
-      const patch: { scheduled_date: ISODate; start_date?: ISODate } = {
+      if (targetDate === "soon") {
+        const { data, error } = await supabase
+          .from("tasks")
+          .update({
+            soon: true,
+            scheduled_date: null,
+            start_date: null,
+            due_date: null,
+          })
+          .eq("id", task.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data as Task;
+      }
+
+      const patch: { scheduled_date: ISODate; start_date?: ISODate; soon: boolean } = {
         scheduled_date: targetDate,
+        soon: false,
       };
-      // If moving to an earlier date would hide the task (start_date > target),
-      // pull start_date forward so it remains visible.
       if (task.start_date && task.start_date > targetDate) {
         patch.start_date = targetDate;
       }
@@ -32,33 +47,57 @@ export function useMoveTask() {
     },
 
     onMutate: async ({ task, targetDate, windowStart, windowEndExclusive }) => {
-      const queryKey = ["tasks", windowStart, windowEndExclusive];
-      await qc.cancelQueries({ queryKey });
-      const prev = qc.getQueryData<Task[]>(queryKey);
+      const calendarKey = ["tasks", windowStart, windowEndExclusive];
+      const soonKey = ["tasks", "soon"];
+      await qc.cancelQueries({ queryKey: calendarKey });
+      await qc.cancelQueries({ queryKey: soonKey });
+      const prevCalendar = qc.getQueryData<Task[]>(calendarKey);
+      const prevSoon = qc.getQueryData<Task[]>(soonKey);
 
-      qc.setQueryData<Task[]>(queryKey, (old = []) =>
-        old.map((t): Task => {
-          if (t.id !== task.id) return t;
-          return {
-            ...t,
-            scheduled_date: targetDate,
-            start_date:
-              t.start_date && t.start_date > targetDate ? targetDate : t.start_date,
-          };
-        }),
-      );
+      if (targetDate === "soon") {
+        qc.setQueryData<Task[]>(calendarKey, (old = []) =>
+          old.filter((t) => t.id !== task.id),
+        );
+        qc.setQueryData<Task[]>(soonKey, (old = []) => [
+          ...old,
+          { ...task, soon: true, scheduled_date: null, start_date: null, due_date: null },
+        ]);
+      } else {
+        qc.setQueryData<Task[]>(soonKey, (old = []) =>
+          old.filter((t) => t.id !== task.id),
+        );
+        qc.setQueryData<Task[]>(calendarKey, (old = []) => {
+          const without = old.filter((t) => t.id !== task.id);
+          return [
+            ...without,
+            {
+              ...task,
+              soon: false,
+              scheduled_date: targetDate,
+              start_date:
+                task.start_date && task.start_date > targetDate
+                  ? targetDate
+                  : task.start_date,
+            },
+          ];
+        });
+      }
 
-      return { prev, queryKey };
+      return { prevCalendar, prevSoon, calendarKey, soonKey };
     },
 
     onError: (_err, _vars, ctx) => {
-      if (ctx?.prev !== undefined) {
-        qc.setQueryData<Task[]>(ctx.queryKey as [string, UUID, UUID], ctx.prev);
+      if (ctx?.prevCalendar !== undefined) {
+        qc.setQueryData<Task[]>(ctx.calendarKey as [string, UUID, UUID], ctx.prevCalendar);
+      }
+      if (ctx?.prevSoon !== undefined) {
+        qc.setQueryData<Task[]>(ctx.soonKey, ctx.prevSoon);
       }
     },
 
     onSettled: (_data, _err, { windowStart, windowEndExclusive }) => {
       qc.invalidateQueries({ queryKey: ["tasks", windowStart, windowEndExclusive] });
+      qc.invalidateQueries({ queryKey: ["tasks", "soon"] });
     },
   });
 }
