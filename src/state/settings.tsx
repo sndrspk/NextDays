@@ -67,6 +67,13 @@ export const FONT_SIZE_OPTIONS: readonly FontSizeOption[] = [
 export const DEFAULT_FONT_SIZE: FontSize = "normal";
 const FONT_SIZE_STORAGE_KEY = "nextdays:fontSize";
 
+// Calendar layout: the classic side-by-side "Columns" strip, or the "Grid"
+// layout (Today on top, Tomorrow + Soon side-by-side below). Persisted so the
+// choice survives reloads.
+export type CalendarLayout = "columns" | "grid";
+export const DEFAULT_CALENDAR_LAYOUT: CalendarLayout = "columns";
+const CALENDAR_LAYOUT_STORAGE_KEY = "nextdays:calendarLayout";
+
 function readStoredFont(): FontChoice {
   if (typeof window === "undefined") return DEFAULT_FONT;
   const raw = window.localStorage.getItem(FONT_STORAGE_KEY);
@@ -89,6 +96,13 @@ function readStoredFontSize(): FontSize {
   return DEFAULT_FONT_SIZE;
 }
 
+function readStoredCalendarLayout(): CalendarLayout {
+  if (typeof window === "undefined") return DEFAULT_CALENDAR_LAYOUT;
+  const raw = window.localStorage.getItem(CALENDAR_LAYOUT_STORAGE_KEY);
+  if (raw === "columns" || raw === "grid") return raw;
+  return DEFAULT_CALENDAR_LAYOUT;
+}
+
 function stackFor(choice: FontChoice): string {
   return (FONT_OPTIONS.find((o) => o.id === choice) ?? FONT_OPTIONS[0]).stack;
 }
@@ -104,6 +118,8 @@ interface SettingsState {
   setDesktopDayCount: (next: DesktopDayCount) => void;
   fontSize: FontSize;
   setFontSize: (next: FontSize) => void;
+  calendarLayout: CalendarLayout;
+  setCalendarLayout: (next: CalendarLayout) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -114,6 +130,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     () => readStoredDesktopDayCount(),
   );
   const [fontSize, setFontSizeState] = useState<FontSize>(() => readStoredFontSize());
+  const [calendarLayout, setCalendarLayoutState] = useState<CalendarLayout>(
+    () => readStoredCalendarLayout(),
+  );
 
   useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
@@ -157,9 +176,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setCalendarLayout = (next: CalendarLayout) => {
+    setCalendarLayoutState(next);
+    try {
+      window.localStorage.setItem(CALENDAR_LAYOUT_STORAGE_KEY, next);
+    } catch {
+      // see setFont
+    }
+  };
+
   const value = useMemo(
-    () => ({ font, setFont, desktopDayCount, setDesktopDayCount, fontSize, setFontSize }),
-    [font, desktopDayCount, fontSize],
+    () => ({
+      font,
+      setFont,
+      desktopDayCount,
+      setDesktopDayCount,
+      fontSize,
+      setFontSize,
+      calendarLayout,
+      setCalendarLayout,
+    }),
+    [font, desktopDayCount, fontSize, calendarLayout],
   );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

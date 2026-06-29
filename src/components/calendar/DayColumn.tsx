@@ -16,6 +16,8 @@ interface DayColumnProps {
   events?: IcsEvent[];
   calendars?: IcsCalendar[];
   showCompleted?: boolean;
+  variant?: "strip" | "card";
+  className?: string;
 }
 
 // Sort: completed tasks sink to the bottom. Active tasks are ordered by
@@ -62,6 +64,8 @@ export default function DayColumn({
   events = [],
   calendars = [],
   showCompleted = true,
+  variant = "strip",
+  className = "",
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
@@ -72,16 +76,22 @@ export default function DayColumn({
 
   const { setNodeRef, isOver } = useDroppable({ id: `day:${isoDate}` });
 
+  const shape =
+    variant === "card"
+      ? "rounded-2xl border border-slate-200/80 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 sm:pb-7"
+      : "flex-1 border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0";
+  const background = isOver
+    ? "bg-accent-100/60"
+    : isToday
+    ? "bg-accent-50/40"
+    : variant === "card"
+    ? "bg-white/95"
+    : "bg-transparent";
+
   return (
     <section
       ref={setNodeRef}
-      className={`relative flex min-w-0 flex-1 flex-col border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0 transition-colors duration-100 ${
-        isOver
-          ? "bg-accent-100/60"
-          : isToday
-          ? "bg-accent-50/40"
-          : "bg-transparent"
-      }`}
+      className={`relative flex min-w-0 flex-col transition-colors duration-100 ${shape} ${background} ${className}`}
       data-date={isoDate}
     >
       <header className="mb-4">

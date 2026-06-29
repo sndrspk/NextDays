@@ -22,11 +22,14 @@ import type { Task } from "../../types";
 import DayColumn from "./DayColumn";
 import SoonColumn from "./SoonColumn";
 import TaskCard from "./TaskCard";
+import LayoutToggle from "./LayoutToggle";
 import CompletedToggle from "../common/CompletedToggle";
+import { useSettings } from "../../state/settings";
 
 export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
+  const { calendarLayout, setCalendarLayout } = useSettings();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showCompleted, setShowCompleted] = useState(true);
   const calendarsQuery = useIcsCalendars();
@@ -102,6 +105,7 @@ export default function CalendarStrip() {
     >
       <div className="flex flex-col">
         <div className="mb-3 flex items-center justify-end gap-2">
+          <LayoutToggle layout={calendarLayout} onChange={setCalendarLayout} />
           <CompletedToggle showCompleted={showCompleted} onChange={setShowCompleted} />
         </div>
 
@@ -114,29 +118,65 @@ export default function CalendarStrip() {
           </div>
         )}
 
-        <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 sm:min-h-[70vh] sm:flex-row xl:[&>section]:min-w-[180px] 2xl:[&>section]:min-w-[220px]">
-          {windowDates.map((date) => {
-            const iso = toISODate(date);
-            return (
-              <DayColumn
-                key={iso}
-                date={date}
-                isoDate={iso}
-                isToday={iso === today}
-                today={today}
-                tasks={tasksByDate.get(iso) ?? []}
-                events={eventsByDate.get(iso) ?? []}
-                calendars={icsCalendars}
-                showCompleted={showCompleted}
-              />
-            );
-          })}
-          <SoonColumn
-            tasks={soonQuery.data ?? []}
-            today={today}
-            showCompleted={showCompleted}
-          />
-        </div>
+        {calendarLayout === "grid" ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <DayColumn
+              variant="card"
+              className="min-h-[180px] sm:col-span-2"
+              date={windowDates[0]}
+              isoDate={toISODate(windowDates[0])}
+              isToday
+              today={today}
+              tasks={tasksByDate.get(toISODate(windowDates[0])) ?? []}
+              events={eventsByDate.get(toISODate(windowDates[0])) ?? []}
+              calendars={icsCalendars}
+              showCompleted={showCompleted}
+            />
+            <DayColumn
+              variant="card"
+              className="min-h-[240px]"
+              date={windowDates[1]}
+              isoDate={toISODate(windowDates[1])}
+              isToday={false}
+              today={today}
+              tasks={tasksByDate.get(toISODate(windowDates[1])) ?? []}
+              events={eventsByDate.get(toISODate(windowDates[1])) ?? []}
+              calendars={icsCalendars}
+              showCompleted={showCompleted}
+            />
+            <SoonColumn
+              variant="card"
+              className="min-h-[240px]"
+              tasks={soonQuery.data ?? []}
+              today={today}
+              showCompleted={showCompleted}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 sm:min-h-[70vh] sm:flex-row xl:[&>section]:min-w-[180px] 2xl:[&>section]:min-w-[220px]">
+            {windowDates.map((date) => {
+              const iso = toISODate(date);
+              return (
+                <DayColumn
+                  key={iso}
+                  date={date}
+                  isoDate={iso}
+                  isToday={iso === today}
+                  today={today}
+                  tasks={tasksByDate.get(iso) ?? []}
+                  events={eventsByDate.get(iso) ?? []}
+                  calendars={icsCalendars}
+                  showCompleted={showCompleted}
+                />
+              );
+            })}
+            <SoonColumn
+              tasks={soonQuery.data ?? []}
+              today={today}
+              showCompleted={showCompleted}
+            />
+          </div>
+        )}
 
         {tasksQuery.isLoading && (
           <p className="mt-3 text-xs text-stone-400">Loading tasks…</p>
