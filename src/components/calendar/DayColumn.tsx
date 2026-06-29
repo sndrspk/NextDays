@@ -18,6 +18,8 @@ interface DayColumnProps {
   showCompleted?: boolean;
   variant?: "strip" | "card";
   className?: string;
+  // Overrides the resting (non-drag) background classes. Drag-hover always wins.
+  restingBg?: string;
 }
 
 // Sort: completed tasks sink to the bottom. Active tasks are ordered by
@@ -66,6 +68,7 @@ export default function DayColumn({
   showCompleted = true,
   variant = "strip",
   className = "",
+  restingBg,
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
@@ -82,6 +85,8 @@ export default function DayColumn({
       : "flex-1 border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0";
   const background = isOver
     ? "bg-accent-100/60"
+    : restingBg
+    ? restingBg
     : isToday
     ? "bg-accent-50/40"
     : variant === "card"

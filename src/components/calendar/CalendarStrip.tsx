@@ -122,6 +122,7 @@ export default function CalendarStrip() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <DayColumn
               variant="card"
+              restingBg="bg-white"
               className="min-h-[180px] sm:col-span-2"
               date={windowDates[0]}
               isoDate={toISODate(windowDates[0])}
@@ -134,6 +135,7 @@ export default function CalendarStrip() {
             />
             <DayColumn
               variant="card"
+              restingBg="bg-slate-50"
               className="min-h-[240px]"
               date={windowDates[1]}
               isoDate={toISODate(windowDates[1])}
@@ -146,6 +148,7 @@ export default function CalendarStrip() {
             />
             <SoonColumn
               variant="card"
+              restingBg="bg-accent-50/40"
               className="min-h-[240px]"
               tasks={soonQuery.data ?? []}
               today={today}
