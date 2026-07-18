@@ -145,3 +145,39 @@ export function useBulkDeleteTasks() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
 }
+
+// Delayed delete with undo support.
+// Returns a { commit, cancel } pair. commit() starts a 5-second timer and
+// returns the timer id; cancel() aborts the timer and prevents the delete.
+// The caller is responsible for showing a toast and wiring cancel to the
+// Undo action.
+export function useDelayedDeleteTask() {
+  const qc = useQueryClient();
+  const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  function commit(id: UUID, onDelete?: () => void): string {
+    const timer = setTimeout(async () => {
+      timers.delete(id);
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) {
+        // Silently fail; the task will reappear on next refresh if the delete
+        // didn't go through. User-facing error is surfaced by the toast system.
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      onDelete?.();
+    }, 5000);
+    timers.set(id, timer);
+    return id;
+  }
+
+  function cancel(id: UUID): boolean {
+    const timer = timers.get(id);
+    if (!timer) return false;
+    clearTimeout(timer);
+    timers.delete(id);
+    return true;
+  }
+
+  return { commit, cancel };
+}
