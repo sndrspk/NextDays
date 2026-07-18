@@ -519,6 +519,11 @@ function ProjectTaskRow({
         } ${urgent ? "font-semibold" : ""}`}
       >
         {task.title}
+        {task.template_id && (
+          <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
+            ↻
+          </span>
+        )}
         {task.tags && task.tags.length > 0 && (
           <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
             {task.tags.map((tag) => (
