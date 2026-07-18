@@ -73,13 +73,27 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     <li
       ref={setNodeRef}
       style={dragStyle}
-      className={`group flex cursor-grab items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50 active:cursor-grabbing ${
+      className={`group flex items-start gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 ease-out-soft hover:bg-slate-50 ${
         isDragging ? "opacity-40" : ""
       }`}
       onClick={() => !isDragging && setSelectedTaskId(task.id)}
-      {...listeners}
-      {...attributes}
     >
+      <button
+        type="button"
+        aria-label="Drag task"
+        className="focus-ring mt-[3px] inline-flex h-6 w-6 flex-none cursor-grab items-center justify-center rounded text-stone-400 transition-colors hover:bg-slate-100 hover:text-stone-600 active:cursor-grabbing"
+        {...listeners}
+        {...attributes}
+      >
+        <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" fill="currentColor">
+          <circle cx="3" cy="3" r="1.2" />
+          <circle cx="9" cy="3" r="1.2" />
+          <circle cx="3" cy="6" r="1.2" />
+          <circle cx="9" cy="6" r="1.2" />
+          <circle cx="3" cy="9" r="1.2" />
+          <circle cx="9" cy="9" r="1.2" />
+        </svg>
+      </button>
       <button
         type="button"
         aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
