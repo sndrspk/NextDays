@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useDeleteTag, useRenameTag, useTags, type TagUsage } from "../../hooks/useTags";
+import { useView } from "../../state/view";
 
 export default function TagsSection() {
   const tagsQuery = useTags();
   const tags = tagsQuery.data ?? [];
 
   if (tagsQuery.isLoading) {
-    return <p className="text-[12px] text-stone-500">Loading tags…</p>;
+    return <p className="text-[12px] text-stone-500">Loading tags...</p>;
   }
 
   if (tags.length === 0) {
@@ -32,6 +33,7 @@ function TagRow({ tag }: { tag: TagUsage }) {
   const [draft, setDraft] = useState(tag.name);
   const rename = useRenameTag();
   const remove = useDeleteTag();
+  const { setView } = useView();
   const total = tag.taskCount + tag.templateCount;
 
   function startEdit() {
@@ -91,7 +93,7 @@ function TagRow({ tag }: { tag: TagUsage }) {
         ) : (
           <button
             type="button"
-            onClick={startEdit}
+            onClick={() => setView({ kind: "tag", tag: tag.name })}
             className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-stone-600 transition-colors hover:bg-slate-200/70 hover:text-stone-900"
           >
             #{tag.name}

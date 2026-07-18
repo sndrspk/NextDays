@@ -41,7 +41,7 @@ Implement the following seven items, grouped into three milestones. The grouping
 **Manual test plan:**
 - Deploy the function.
 - Add a Google Calendar ICS URL in Settings. It should still work.
-- Add a URL that returns HTML (e.g. a random webpage). It should fail with “Response is not an iCalendar document.”
+- Add a URL that returns HTML (e.g. a random webpage). It should fail with "Response is not an iCalendar document."
 - Add a URL resolving to `169.254.169.254`. It should fail with a private-address error.
 
 **Acceptance criteria:**
@@ -66,10 +66,10 @@ Implement the following seven items, grouped into three milestones. The grouping
 - In the `submit()` function, after trimming the title, call `parseTaskTitle(trimmed, projectsQuery.data ?? [])`.
 - Use `parsed.project_id` and `parsed.tags` when calling `create.mutate`.
 - If the user has also selected a project in the Project dropdown, the parsed `@Project` should override the dropdown (same behaviour as `ProjectQuickAdd`). If no `@Project` is parsed, keep the dropdown value.
-- Update the placeholder or helper text to mention the syntax, e.g. “Type `@Project` or `#tag` inline”.
+- Update the placeholder or helper text to mention the syntax, e.g. "Type `@Project` or `#tag` inline".
 
 **Manual test plan:**
-- Open Add task, type “Call client @Work #followup”, save. The task should be created with project Work and tag followup, and the title should be “Call client”.
+- Open Add task, type "Call client @Work #followup", save. The task should be created with project Work and tag followup, and the title should be "Call client".
 - Select a project in the dropdown, then type an explicit `@OtherProject`. The explicit one wins.
 - Select a project in the dropdown, type no `@`. The dropdown project is used.
 
@@ -115,7 +115,7 @@ Implement the following seven items, grouped into three milestones. The grouping
 - `src/state/view.tsx` — add `{ kind: "tag"; tag: string }` to the `View` union.
 - `src/App.tsx` — route `view.kind === "tag"` to a new `TagView` component.
 - `src/components/tags/TagView.tsx` — new component (create the `tags` folder if needed).
-- `src/components/sidebar/Sidebar.tsx` — optional: add a “Tags” section listing all tags, or keep the entry point as tag chips only.
+- `src/components/sidebar/Sidebar.tsx` — optional: add a "Tags" section listing all tags, or keep the entry point as tag chips only.
 - `src/components/calendar/TaskCard.tsx` — make tag chips clickable? No, `TaskCard` currently does not render tag chips. Skip for now.
 - `src/components/projects/ProjectView.tsx` — make tag chips in `ProjectTaskRow` clickable, jumping to `{ kind: "tag", tag }`.
 - `src/components/settings/TagsSection.tsx` — make each tag row clickable, jumping to the tag view.
@@ -156,7 +156,7 @@ Implement the following seven items, grouped into three milestones. The grouping
 - The outer `<li>` keeps `onClick` for opening the detail panel and the checkbox button stays separate.
 - Remove `cursor-grab` from the outer `<li>` and apply it only to the drag handle.
 - Use a small SVG grip icon (six dots or two horizontal lines) in `stone-400`.
-- Ensure the handle is at least 24×24 px for touch accessibility.
+- Ensure the handle is at least 24x24 px for touch accessibility.
 
 **Manual test plan:**
 - Drag a task by the handle. It moves to another day.
@@ -190,9 +190,9 @@ Implement the following seven items, grouped into three milestones. The grouping
 
 **Implementation notes:**
 - Keep the toast system simple: a single global stack of toasts, each with `message`, `actionLabel`, `onAction`, and `onDismiss`.
-- For task completion: when the user clicks the checkbox, perform the mutation immediately, then show a toast “Task completed” with “Undo”. If Undo is clicked, call `useToggleTaskCompleted` again on the same task to revert it.
+- For task completion: when the user clicks the checkbox, perform the mutation immediately, then show a toast "Task completed" with "Undo". If Undo is clicked, call `useToggleTaskCompleted` again on the same task to revert it.
 - For task deletion: perform a soft-delete pattern? No schema change needed. Instead, delay the actual delete by 5 seconds and show a toast. If Undo is clicked, cancel the delete. This requires storing a pending delete timer in the hook or component state.
-- For moves via drag-and-drop: show a toast “Moved to Friday” with “Undo” that moves the task back.
+- For moves via drag-and-drop: show a toast "Moved to Friday" with "Undo" that moves the task back.
 - For bulk operations in project view: show a count toast with Undo that reverts the action.
 - Do not add toasts for low-risk actions like creating a task or saving a note.
 
@@ -218,7 +218,7 @@ Implement the following seven items, grouped into three milestones. The grouping
 **Files to change:**
 - `index.html` — add `<link rel="manifest" href="/manifest.json">` and theme/meta tags.
 - `public/manifest.json` — new manifest file.
-- `public/icons/` — add icon files (at minimum 192×192 and 512×512). Use generated simple icons or SVG fallbacks if no assets are available.
+- `public/icons/` — add icon files (at minimum 192x192 and 512x512). Use generated simple icons or SVG fallbacks if no assets are available.
 - `vite.config.ts` — add `vite-plugin-pwa` or a custom service worker via `workbox-window`.
 - `src/service-worker.ts` — new service worker file (or let `vite-plugin-pwa` generate one).
 - `src/main.tsx` — register the service worker.
@@ -226,14 +226,14 @@ Implement the following seven items, grouped into three milestones. The grouping
 **Implementation notes:**
 - Use `vite-plugin-pwa` if it is compatible with the current Vite 8 / Tailwind 4 setup. If not, write a minimal custom service worker.
 - The service worker should cache the app shell (index.html, JS, CSS, fonts) and serve it offline. Dynamic data from Supabase should not be cached by the SW; rely on the existing TanStack Query cache and localStorage for offline data.
-- Add `theme-color` and `background-color` to the manifest matching the app’s indigo accent (`#6366f1`) and light background (`#eef2ff`).
+- Add `theme-color` and `background-color` to the manifest matching the app's indigo accent (`#6366f1`) and light background (`#eef2ff`).
 - The `start_url` should be `/NextDays/` in production (matching the `base` path) and `/` locally. Use the same `GITHUB_ACTIONS` check as `vite.config.ts`.
-- If generating icons, keep them simple: a rounded square with “ND” or a calendar glyph in the accent colour.
+- If generating icons, keep them simple: a rounded square with "ND" or a calendar glyph in the accent colour.
 
 **Manual test plan:**
 - Build the app. The manifest is present in `dist/`.
 - Open the deployed app in Chrome. Lighthouse PWA audit passes the installable criteria (manifest + icons + service worker + HTTPS).
-- On Android, the browser offers “Add to Home screen”.
+- On Android, the browser offers "Add to Home screen".
 - With the network offline, the app shell still loads (data will be missing until the network returns).
 
 **Acceptance criteria:**
@@ -258,7 +258,7 @@ Each milestone should be developed on its own branch per the working agreements 
 
 - **Tag view scope:** Should it support multiple selected tags (AND/OR)? Recommendation: single-tag only for this batch.
 - **Undo delete timing:** Is a 5-second delayed delete acceptable, or should we implement a true soft-delete column (`deleted_at`)? Recommendation: delayed delete with a timer, no schema change.
-- **PWA icons:** Do you have brand assets, or should we generate simple icons? Recommendation: generate simple SVG/PNG icons with the “ND” monogram.
+- **PWA icons:** Do you have brand assets, or should we generate simple icons? Recommendation: generate simple SVG/PNG icons with the "ND" monogram.
 - **Drag handle placement:** Left of the checkbox or right of the title? Recommendation: left of the checkbox, consistent with most task apps.
 
 ---
@@ -266,7 +266,7 @@ Each milestone should be developed on its own branch per the working agreements 
 ## Cross-cutting concerns
 
 - **Mobile:** Every UI change must be tested on narrow viewports. The off-canvas sidebar, bottom-sheet panel, and stacked calendar all interact with new elements.
-- **Keyboard:** The app is “keyboard-first”. Ensure tag chips and drag handles are reachable via keyboard. The drag handle should have an `aria-label` and be focusable.
+- **Keyboard:** The app is "keyboard-first". Ensure tag chips and drag handles are reachable via keyboard. The drag handle should have an `aria-label` and be focusable.
 - **Accessibility:** Toasts should use `role="status"` or `role="alert"` and not auto-focus. Undo actions should be keyboard-accessible.
 - **Type safety:** Extend the `View` union carefully; TypeScript will surface every switch statement that needs updating.
 

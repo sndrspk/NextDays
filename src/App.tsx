@@ -7,6 +7,7 @@ import FocusView from "./components/focus/FocusView";
 import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
 import SettingsView from "./components/settings/SettingsView";
+import TagView from "./components/tags/TagView";
 import Sidebar from "./components/sidebar/Sidebar";
 import { useRecurrenceGenerator } from "./hooks/useRecurrenceGenerator";
 import { useRollover } from "./hooks/useRollover";
@@ -45,7 +46,7 @@ function AuthGate() {
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-stone-400">
-        Loading…
+        Loading...
       </div>
     );
   }
@@ -70,7 +71,7 @@ function AppShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Close the mobile drawer whenever the active view changes.
-  const viewKey = view.kind + ("id" in view ? `:${view.id}` : "");
+  const viewKey = view.kind + ("id" in view ? `:${view.id}` : "tag" in view ? `:${view.tag}` : "");
   useEffect(() => {
     setMobileNavOpen(false);
   }, [viewKey]);
@@ -102,6 +103,8 @@ function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
       ? "Settings"
       : view.kind === "addTask"
       ? "Add task"
+      : view.kind === "tag"
+      ? `Tag: #${view.tag}`
       : "List";
 
   return (
@@ -153,6 +156,14 @@ function MainView() {
 
   if (view.kind === "addTask") {
     return <AddTaskView />;
+  }
+
+  if (view.kind === "tag") {
+    return (
+      <div className="h-full overflow-y-auto">
+        <TagView tag={view.tag} />
+      </div>
+    );
   }
 
   return (

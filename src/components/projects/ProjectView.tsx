@@ -10,6 +10,7 @@ import {
 import { isDueOrOverdue, todayLocal, toISODate } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useSelection } from "../../state/selection";
+import { useView } from "../../state/view";
 import type { Task, UUID } from "../../types";
 
 type Filter = "active" | "completed" | "all";
@@ -106,7 +107,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
   if (!project) {
     return (
       <div className="p-8 text-sm text-stone-500">
-        {projectsQuery.isLoading ? "Loading…" : "Project not found."}
+        {projectsQuery.isLoading ? "Loading..." : "Project not found."}
       </div>
     );
   }
@@ -177,7 +178,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
 
       <div className="flex-1 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/95">
         {tasksQuery.isLoading ? (
-          <p className="p-8 text-sm text-stone-400">Loading…</p>
+          <p className="p-8 text-sm text-stone-400">Loading...</p>
         ) : filtered.length === 0 ? (
           <EmptyState
             title={query || tagFilter.size > 0 ? "No matching tasks" : "Nothing here yet"}
@@ -256,7 +257,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (next: stri
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search tasks…"
+        placeholder="Search tasks..."
         className="focus-ring w-full rounded-lg border border-slate-200/80 bg-white py-1.5 pl-8 pr-3 text-[13px] text-stone-800 placeholder:text-stone-400 transition-colors hover:border-slate-300 focus:border-accent/60 focus:outline-none"
       />
       {value && (
@@ -458,6 +459,7 @@ function ProjectTaskRow({
 }: ProjectTaskRowProps) {
   const toggle = useToggleTaskCompleted();
   const { setSelectedTaskId } = useSelection();
+  const { setView } = useView();
 
   const overdue = task.due_date && !task.completed && task.due_date < today;
   const urgent = isDueOrOverdue(task.due_date, today, task.completed);
@@ -527,12 +529,17 @@ function ProjectTaskRow({
         {task.tags && task.tags.length > 0 && (
           <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
             {task.tags.map((tag) => (
-              <span
+              <button
                 key={tag}
-                className="rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setView({ kind: "tag", tag });
+                }}
+                className="rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500 transition-colors hover:bg-slate-200/70 hover:text-stone-700"
               >
                 {tag}
-              </span>
+              </button>
             ))}
           </span>
         )}
