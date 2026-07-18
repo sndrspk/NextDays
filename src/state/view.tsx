@@ -8,7 +8,8 @@ export type View =
   | { kind: "project"; id: UUID }
   | { kind: "list"; id: UUID }
   | { kind: "settings" }
-  | { kind: "addTask" };
+  | { kind: "addTask" }
+  | { kind: "tag"; tag: string };
 
 interface ViewState {
   view: View;
