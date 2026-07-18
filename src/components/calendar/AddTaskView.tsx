@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useProjects } from "../../hooks/useProjects";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { toISODate, todayLocal } from "../../lib/dates";
+import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useView } from "../../state/view";
 import type { ISODate, UUID } from "../../types";
 
@@ -84,13 +85,18 @@ export default function AddTaskView() {
     if (!trimmed || create.isPending) return;
     if (!soon && !scheduledDate) return;
 
-    const parsedTags = parseTagsInput(tags);
+    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
+    const parsedTags = parsed.tags.concat(
+      parseTagsInput(tags).filter(
+        (t) => !parsed.tags.map((x) => x.toLowerCase()).includes(t.toLowerCase()),
+      ),
+    );
 
     create.mutate(
       {
-        title: trimmed,
+        title: parsed.title,
         scheduled_date: soon ? null : scheduledDate,
-        project_id: projectId === "" ? null : projectId,
+        project_id: parsed.project_id ?? (projectId === "" ? null : projectId),
         tags: parsedTags,
         notes: notes.trim() === "" ? null : notes,
         start_date: soon ? null : (startDate === "" ? null : startDate),
@@ -104,7 +110,7 @@ export default function AddTaskView() {
               scheduledDate,
               startDate,
               dueDate,
-              projectId,
+              projectId: parsed.project_id ?? projectId,
               tags,
               notes,
               soon,
@@ -132,7 +138,7 @@ export default function AddTaskView() {
               Add task
             </h1>
             <p className="mt-0.5 text-[12px] text-stone-500">
-              Fill the fields and save. Tick the carry box to keep them for the next one.
+              Type `@Project` or `#tag` inline, or fill the fields below.
             </p>
           </div>
           <button
