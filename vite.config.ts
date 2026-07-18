@@ -49,6 +49,7 @@ const cspPlugin = (): Plugin => ({
 export default defineConfig({
   base,
   plugins: [react(), tailwindcss(), cspPlugin()],
+  publicDir: "public",
   server: {
     port: 5173,
   },
