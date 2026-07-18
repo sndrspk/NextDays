@@ -5,6 +5,7 @@ import { diffInDays, isDueOrOverdue } from "../../lib/dates";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
+import { useToast } from "../../state/toast";
 
 type DueUrgency = "overdue" | "today" | "tomorrow" | "later" | "none";
 
@@ -25,6 +26,7 @@ interface TaskCardProps {
 export default function TaskCard({ task, today }: TaskCardProps) {
   const toggle = useToggleTaskCompleted();
   const { setSelectedTaskId } = useSelection();
+  const { push } = useToast();
   const projectsQuery = useProjects();
   const project = task.project_id
     ? projectsQuery.data?.find((p) => p.id === task.project_id)
@@ -69,6 +71,22 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     ? { transform: CSS.Transform.toString(transform), zIndex: 50 }
     : undefined;
 
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    const wasCompleted = task.completed;
+    toggle.mutate(task, {
+      onSuccess: () => {
+        push({
+          message: wasCompleted ? "Task marked active" : "Task completed",
+          actionLabel: "Undo",
+          onAction: () => {
+            toggle.mutate({ ...task, completed: !wasCompleted });
+          },
+        });
+      },
+    });
+  }
+
   return (
     <li
       ref={setNodeRef}
@@ -98,10 +116,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
         type="button"
         aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
         title={project?.name}
-        onClick={(e) => {
-          e.stopPropagation();
-          toggle.mutate(task);
-        }}
+        onClick={handleToggle}
         disabled={toggle.isPending}
         style={checkboxStyle}
         className={`focus-ring mt-[3px] inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border-[1.5px] transition-all duration-150 ease-out-soft ${checkboxClass} disabled:opacity-50`}
