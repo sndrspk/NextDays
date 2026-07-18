@@ -18,3 +18,17 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </React.StrictMode>,
 );
+
+// Register service worker for PWA support (C2)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then(() => {
+        // Registration successful; no need to log in production.
+      })
+      .catch(() => {
+        // Registration failed; app still works offline via cached shell.
+      });
+  });
+}

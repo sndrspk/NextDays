@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { Task } from "../../types";
 import { useTask } from "../../hooks/useTasks";
 import { useProjects } from "../../hooks/useProjects";
-import { useDeleteTask, useUpdateTask } from "../../hooks/useTaskMutations";
+import { useDeleteTask, useDelayedDeleteTask, useUpdateTask } from "../../hooks/useTaskMutations";
 import { useSelection } from "../../state/selection";
+import { useToast } from "../../state/toast";
 import { todayLocal, toISODate } from "../../lib/dates";
 import RecurrenceEditor from "./RecurrenceEditor";
 
@@ -24,6 +25,8 @@ export default function TaskDetailPanel() {
   const projectsQuery = useProjects();
   const update = useUpdateTask();
   const del = useDeleteTask();
+  const delayed = useDelayedDeleteTask();
+  const { push } = useToast();
 
   const isOpen = selectedTaskId !== null;
 
@@ -32,7 +35,18 @@ export default function TaskDetailPanel() {
     if (!task) return;
     const label = task.title.trim() || "this task";
     if (!window.confirm(`Delete "${label}"?`)) return;
-    del.mutate(task.id, { onSuccess: () => setSelectedTaskId(null) });
+
+    // Close panel immediately; the task is optimistically gone from UI.
+    setSelectedTaskId(null);
+    const timerId = delayed.commit(task.id);
+
+    push({
+      message: "Task deleted",
+      actionLabel: "Undo",
+      onAction: () => {
+        delayed.cancel(timerId);
+      },
+    });
   }
 
   useEffect(() => {

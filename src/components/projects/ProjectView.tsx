@@ -10,6 +10,7 @@ import {
 import { isDueOrOverdue, todayLocal, toISODate } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useSelection } from "../../state/selection";
+import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Task, UUID } from "../../types";
 
@@ -27,6 +28,7 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
   const [tagFilter, setTagFilter] = useState<Set<string>>(() => new Set());
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<UUID>>(() => new Set());
+  const { push } = useToast();
 
   const bulkComplete = useBulkCompleteTasks();
   const bulkDelete = useBulkDeleteTasks();
@@ -91,9 +93,30 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
   function bulkCompleteSelected(completed: boolean) {
     const ids = [...selectedIds];
     if (ids.length === 0) return;
+    const prevStates = new Map(
+      (tasksQuery.data ?? [])
+        .filter((t) => ids.includes(t.id))
+        .map((t) => [t.id, t.completed]),
+    );
     bulkComplete.mutate(
       { ids, completed },
-      { onSuccess: () => clearSelection() },
+      {
+        onSuccess: () => {
+          clearSelection();
+          push({
+            message: `${ids.length} task${ids.length === 1 ? "" : "s"} ${completed ? "completed" : "marked active"}`,
+            actionLabel: "Undo",
+            onAction: () => {
+              const revertIds = ids.filter((id) => prevStates.get(id) !== completed);
+              if (revertIds.length === 0) return;
+              bulkComplete.mutate({
+                ids: revertIds,
+                completed: !completed,
+              });
+            },
+          });
+        },
+      },
     );
   }
 
@@ -101,7 +124,20 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
     const ids = [...selectedIds];
     if (ids.length === 0) return;
     if (!window.confirm(`Delete ${ids.length} task${ids.length === 1 ? "" : "s"}?`)) return;
-    bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
+    bulkDelete.mutate(ids, {
+      onSuccess: () => {
+        clearSelection();
+        push({
+          message: `${ids.length} task${ids.length === 1 ? "" : "s"} deleted`,
+          actionLabel: "Undo",
+          onAction: () => {
+            // Bulk delete cannot be undone without soft-delete.
+            // Show a non-functional toast to acknowledge the limitation.
+            push({ message: "Bulk delete cannot be undone" });
+          },
+        });
+      },
+    });
   }
 
   if (!project) {
@@ -460,6 +496,7 @@ function ProjectTaskRow({
   const toggle = useToggleTaskCompleted();
   const { setSelectedTaskId } = useSelection();
   const { setView } = useView();
+  const { push } = useToast();
 
   const overdue = task.due_date && !task.completed && task.due_date < today;
   const urgent = isDueOrOverdue(task.due_date, today, task.completed);
@@ -471,6 +508,22 @@ function ProjectTaskRow({
   function onRowClick() {
     if (selectMode) onToggleSelected();
     else setSelectedTaskId(task.id);
+  }
+
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    const wasCompleted = task.completed;
+    toggle.mutate(task, {
+      onSuccess: () => {
+        push({
+          message: wasCompleted ? "Task marked active" : "Task completed",
+          actionLabel: "Undo",
+          onAction: () => {
+            toggle.mutate({ ...task, completed: !wasCompleted });
+          },
+        });
+      },
+    });
   }
 
   return (
@@ -499,10 +552,7 @@ function ProjectTaskRow({
       <button
         type="button"
         aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
-        onClick={(e) => {
-          e.stopPropagation();
-          toggle.mutate(task);
-        }}
+        onClick={handleToggle}
         disabled={toggle.isPending}
         style={checkboxStyle}
         className={`focus-ring inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border-[1.5px] transition-all duration-150 ease-out-soft ${

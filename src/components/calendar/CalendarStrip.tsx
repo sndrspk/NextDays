@@ -17,7 +17,8 @@ import { useSoonTasks } from "../../hooks/useSoonTasks";
 import { useMoveTask } from "../../hooks/useMoveTask";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
 import { useIcsCalendars } from "../../hooks/useIcsCalendars";
-import { addDays, buildDayWindow, todayLocal, toISODate } from "../../lib/dates";
+import { addDays, buildDayWindow, todayLocal, toISODate, formatColumnHeader } from "../../lib/dates";
+import { useToast } from "../../state/toast";
 import type { Task } from "../../types";
 import DayColumn from "./DayColumn";
 import SoonColumn from "./SoonColumn";
@@ -30,6 +31,7 @@ export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
   const { calendarLayout, setCalendarLayout } = useSettings();
+  const { push } = useToast();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showCompleted, setShowCompleted] = useState(true);
   const calendarsQuery = useIcsCalendars();
@@ -85,6 +87,18 @@ export default function CalendarStrip() {
     if (overId === "soon") {
       if (task.soon) return;
       moveTask.mutate({ task, targetDate: "soon", windowStart, windowEndExclusive });
+      push({
+        message: "Moved to Soon",
+        actionLabel: "Undo",
+        onAction: () => {
+          moveTask.mutate({
+            task: { ...task, soon: true, scheduled_date: null },
+            targetDate: task.scheduled_date ?? today,
+            windowStart,
+            windowEndExclusive,
+          });
+        },
+      });
       return;
     }
 
@@ -93,7 +107,35 @@ export default function CalendarStrip() {
 
     if (targetDate === task.scheduled_date && !task.soon) return;
 
+    const fromLabel = task.soon
+      ? "Soon"
+      : task.scheduled_date
+      ? formatColumnHeader(new Date(task.scheduled_date)).weekday
+      : "";
+    const toLabel = formatColumnHeader(new Date(targetDate)).weekday;
+
     moveTask.mutate({ task, targetDate, windowStart, windowEndExclusive });
+    push({
+      message: `Moved to ${toLabel}`,
+      actionLabel: "Undo",
+      onAction: () => {
+        if (task.soon) {
+          moveTask.mutate({
+            task: { ...task, scheduled_date: targetDate, soon: false },
+            targetDate: "soon",
+            windowStart,
+            windowEndExclusive,
+          });
+        } else {
+          moveTask.mutate({
+            task: { ...task, scheduled_date: targetDate },
+            targetDate: task.scheduled_date ?? today,
+            windowStart,
+            windowEndExclusive,
+          });
+        }
+      },
+    });
   }
 
   return (

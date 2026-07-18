@@ -9,12 +9,14 @@ import ProjectView from "./components/projects/ProjectView";
 import SettingsView from "./components/settings/SettingsView";
 import TagView from "./components/tags/TagView";
 import Sidebar from "./components/sidebar/Sidebar";
+import { ToastContainer } from "./components/common/Toast";
 import { useRecurrenceGenerator } from "./hooks/useRecurrenceGenerator";
 import { useRollover } from "./hooks/useRollover";
 import { supabaseConfigured } from "./lib/supabase";
 import { AuthProvider, useAuth } from "./state/auth";
 import { SelectionProvider } from "./state/selection";
 import { SettingsProvider } from "./state/settings";
+import { ToastProvider } from "./state/toast";
 import { ViewProvider, useView } from "./state/view";
 
 export default function App() {
@@ -56,11 +58,13 @@ function AuthGate() {
   }
 
   return (
-    <SelectionProvider>
-      <ViewProvider>
-        <AppShell />
-      </ViewProvider>
-    </SelectionProvider>
+    <ToastProvider>
+      <SelectionProvider>
+        <ViewProvider>
+          <AppShell />
+        </ViewProvider>
+      </SelectionProvider>
+    </ToastProvider>
   );
 }
 
@@ -86,6 +90,7 @@ function AppShell() {
         </div>
       </main>
       <TaskDetailPanel />
+      <ToastContainer />
     </div>
   );
 }
