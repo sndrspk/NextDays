@@ -55,37 +55,6 @@ serve(async (req: Request) => {
     return jsonResponse({ error: "Missing `url` in body." }, 400);
   }
 
-  let target: URL;
-  try {
-    target = new URL(rawUrl);
-  } catch {
-    return jsonResponse({ error: "Invalid URL." }, 400);
-  }
-  // Basic SSRF guard: only public http(s).
-  if (target.protocol !== "http:" && target.protocol !== "https:") {
-    return jsonResponse({ error: "Only http(s) URLs are allowed." }, 400);
-  }
-
-  let upstream: Response;
-  try {
-    upstream = await fetch(target.toString(), {
-      redirect: "follow",
-      headers: { "User-Agent": "NextDays/1.0 (+https://github.com/sndrspk/NextDays)" },
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    return jsonResponse({ error: `Couldn't reach the calendar: ${message}` }, 502);
-  }
-
-  if (!upstream.ok) {
-    return jsonResponse(
-      { error: `Provider returned HTTP ${upstream.status} ${upstream.statusText}` },
-      502,
-    );
-  }
-
-  const text = await upstream.text();
-  return jsonResponse({ text });
   try {
     const text = await safeFetch(rawUrl);
     return jsonResponse({ text });
