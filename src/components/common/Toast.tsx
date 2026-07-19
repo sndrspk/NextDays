@@ -43,7 +43,7 @@ export default function ToastItem({ id, message, actionLabel, onAction }: ToastP
 }
 
 export function ToastContainer() {
-  const { toasts, dismiss } = useToast();
+  const { toasts } = useToast();
   if (toasts.length === 0) return null;
 
   return (
