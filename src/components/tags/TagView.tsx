@@ -1,9 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTaggedTasks } from "../../hooks/useTaggedTasks";
-import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
-import { useProjects } from "../../hooks/useProjects";
 import { useView } from "../../state/view";
-import { todayLocal, toISODate, isDueOrOverdue } from "../../lib/dates";
+import { todayLocal, toISODate } from "../../lib/dates";
 import type { Task } from "../../types";
 import TaskCard from "../calendar/TaskCard";
 
