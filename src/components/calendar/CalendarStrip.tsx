@@ -107,11 +107,6 @@ export default function CalendarStrip() {
 
     if (targetDate === task.scheduled_date && !task.soon) return;
 
-    const fromLabel = task.soon
-      ? "Soon"
-      : task.scheduled_date
-      ? formatColumnHeader(new Date(task.scheduled_date)).weekday
-      : "";
     const toLabel = formatColumnHeader(new Date(targetDate)).weekday;
 
     moveTask.mutate({ task, targetDate, windowStart, windowEndExclusive });

@@ -16,7 +16,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_ASSETS)),
   );
-  (self as unknown as ServiceWorkerGlobalScope).skipWaiting();
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -28,7 +28,7 @@ self.addEventListener("activate", (event) => {
           keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)),
         ),
       )
-      .then(() => (self as unknown as ServiceWorkerGlobalScope).clients.claim()),
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -65,7 +65,7 @@ self.addEventListener("fetch", (event) => {
           // If fetch fails and we have nothing cached, return a minimal
           // offline page for navigation requests.
           if (request.mode === "navigate") {
-            return caches.match("/index.html") as Promise<Response>;
+            return caches.match("/index.html");
           }
           throw new Error("Network request failed and no cache available");
         });
