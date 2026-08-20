@@ -13,6 +13,7 @@ import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Task, UUID } from "../../types";
+import TagFilterRow from "../tags/TagFilterRow";
 
 type Filter = "active" | "completed" | "all";
 
@@ -86,6 +87,26 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
       const next = new Set(prev);
       if (next.has(tag)) next.delete(tag);
       else next.add(tag);
+      return next;
+    });
+  }
+
+  // Tag rename / removal is global, so the local filter set has to follow.
+  function renameInFilter(from: string, to: string) {
+    setTagFilter((prev) => {
+      if (!prev.has(from)) return prev;
+      const next = new Set(prev);
+      next.delete(from);
+      next.add(to);
+      return next;
+    });
+  }
+
+  function removeFromFilter(tag: string) {
+    setTagFilter((prev) => {
+      if (!prev.has(tag)) return prev;
+      const next = new Set(prev);
+      next.delete(tag);
       return next;
     });
   }
@@ -193,6 +214,8 @@ export default function ProjectView({ projectId }: ProjectViewProps) {
           selected={tagFilter}
           onToggle={toggleTag}
           onClear={() => setTagFilter(new Set())}
+          onRenamed={renameInFilter}
+          onRemoved={removeFromFilter}
         />
       )}
 
@@ -294,7 +317,7 @@ function SearchInput({ value, onChange }: { value: string; onChange: (next: stri
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search tasks..."
-        className="focus-ring w-full rounded-lg border border-slate-200/80 bg-white py-1.5 pl-8 pr-3 text-[13px] text-stone-800 placeholder:text-stone-400 transition-colors hover:border-slate-300 focus:border-accent/60 focus:outline-none"
+        className="focus-ring w-full rounded-lg border border-slate-200/80 bg-white py-1.5 pl-8 pr-3 text-[13px] text-stone-800 placeholder:text-stone-400 transition-colors hover:border-slate-300 focus:border-accent/60 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
         <button
@@ -306,52 +329,6 @@ function SearchInput({ value, onChange }: { value: string; onChange: (next: stri
           <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.75">
             <path d="M3 3l10 10M13 3L3 13" strokeLinecap="round" />
           </svg>
-        </button>
-      )}
-    </div>
-  );
-}
-
-function TagFilterRow({
-  tags,
-  selected,
-  onToggle,
-  onClear,
-}: {
-  tags: string[];
-  selected: Set<string>;
-  onToggle: (tag: string) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="mb-3 flex flex-wrap items-center gap-1.5">
-      <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
-        Tags
-      </span>
-      {tags.map((tag) => {
-        const active = selected.has(tag);
-        return (
-          <button
-            key={tag}
-            type="button"
-            onClick={() => onToggle(tag)}
-            className={`focus-ring rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
-              active
-                ? "border-accent-100 bg-accent-50 text-accent-700"
-                : "border-slate-200/80 bg-white text-stone-600 hover:border-slate-300 hover:text-stone-900"
-            }`}
-          >
-            {tag}
-          </button>
-        );
-      })}
-      {selected.size > 0 && (
-        <button
-          type="button"
-          onClick={onClear}
-          className="ml-1 text-[11px] text-stone-400 underline-offset-2 transition-colors hover:text-stone-700 hover:underline"
-        >
-          Clear
         </button>
       )}
     </div>
