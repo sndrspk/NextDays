@@ -22,11 +22,19 @@ interface MenuState {
 const MENU_WIDTH = 150;
 const MENU_HEIGHT = 76;
 
+// Touch fallback for right-click. Android Chrome's long-press only sometimes
+// produces a `contextmenu` event (it competes with text selection and varies
+// by version) and iOS Safari doesn't play along at all, so touch devices get
+// their own timer instead of relying on the platform.
+const LONG_PRESS_MS = 500;
+// Treat the press as a scroll, not a hold, once the finger travels this far.
+const LONG_PRESS_SLOP_PX = 10;
+
 /**
- * The tag chips above a task list. Left-click filters; right-click (or the
- * keyboard context-menu key on a focused chip) opens Rename / Remove, which
- * act on the tag **everywhere** — every task and recurrence template that
- * carries it, not just the ones in view.
+ * The tag chips above a task list. Left-click (or tap) filters; right-click,
+ * long-press on touch, or the keyboard context-menu key on a focused chip
+ * opens Rename / Remove, which act on the tag **everywhere** — every task and
+ * recurrence template that carries it, not just the ones in view.
  */
 export default function TagFilterRow({
   tags,
@@ -39,6 +47,12 @@ export default function TagFilterRow({
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressOrigin = useRef<{ x: number; y: number } | null>(null);
+  const lastPointerType = useRef<string>("mouse");
+  // Set when a menu was opened by touch, so the click that lands on finger-up
+  // doesn't also toggle the filter.
+  const swallowNextClick = useRef(false);
   const rename = useRenameTag();
   const remove = useDeleteTag();
   const tagsQuery = useTags();
@@ -55,8 +69,47 @@ export default function TagFilterRow({
   function openMenu(e: React.MouseEvent, tag: string) {
     e.preventDefault();
     e.stopPropagation();
+    // A contextmenu raised by a touch long-press is followed by a click on
+    // finger-up; a mouse right-click is not.
+    if (lastPointerType.current === "touch") swallowNextClick.current = true;
+    cancelLongPress();
     setMenu({ tag, x: e.clientX, y: e.clientY });
   }
+
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    pressOrigin.current = null;
+  }
+
+  function onPointerDown(e: React.PointerEvent, tag: string) {
+    lastPointerType.current = e.pointerType;
+    swallowNextClick.current = false;
+    cancelLongPress();
+    if (e.pointerType === "mouse") return;
+
+    const { clientX: x, clientY: y } = e;
+    pressOrigin.current = { x, y };
+    longPressTimer.current = setTimeout(() => {
+      longPressTimer.current = null;
+      swallowNextClick.current = true;
+      setMenu({ tag, x, y });
+    }, LONG_PRESS_MS);
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    const origin = pressOrigin.current;
+    if (!origin || !longPressTimer.current) return;
+    const moved =
+      Math.abs(e.clientX - origin.x) > LONG_PRESS_SLOP_PX ||
+      Math.abs(e.clientY - origin.y) > LONG_PRESS_SLOP_PX;
+    if (moved) cancelLongPress();
+  }
+
+  // Cleans up if the component unmounts mid-press.
+  useEffect(() => cancelLongPress, []);
 
   function startRename(tag: string) {
     setMenu(null);
@@ -158,10 +211,22 @@ export default function TagFilterRow({
             key={tag}
             type="button"
             disabled={busy}
-            onClick={() => onToggle(tag)}
+            onClick={() => {
+              if (swallowNextClick.current) {
+                swallowNextClick.current = false;
+                return;
+              }
+              onToggle(tag);
+            }}
             onContextMenu={(e) => openMenu(e, tag)}
-            title={`${tag} — right-click to rename or remove`}
-            className={`focus-ring rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+            onPointerDown={(e) => onPointerDown(e, tag)}
+            onPointerMove={onPointerMove}
+            onPointerUp={cancelLongPress}
+            onPointerCancel={cancelLongPress}
+            onPointerLeave={cancelLongPress}
+            title={`${tag} — right-click or long-press to rename or remove`}
+            style={{ WebkitTouchCallout: "none" }}
+            className={`focus-ring select-none rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
               active
                 ? "border-accent-100 bg-accent-50 text-accent-700"
                 : "border-slate-200/80 bg-white text-stone-600 hover:border-slate-300 hover:text-stone-900"
@@ -183,7 +248,7 @@ export default function TagFilterRow({
       )}
 
       <span className="ml-1 hidden text-[10px] text-stone-300 sm:inline">
-        right-click a tag to rename or remove
+        right-click or long-press a tag to rename or remove
       </span>
 
       {menu && (
