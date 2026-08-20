@@ -18,7 +18,7 @@ export default function CompletedToggle({ showCompleted, onChange }: CompletedTo
         role="radio"
         aria-checked={showCompleted}
         aria-label="Show completed tasks"
-        title="Show completed"
+        title="Show completed (last 7 days)"
         onClick={() => onChange(true)}
         className={`focus-ring flex h-7 w-9 items-center justify-center rounded-md transition-all duration-150 ease-out-soft ${
           showCompleted

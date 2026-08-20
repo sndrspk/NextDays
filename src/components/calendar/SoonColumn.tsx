@@ -4,6 +4,7 @@ import type { Task } from "../../types";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
+import { filterCompletedForDisplay } from "../../lib/completedVisibility";
 import TaskCard from "./TaskCard";
 
 interface SoonColumnProps {
@@ -35,7 +36,7 @@ export default function SoonColumn({
   className = "",
   restingBg,
 }: SoonColumnProps) {
-  const filtered = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+  const filtered = filterCompletedForDisplay(tasks, showCompleted);
   const sorted = sortSoonTasks(filtered);
 
   const { setNodeRef, isOver } = useDroppable({ id: "soon" });
