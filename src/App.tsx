@@ -6,6 +6,7 @@ import TaskDetailPanel from "./components/calendar/TaskDetailPanel";
 import FocusView from "./components/focus/FocusView";
 import CustomListView from "./components/lists/CustomListView";
 import ProjectView from "./components/projects/ProjectView";
+import SearchView from "./components/search/SearchView";
 import SettingsView from "./components/settings/SettingsView";
 import TagView from "./components/tags/TagView";
 import Sidebar from "./components/sidebar/Sidebar";
@@ -102,6 +103,8 @@ function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
       ? "Calendar"
       : view.kind === "focus"
       ? "Focus"
+      : view.kind === "search"
+      ? "Search"
       : view.kind === "project"
       ? "Project"
       : view.kind === "settings"
@@ -145,6 +148,10 @@ function MainView() {
         <FocusView />
       </div>
     );
+  }
+
+  if (view.kind === "search") {
+    return <SearchView />;
   }
 
   if (view.kind === "project") {
