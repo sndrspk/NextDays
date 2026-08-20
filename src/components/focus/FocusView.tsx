@@ -6,6 +6,7 @@ import { useProjects } from "../../hooks/useProjects";
 import { useExternalEvents } from "../../hooks/useExternalEvents";
 import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
+import { filterCompletedForDisplay } from "../../lib/completedVisibility";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
 import { compareActiveTasks } from "../calendar/DayColumn";
@@ -54,13 +55,13 @@ export default function FocusView() {
     const overdue: Task[] = [];
     const dueToday: Task[] = [];
     const otherToday: Task[] = [];
-    const source = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+    const source = filterCompletedForDisplay(tasks, showCompleted);
     for (const t of source) {
       if (t.due_date && t.due_date < today) overdue.push(t);
       else if (t.due_date && t.due_date === today) dueToday.push(t);
       else if (t.scheduled_date === today) otherToday.push(t);
     }
-    const soonSource = showCompleted ? soonTasks : soonTasks.filter((t) => !t.completed);
+    const soonSource = filterCompletedForDisplay(soonTasks, showCompleted);
     return {
       overdue: partitionAndSort(overdue),
       dueToday: partitionAndSort(dueToday),

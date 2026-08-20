@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
+import { filterCompletedForDisplay } from "../../lib/completedVisibility";
 import type { IcsCalendar, IcsEvent } from "../../lib/ics";
 import { isPastEvent } from "../../lib/ics";
 import TaskCard from "./TaskCard";
@@ -72,7 +73,7 @@ export default function DayColumn({
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
-  const filtered = showCompleted ? tasks : tasks.filter((t) => !t.completed);
+  const filtered = filterCompletedForDisplay(tasks, showCompleted);
   const sorted = sortTasks(filtered);
   const visibleEvents = events.filter((ev) => !isPastEvent(ev));
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
