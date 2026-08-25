@@ -2,7 +2,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { ISODate, Task } from "../../types";
 import { dueUrgency, isDueOrOverdue } from "../../lib/dates";
-import { dueBadgeFor } from "../../lib/dueBadge";
+import { PILL_BASE, TAG_PILL, TAG_PILL_COMPLETED, dueBadgeFor } from "../../lib/dueBadge";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
@@ -129,13 +129,15 @@ export default function TaskCard({ task, today }: TaskCardProps) {
             ↻
           </span>
         )}
-        {badge && (
+        {badge && <span className={`${PILL_BASE} ${badge.className}`}>{badge.label}</span>}
+        {task.tags?.map((tag) => (
           <span
-            className={`ml-1.5 whitespace-nowrap rounded-full px-1.5 py-px align-middle text-[10px] font-semibold leading-[1.4] ${badge.className}`}
+            key={tag}
+            className={`${PILL_BASE} ${task.completed ? TAG_PILL_COMPLETED : TAG_PILL}`}
           >
-            {badge.label}
+            {tag}
           </span>
-        )}
+        ))}
       </span>
     </li>
   );
