@@ -7,35 +7,17 @@ import { useExternalEvents } from "../../hooks/useExternalEvents";
 import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { filterCompletedForDisplay } from "../../lib/completedVisibility";
+import { orderTasksForDisplay } from "../../lib/taskOrdering";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
-import { compareActiveTasks } from "../calendar/DayColumn";
 import CompletedToggle from "../common/CompletedToggle";
-import type { ISODate, Task } from "../../types";
+import type { ISODate, Project, Task } from "../../types";
 import type { IcsEvent } from "../../lib/ics";
 import { isPastEvent } from "../../lib/ics";
 
-function partitionAndSort(tasks: Task[]): Task[] {
-  const active: Task[] = [];
-  const completed: Task[] = [];
-  for (const t of tasks) (t.completed ? completed : active).push(t);
-  active.sort(compareActiveTasks);
-  completed.sort(
-    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
-  );
-  return [...active, ...completed];
-}
-
-function sortBySortOrder(tasks: Task[]): Task[] {
-  const active: Task[] = [];
-  const completed: Task[] = [];
-  for (const t of tasks) (t.completed ? completed : active).push(t);
-  active.sort((a, b) => a.sort_order - b.sort_order);
-  completed.sort(
-    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
-  );
-  return [...active, ...completed];
-}
+// Stable identity so the ordering memo doesn't re-run on every render while
+// the projects query is still loading.
+const EMPTY_PROJECTS: Project[] = [];
 
 export default function FocusView() {
   const query = useFocusTasks();
@@ -44,6 +26,7 @@ export default function FocusView() {
   const tasks = query.data?.tasks ?? [];
   const soonTasks = soonQuery.data ?? [];
   const [showCompleted, setShowCompleted] = useState(false);
+  const projects = useProjects().data ?? EMPTY_PROJECTS;
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
@@ -63,12 +46,12 @@ export default function FocusView() {
     }
     const soonSource = filterCompletedForDisplay(soonTasks, showCompleted);
     return {
-      overdue: partitionAndSort(overdue),
-      dueToday: partitionAndSort(dueToday),
-      otherToday: partitionAndSort(otherToday),
-      soonFiltered: sortBySortOrder(soonSource),
+      overdue: orderTasksForDisplay(overdue, projects),
+      dueToday: orderTasksForDisplay(dueToday, projects),
+      otherToday: orderTasksForDisplay(otherToday, projects),
+      soonFiltered: orderTasksForDisplay(soonSource, projects),
     };
-  }, [tasks, soonTasks, today, showCompleted]);
+  }, [tasks, soonTasks, today, showCompleted, projects]);
 
   const total = overdue.length + dueToday.length + otherToday.length + soonFiltered.length;
 

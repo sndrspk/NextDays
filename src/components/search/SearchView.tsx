@@ -8,7 +8,7 @@ import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Project, Task, UUID } from "../../types";
-import { compareActiveTasks } from "../calendar/DayColumn";
+import { compareActiveTasks } from "../../lib/taskOrdering";
 
 export default function SearchView() {
   const [query, setQuery] = useState("");

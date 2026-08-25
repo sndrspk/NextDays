@@ -5,6 +5,7 @@ import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { filterCompletedForDisplay } from "../../lib/completedVisibility";
+import { orderTasksForDisplay } from "../../lib/taskOrdering";
 import TaskCard from "./TaskCard";
 
 interface SoonColumnProps {
@@ -17,17 +18,6 @@ interface SoonColumnProps {
   restingBg?: string;
 }
 
-function sortSoonTasks(tasks: Task[]): Task[] {
-  const active: Task[] = [];
-  const completed: Task[] = [];
-  for (const t of tasks) (t.completed ? completed : active).push(t);
-  active.sort((a, b) => a.sort_order - b.sort_order);
-  completed.sort(
-    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
-  );
-  return [...active, ...completed];
-}
-
 export default function SoonColumn({
   tasks,
   today,
@@ -36,8 +26,11 @@ export default function SoonColumn({
   className = "",
   restingBg,
 }: SoonColumnProps) {
+  const projects = useProjects().data ?? [];
   const filtered = filterCompletedForDisplay(tasks, showCompleted);
-  const sorted = sortSoonTasks(filtered);
+  // Soon tasks carry no dates, so the urgency sort collapses to sort_order
+  // inside each project group.
+  const sorted = orderTasksForDisplay(filtered, projects);
 
   const { setNodeRef, isOver } = useDroppable({ id: "soon" });
 
