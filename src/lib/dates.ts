@@ -62,6 +62,44 @@ export function isDueOrOverdue(
   return dueDate <= today;
 }
 
+// The urgency ladder: overdue → due today → tomorrow → the day after → the
+// rest. `orderTasksForDisplay` sorts active tasks by due_date ascending
+// (undated last), which walks this ladder in exactly this order, so the badge
+// a task shows and its position inside its project group always agree.
+export type DueUrgency =
+  | "overdue"
+  | "today"
+  | "tomorrow"
+  | "dayAfter"
+  | "later"
+  | "none";
+
+export function dueUrgency(
+  dueDate: ISODate | null,
+  today: ISODate,
+  completed: boolean,
+): DueUrgency {
+  if (!dueDate || completed) return "none";
+  const d = diffInDays(dueDate, today);
+  if (d < 0) return "overdue";
+  if (d === 0) return "today";
+  if (d === 1) return "tomorrow";
+  if (d === 2) return "dayAfter";
+  return "later";
+}
+
+// Lower is more urgent. "later" and "none" share the tail of the list, where
+// due_date (undated last) keeps ordering them. Used by the ordering tests to
+// assert that sorted output never steps back up the ladder.
+export const DUE_URGENCY_RANK: Record<DueUrgency, number> = {
+  overdue: 0,
+  today: 1,
+  tomorrow: 2,
+  dayAfter: 3,
+  later: 4,
+  none: 5,
+};
+
 export function formatColumnHeader(date: Date): { weekday: string; dayMonth: string } {
   return {
     weekday: WEEKDAYS[date.getDay()],

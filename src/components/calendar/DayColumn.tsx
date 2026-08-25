@@ -2,6 +2,8 @@ import { useDroppable } from "@dnd-kit/core";
 import type { ISODate, Task } from "../../types";
 import { diffInDays, formatColumnHeader } from "../../lib/dates";
 import { filterCompletedForDisplay } from "../../lib/completedVisibility";
+import { orderTasksForDisplay } from "../../lib/taskOrdering";
+import { useProjects } from "../../hooks/useProjects";
 import type { IcsCalendar, IcsEvent } from "../../lib/ics";
 import { isPastEvent } from "../../lib/ics";
 import TaskCard from "./TaskCard";
@@ -21,34 +23,6 @@ interface DayColumnProps {
   className?: string;
   // Overrides the resting (non-drag) background classes. Drag-hover always wins.
   restingBg?: string;
-}
-
-// Sort: completed tasks sink to the bottom. Active tasks are ordered by
-// (a) earliest due_date first (tasks with no due_date go last), then
-// (b) latest scheduled_date first, then by sort_order as a tiebreaker.
-export function compareActiveTasks(a: Task, b: Task): number {
-  if (a.due_date !== b.due_date) {
-    if (!a.due_date) return 1;
-    if (!b.due_date) return -1;
-    return a.due_date < b.due_date ? -1 : 1;
-  }
-  if (a.scheduled_date !== b.scheduled_date) {
-    if (!a.scheduled_date) return 1;
-    if (!b.scheduled_date) return -1;
-    return a.scheduled_date < b.scheduled_date ? 1 : -1;
-  }
-  return a.sort_order - b.sort_order;
-}
-
-function sortTasks(tasks: Task[]): Task[] {
-  const active: Task[] = [];
-  const completed: Task[] = [];
-  for (const t of tasks) (t.completed ? completed : active).push(t);
-  active.sort(compareActiveTasks);
-  completed.sort(
-    (a, b) => (a.completed_at ?? "").localeCompare(b.completed_at ?? ""),
-  );
-  return [...active, ...completed];
 }
 
 function dayLabel(isoDate: ISODate, today: ISODate, weekday: string): string {
@@ -73,8 +47,9 @@ export default function DayColumn({
 }: DayColumnProps) {
   const { weekday, dayMonth } = formatColumnHeader(date);
   const label = dayLabel(isoDate, today, weekday);
+  const projects = useProjects().data ?? [];
   const filtered = filterCompletedForDisplay(tasks, showCompleted);
-  const sorted = sortTasks(filtered);
+  const sorted = orderTasksForDisplay(filtered, projects);
   const visibleEvents = events.filter((ev) => !isPastEvent(ev));
   const colourByCalendar = new Map(calendars.map((c) => [c.id, c.colour]));
 
