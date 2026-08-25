@@ -154,6 +154,113 @@ check(
   ["a", "b"],
 );
 
+// --- tag runs inside a due-date bucket ---
+
+check(
+  "tasks sharing a tag run together, untagged last",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "flights", project_id: "p-admin", tags: ["travel"] }),
+        task({ id: "deck", project_id: "p-admin", tags: ["work"] }),
+        task({ id: "plants", project_id: "p-admin", tags: [] }),
+        task({ id: "hotel", project_id: "p-admin", tags: ["travel"] }),
+        task({ id: "agenda", project_id: "p-admin", tags: ["work"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["flights", "hotel", "deck", "agenda", "plants"],
+);
+
+check(
+  "tag runs do not cross project groups",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "build-travel", project_id: "p-build", tags: ["travel"] }),
+        task({ id: "admin-work", project_id: "p-admin", tags: ["work"] }),
+        task({ id: "admin-travel", project_id: "p-admin", tags: ["travel"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["admin-travel", "admin-work", "build-travel"],
+);
+
+check(
+  "urgency outranks the tag run: a shared tag never lifts a task past a due one",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "work-undated", project_id: "p-admin", tags: ["work"] }),
+        task({ id: "travel-overdue", project_id: "p-admin", tags: ["travel"], due_date: "2026-08-20" }),
+        task({ id: "work-overdue", project_id: "p-admin", tags: ["work"], due_date: "2026-08-20" }),
+        task({ id: "travel-undated", project_id: "p-admin", tags: ["travel"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["travel-overdue", "work-overdue", "travel-undated", "work-undated"],
+);
+
+check(
+  "tag matching is case-insensitive",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "lower", project_id: "p-admin", tags: ["travel"] }),
+        task({ id: "other", project_id: "p-admin", tags: ["work"] }),
+        task({ id: "upper", project_id: "p-admin", tags: ["Travel"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["lower", "upper", "other"],
+);
+
+check(
+  "a two-tag task joins the run of its alphabetically first tag",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "work-only", project_id: "p-admin", tags: ["work"] }),
+        task({ id: "travel-and-work", project_id: "p-admin", tags: ["work", "travel"] }),
+        task({ id: "travel-only", project_id: "p-admin", tags: ["travel"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["travel-only", "travel-and-work", "work-only"],
+);
+
+check(
+  "the NUL separator keeps a tag and its prefix-alike apart",
+  ids(
+    orderTasksForDisplay(
+      [
+        task({ id: "traveller", project_id: "p-admin", tags: ["traveller"] }),
+        task({ id: "travel-urgent", project_id: "p-admin", tags: ["travel", "urgent"] }),
+        task({ id: "travel", project_id: "p-admin", tags: ["travel"] }),
+      ],
+      projects,
+    ),
+  ),
+  ["travel", "travel-urgent", "traveller"],
+);
+
+check(
+  "tag runs leave the search view's comparator alone",
+  ids(
+    [
+      task({ id: "b", tags: ["work"], sort_order: 1 }),
+      task({ id: "a", tags: ["travel"], sort_order: 2 }),
+      task({ id: "c", tags: ["work"], sort_order: 3 }),
+    ].sort(compareActiveTasks),
+  ),
+  ["b", "a", "c"],
+);
+
 // --- completed tasks ---
 
 check(

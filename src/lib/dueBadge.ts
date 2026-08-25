@@ -18,3 +18,17 @@ const BADGES: Partial<Record<DueUrgency, DueBadge>> = {
 export function dueBadgeFor(urgency: DueUrgency): DueBadge | null {
   return BADGES[urgency] ?? null;
 }
+
+// Shared pill geometry, so the due badge and the tag chips on a task card sit
+// on the same baseline and read as one row of pills.
+export const PILL_BASE =
+  "ml-1.5 whitespace-nowrap rounded-full px-1.5 py-px align-middle text-[10px] font-semibold leading-[1.4] no-underline";
+
+// One pastel for every tag — deliberately outside the red/orange/yellow/grey
+// urgency ramp so a tag never reads as a due state, and picked to sit with the
+// app's lilac background wash.
+export const TAG_PILL = "bg-violet-100 text-violet-700";
+
+// Completed rows keep their tags, but muted: a bright chip next to a
+// struck-through title pulls more attention than the task deserves.
+export const TAG_PILL_COMPLETED = "bg-slate-100 text-stone-400";
