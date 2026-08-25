@@ -1,22 +1,12 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { ISODate, Task } from "../../types";
-import { diffInDays, isDueOrOverdue } from "../../lib/dates";
+import { dueUrgency, isDueOrOverdue } from "../../lib/dates";
+import { dueBadgeFor } from "../../lib/dueBadge";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
-
-type DueUrgency = "overdue" | "today" | "tomorrow" | "later" | "none";
-
-function urgency(dueDate: ISODate | null, today: ISODate, completed: boolean): DueUrgency {
-  if (!dueDate || completed) return "none";
-  const d = diffInDays(dueDate, today);
-  if (d < 0) return "overdue";
-  if (d === 0) return "today";
-  if (d === 1) return "tomorrow";
-  return "later";
-}
 
 interface TaskCardProps {
   task: Task;
@@ -31,7 +21,8 @@ export default function TaskCard({ task, today }: TaskCardProps) {
   const project = task.project_id
     ? projectsQuery.data?.find((p) => p.id === task.project_id)
     : undefined;
-  const u = urgency(task.due_date, today, task.completed);
+  const u = dueUrgency(task.due_date, today, task.completed);
+  const badge = dueBadgeFor(u);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -47,11 +38,6 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     ? "text-orange-600"
     : "text-stone-800";
   const weightClass = urgent ? "font-semibold" : "";
-
-  const urgencyMarkClass =
-    u === "overdue" ? "text-red-500" : u === "today" || u === "tomorrow" ? "text-orange-500" : "";
-
-  const showUrgencyMark = !task.completed && (u === "overdue" || u === "today" || u === "tomorrow");
 
   const tint = project?.colour ?? null;
   const checkboxStyle = tint
@@ -137,11 +123,17 @@ export default function TaskCard({ task, today }: TaskCardProps) {
         )}
       </button>
       <span className={`flex-1 text-[13px] leading-snug ${titleClass} ${weightClass}`}>
-        {showUrgencyMark && <span className={`mr-0.5 font-bold ${urgencyMarkClass}`}>!</span>}
         {task.title}
         {task.template_id && (
           <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
             ↻
+          </span>
+        )}
+        {badge && (
+          <span
+            className={`ml-1.5 whitespace-nowrap rounded-full px-1.5 py-px align-middle text-[10px] font-semibold leading-[1.4] ${badge.className}`}
+          >
+            {badge.label}
           </span>
         )}
       </span>

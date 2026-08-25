@@ -2,7 +2,10 @@ import type { Project, Task } from "../types";
 
 // Active tasks are ordered by (a) earliest due_date first (tasks with no
 // due_date go last), then (b) latest scheduled_date first, then by sort_order
-// as a tiebreaker. Overdue and due-soon tasks float to the top as a result.
+// as a tiebreaker. Sorting on due_date walks the urgency ladder in
+// `lib/dueUrgency.ts` — overdue, due today, tomorrow, the day after, then the
+// rest — so a task's badge and its position in its project group agree.
+// `scripts/taskOrdering.test.ts` pins that correspondence.
 export function compareActiveTasks(a: Task, b: Task): number {
   if (a.due_date !== b.due_date) {
     if (!a.due_date) return 1;

@@ -1,4 +1,6 @@
 import { compareActiveTasks, orderTasksForDisplay } from "../src/lib/taskOrdering.ts";
+import { DUE_URGENCY_RANK, dueUrgency } from "../src/lib/dates.ts";
+import { dueBadgeFor } from "../src/lib/dueBadge.ts";
 import type { Project, Task } from "../src/types/index.ts";
 
 let pass = 0;
@@ -203,6 +205,71 @@ check(
     ].sort(compareActiveTasks),
   ),
   ["later-column", "earlier-column"],
+);
+
+// --- urgency ladder: badges and ordering must agree ---
+
+const TODAY = "2026-08-25";
+
+check("urgency: past due date", dueUrgency("2026-08-24", TODAY, false), "overdue");
+check("urgency: due today", dueUrgency(TODAY, TODAY, false), "today");
+check("urgency: due tomorrow", dueUrgency("2026-08-26", TODAY, false), "tomorrow");
+check("urgency: due in 2 days", dueUrgency("2026-08-27", TODAY, false), "dayAfter");
+check("urgency: due in 3 days", dueUrgency("2026-08-28", TODAY, false), "later");
+check("urgency: no due date", dueUrgency(null, TODAY, false), "none");
+check("urgency: completed tasks are never urgent", dueUrgency("2026-08-01", TODAY, true), "none");
+
+function badgeFor(dueDate: string | null, completed = false) {
+  return dueBadgeFor(dueUrgency(dueDate, TODAY, completed));
+}
+
+check("badge: overdue", badgeFor("2026-08-24"), {
+  label: "OVERDUE",
+  className: "bg-red-600 text-white",
+});
+check("badge: due today", badgeFor(TODAY), {
+  label: "DUE TODAY",
+  className: "bg-orange-500 text-white",
+});
+check("badge: due tomorrow", badgeFor("2026-08-26"), {
+  label: "Due Tomorrow",
+  className: "bg-yellow-200 text-stone-900",
+});
+check("badge: due in 2 days", badgeFor("2026-08-27"), {
+  label: "Due in 2 days",
+  className: "bg-slate-200 text-stone-900",
+});
+check(
+  "badge: nothing for later, undated, or completed",
+  [badgeFor("2026-08-28"), badgeFor(null), badgeFor("2026-08-01", true)],
+  [null, null, null],
+);
+
+// Sorting on due_date has to walk the ladder in badge order, so a column never
+// shows "Due in 2 days" above "OVERDUE" within one project group.
+const ladder = orderTasksForDisplay(
+  [
+    task({ id: "undated", project_id: "p-admin" }),
+    task({ id: "later", project_id: "p-admin", due_date: "2026-09-10" }),
+    task({ id: "dayAfter", project_id: "p-admin", due_date: "2026-08-27" }),
+    task({ id: "overdue", project_id: "p-admin", due_date: "2026-08-11" }),
+    task({ id: "tomorrow", project_id: "p-admin", due_date: "2026-08-26" }),
+    task({ id: "today", project_id: "p-admin", due_date: TODAY }),
+  ],
+  projects,
+);
+check("ladder: overdue → today → tomorrow → day after → later → undated", ids(ladder), [
+  "overdue",
+  "today",
+  "tomorrow",
+  "dayAfter",
+  "later",
+  "undated",
+]);
+check(
+  "ladder: order matches the badge ranks, never decreasing",
+  ladder.map((t) => DUE_URGENCY_RANK[dueUrgency(t.due_date, TODAY, t.completed)]),
+  [0, 1, 2, 3, 4, 5],
 );
 
 console.log(`\n${pass} passed, ${fail} failed`);
