@@ -11,6 +11,7 @@ import { orderTasksForDisplay } from "../../lib/taskOrdering";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
 import CompletedToggle from "../common/CompletedToggle";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 import type { ISODate, Project, Task } from "../../types";
 import type { IcsEvent } from "../../lib/ics";
 import { isPastEvent } from "../../lib/ics";
@@ -189,11 +190,13 @@ function FocusQuickAdd({ today }: { today: ISODate }) {
       }}
       className="flex w-full items-center rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20"
     >
-      <input
+      <TokenSuggestInput
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={setTitle}
+        mode="inline"
         placeholder="+ Add task for today"
         disabled={create.isPending}
+        aria-label="Add task for today"
         className="w-full bg-transparent text-[13px] text-stone-800 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
       />
     </form>

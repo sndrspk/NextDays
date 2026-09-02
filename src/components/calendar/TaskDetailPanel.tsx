@@ -7,6 +7,7 @@ import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { todayLocal, toISODate } from "../../lib/dates";
 import RecurrenceEditor from "./RecurrenceEditor";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 
 function parseTags(input: string): string[] {
   return input
@@ -158,7 +159,7 @@ function PanelBody({
 }: PanelBodyProps) {
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes ?? "");
-  const [startDate, setStartDate] = useState(task.start_date ?? "");
+  const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
   const [dueDate, setDueDate] = useState(task.due_date ?? "");
   const [tags, setTags] = useState(formatTags(task.tags));
   const [projectId, setProjectId] = useState(task.project_id ?? "");
@@ -167,7 +168,7 @@ function PanelBody({
   useEffect(() => {
     setTitle(task.title);
     setNotes(task.notes ?? "");
-    setStartDate(task.start_date ?? "");
+    setScheduledDate(task.scheduled_date ?? "");
     setDueDate(task.due_date ?? "");
     setTags(formatTags(task.tags));
     setProjectId(task.project_id ?? "");
@@ -205,8 +206,11 @@ function PanelBody({
     }
 
     if (!soon) {
-      const nextStart = startDate === "" ? null : startDate;
-      if (nextStart !== (task.start_date ?? null)) patch.start_date = nextStart;
+      // A dated task always needs a column to live in, so an emptied input is
+      // ignored rather than written as null.
+      if (scheduledDate !== "" && scheduledDate !== task.scheduled_date) {
+        patch.scheduled_date = scheduledDate;
+      }
       const nextDue = dueDate === "" ? null : dueDate;
       if (nextDue !== (task.due_date ?? null)) patch.due_date = nextDue;
     }
@@ -223,10 +227,9 @@ function PanelBody({
 
   function toggleSoon(checked: boolean) {
     setSoon(checked);
-    if (checked) {
-      setStartDate("");
-      setDueDate("");
-    }
+    // The scheduled date is kept in local state so toggling Soon back off
+    // restores the visible value; the inputs are disabled while Soon is on.
+    if (checked) setDueDate("");
   }
 
   function submit() {
@@ -319,11 +322,11 @@ function PanelBody({
           </label>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Start date">
+            <Field label="Scheduled date">
               <input
                 type="date"
-                value={soon ? "" : startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={soon ? "" : scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
                 disabled={soon}
                 className={soon ? disabledInputClass : inputClass}
               />
@@ -356,7 +359,7 @@ function PanelBody({
 
           {!soon && (
             <>
-              {(patch.start_date !== undefined || patch.due_date !== undefined) && (
+              {(patch.scheduled_date !== undefined || patch.due_date !== undefined) && (
                 <p className="mb-2 text-[11px] text-stone-400">
                   Repeat options follow the saved dates — save the task first to use a date you
                   just changed.
@@ -375,26 +378,24 @@ function PanelBody({
           )}
 
           <Field label="Tags">
-            <input
+            <TokenSuggestInput
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={setTags}
+              mode="csv"
               placeholder="comma, separated, tags"
+              aria-label="Tags"
               className={inputClass}
             />
           </Field>
 
-          <div className="mt-6 space-y-0.5 border-t border-slate-200/70 pt-4 text-[11px] text-stone-400">
-            <div>
-              <span className="text-stone-500">Scheduled</span> ·{" "}
-              {task.soon ? "Soon" : task.scheduled_date}
+          {/* The scheduled date used to be read-only footer text; it is an
+              editable field above now, so only completion is echoed here. */}
+          {task.completed && task.completed_at && (
+            <div className="mt-6 border-t border-slate-200/70 pt-4 text-[11px] text-stone-400">
+              <span className="text-stone-500">Completed</span> ·{" "}
+              {new Date(task.completed_at).toLocaleString()}
             </div>
-            {task.completed && task.completed_at && (
-              <div>
-                <span className="text-stone-500">Completed</span> ·{" "}
-                {new Date(task.completed_at).toLocaleString()}
-              </div>
-            )}
-          </div>
+          )}
 
           {saveError != null && (
             <p className="mt-4 text-[12px] text-red-600">

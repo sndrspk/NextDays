@@ -96,7 +96,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
     !formsEqual(startForm, initialStart) || !formsEqual(dueForm, initialDue);
   const startEnabled = startForm.preset !== "none";
   const dueEnabled = dueForm.preset !== "none";
-  const startNeedsDate = startEnabled && !task.start_date;
+  const startNeedsDate = startEnabled && !task.scheduled_date;
   const dueNeedsDate = dueEnabled && !task.due_date;
   const canSave =
     (startEnabled || dueEnabled || (template !== null && !startEnabled && !dueEnabled)) &&
@@ -122,8 +122,12 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
       return;
     }
 
-    const startRule = startEnabled && task.start_date
-      ? buildRRule(startForm, task.start_date)
+    // The start rule anchors on the task's scheduled date now that `start_date`
+    // is no longer a field the user can set. Note the anchor moves with
+    // rollover, so a rule set on a task that has drifted starts from where the
+    // task actually is, not from where it was first put.
+    const startRule = startEnabled && task.scheduled_date
+      ? buildRRule(startForm, task.scheduled_date)
       : null;
     const dueRule = dueEnabled && task.due_date
       ? buildRRule(dueForm, task.due_date)
@@ -131,7 +135,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
 
     const patch = {
       start_rrule: startRule,
-      start_dtstart: startEnabled ? task.start_date : null,
+      start_dtstart: startEnabled ? task.scheduled_date : null,
       due_rrule: dueRule,
       due_dtstart: dueEnabled ? task.due_date : null,
     };
@@ -158,11 +162,11 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
       </span>
 
       <RuleSection
-        label="Start date"
-        anchor={task.start_date}
+        label="Scheduled date"
+        anchor={task.scheduled_date}
         form={startForm}
         onChange={setStartForm}
-        missingDateHint="Set a start date above to make it recur."
+        missingDateHint="Set a scheduled date above to make it recur."
       />
 
       <div className="my-2.5 border-t border-slate-200/60" />

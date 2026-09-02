@@ -291,6 +291,7 @@ These are explicitly out of scope for v1 but should be kept in mind architectura
 ## 10. Key Design Decisions to Preserve
 
 - **`scheduled_date` is mutable** — it's the "live" date of a task in the calendar, updated by rollover. `start_date` is set by the user (on create or edit) and controls the earliest date a task can appear in the calendar. The rollover logic never modifies `start_date`.
+  - **Superseded in part (2026-09-02), by agreement with the owner:** `start_date` is no longer settable from the UI. A query against the live database found zero tasks where `start_date > scheduled_date` — the only condition under which the field does anything — while all 71 rows that differed from `scheduled_date` differed the other way, as rollover drift. The column, its data, and the visibility gate all remain, so any legacy gated row still behaves as specified; the task detail panel now edits `scheduled_date` directly instead. Per-field **recurrence** rules (`start_rrule` / `due_rrule` on `task_templates`) are untouched and remain load-bearing; the start rule now anchors on the task's `scheduled_date`. See `CLAUDE.md` and `VERSIONS.md` 0.0.60.
 - **Custom list items are a separate data model** — they share no fields with calendar tasks intentionally. Do not merge them.
 - **Work/personal project distinction lives on the project, not the task** — a task inherits rollover behaviour from its project.
 - **No week concept** — the calendar is a continuous rolling strip, not Mon–Sun blocks.

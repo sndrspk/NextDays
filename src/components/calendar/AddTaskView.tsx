@@ -4,11 +4,11 @@ import { useCreateTask } from "../../hooks/useTaskMutations";
 import { toISODate, todayLocal } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useView } from "../../state/view";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 import type { ISODate, UUID } from "../../types";
 
 interface CarryFields {
   scheduledDate: ISODate;
-  startDate: string;
   dueDate: string;
   projectId: UUID | "";
   tags: string;
@@ -34,7 +34,6 @@ export default function AddTaskView() {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [scheduledDate, setScheduledDate] = useState<ISODate>(today);
-  const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [projectId, setProjectId] = useState<UUID | "">("");
   const [tags, setTags] = useState("");
@@ -45,7 +44,6 @@ export default function AddTaskView() {
   useEffect(() => {
     if (!carry) return;
     setScheduledDate(carry.scheduledDate);
-    setStartDate(carry.startDate);
     setDueDate(carry.dueDate);
     setProjectId(carry.projectId);
     setTags(carry.tags);
@@ -72,7 +70,6 @@ export default function AddTaskView() {
     if (!keepCarry) {
       setNotes("");
       setScheduledDate(today);
-      setStartDate("");
       setDueDate("");
       setProjectId("");
       setTags("");
@@ -99,7 +96,6 @@ export default function AddTaskView() {
         project_id: parsed.project_id ?? (projectId === "" ? null : projectId),
         tags: parsedTags,
         notes: notes.trim() === "" ? null : notes,
-        start_date: soon ? null : (startDate === "" ? null : startDate),
         due_date: soon ? null : (dueDate === "" ? null : dueDate),
         soon,
       },
@@ -108,7 +104,6 @@ export default function AddTaskView() {
           if (carryFields) {
             setCarry({
               scheduledDate,
-              startDate,
               dueDate,
               projectId: parsed.project_id ?? projectId,
               tags,
@@ -160,12 +155,15 @@ export default function AddTaskView() {
           }}
           className="flex flex-1 flex-col"
         >
-          <input
-            ref={titleRef}
+          <TokenSuggestInput
+            inputRef={titleRef}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={setTitle}
+            mode="inline"
             placeholder="Untitled task"
-            className="focus-ring mb-5 w-full bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-stone-900 placeholder:text-stone-300 focus:outline-none"
+            aria-label="Task title"
+            wrapperClassName="relative mb-5 w-full"
+            className="focus-ring w-full bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-stone-900 placeholder:text-stone-300 focus:outline-none"
           />
 
           <Field label="Notes">
@@ -204,22 +202,13 @@ export default function AddTaskView() {
             <span className="text-[11px] text-stone-400">No dates — just on the radar</span>
           </label>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Scheduled date">
               <input
                 type="date"
                 value={soon ? "" : scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
                 required={!soon}
-                disabled={soon}
-                className={soon ? disabledInputClass : inputClass}
-              />
-            </Field>
-            <Field label="Start date">
-              <input
-                type="date"
-                value={soon ? "" : startDate}
-                onChange={(e) => setStartDate(e.target.value)}
                 disabled={soon}
                 className={soon ? disabledInputClass : inputClass}
               />
@@ -251,10 +240,12 @@ export default function AddTaskView() {
           </Field>
 
           <Field label="Tags">
-            <input
+            <TokenSuggestInput
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={setTags}
+              mode="csv"
               placeholder="comma, separated, tags"
+              aria-label="Tags"
               className={inputClass}
             />
           </Field>
