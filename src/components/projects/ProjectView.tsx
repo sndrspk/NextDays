@@ -14,6 +14,7 @@ import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Task, UUID } from "../../types";
 import TagFilterRow from "../tags/TagFilterRow";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 
 type Filter = "active" | "completed" | "all";
 
@@ -433,11 +434,13 @@ function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string 
       }}
       className="flex w-full items-center rounded-lg border border-slate-200/80 bg-white px-3 py-1.5 transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 sm:w-72"
     >
-      <input
+      <TokenSuggestInput
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={setTitle}
+        mode="inline"
         placeholder="+ Add task to project"
         disabled={create.isPending}
+        aria-label="Add task to project"
         className="w-full bg-transparent text-[13px] text-stone-800 placeholder:text-stone-400 focus:outline-none disabled:opacity-50"
       />
     </form>

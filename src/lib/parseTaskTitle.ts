@@ -6,38 +6,67 @@ export interface ParsedTaskTitle {
   tags: string[];
 }
 
-const PROJECT_TOKEN = /(^|\s)@([A-Za-z0-9_-]+)/g;
-const TAG_TOKEN = /(^|\s)#([A-Za-z0-9_-]+)/g;
+const TAG_BODY = /^[A-Za-z0-9_-]+/;
 
-// Parses inline `@Project` (only kept if a project with that name — case-
-// insensitive — exists) and `#tag` (always kept) tokens out of a task title,
-// returning the stripped title plus the resolved project_id and tag list.
-// Only the first matching @Project wins; tags accumulate (deduped, original
-// casing preserved).
+// Parses inline `@Project` and `#tag` tokens out of a task title, returning the
+// stripped title plus the resolved project_id and tag list.
+//
+// Rules:
+//   * `@Name` is only consumed when a project with that name exists
+//     (case-insensitive). Multi-word project names are matched greedily —
+//     longest name wins — so `@Home Admin` works. An unknown `@word` is left
+//     in the title untouched, and only the first match assigns the project.
+//   * `#tag` is always consumed; the text behind the `#` becomes the tag as-is.
+//     Tags are deduped case-insensitively, keeping the first spelling.
+//   * Tokens must start the string or follow whitespace, so `a@b.com` and
+//     `C#` are left alone.
 export function parseTaskTitle(raw: string, projects: Project[]): ParsedTaskTitle {
-  const byName = new Map<string, Project>();
-  for (const p of projects) byName.set(p.name.toLowerCase(), p);
+  // Longest first so a project called "Home Admin" beats one called "Home".
+  const byLength = projects
+    .map((p) => ({ project: p, name: p.name.trim() }))
+    .filter((p) => p.name.length > 0)
+    .sort((a, b) => b.name.length - a.name.length);
+  const lower = raw.toLowerCase();
 
   let project_id: UUID | null = null;
-  let title = raw.replace(PROJECT_TOKEN, (full, prefix, name) => {
-    if (project_id !== null) return full;
-    const found = byName.get(String(name).toLowerCase());
-    if (!found) return full;
-    project_id = found.id;
-    return prefix;
-  });
-
-  const seenTags = new Set<string>();
   const tags: string[] = [];
-  title = title.replace(TAG_TOKEN, (_full, prefix, name) => {
-    const key = String(name).toLowerCase();
-    if (!seenTags.has(key)) {
-      seenTags.add(key);
-      tags.push(String(name));
-    }
-    return prefix;
-  });
+  const seenTags = new Set<string>();
 
-  title = title.replace(/\s+/g, " ").trim();
-  return { title, project_id, tags };
+  let out = "";
+  let i = 0;
+  while (i < raw.length) {
+    const ch = raw[i];
+    const atBoundary = i === 0 || /\s/.test(raw[i - 1]);
+
+    if (atBoundary && ch === "@" && project_id === null) {
+      const match = byLength.find(({ name }) => {
+        if (!lower.startsWith(name.toLowerCase(), i + 1)) return false;
+        const after = raw[i + 1 + name.length];
+        return after === undefined || /\s/.test(after);
+      });
+      if (match) {
+        project_id = match.project.id;
+        i += 1 + match.name.length;
+        continue;
+      }
+    }
+
+    if (atBoundary && ch === "#") {
+      const body = TAG_BODY.exec(raw.slice(i + 1));
+      if (body) {
+        const key = body[0].toLowerCase();
+        if (!seenTags.has(key)) {
+          seenTags.add(key);
+          tags.push(body[0]);
+        }
+        i += 1 + body[0].length;
+        continue;
+      }
+    }
+
+    out += ch;
+    i += 1;
+  }
+
+  return { title: out.replace(/\s+/g, " ").trim(), project_id, tags };
 }

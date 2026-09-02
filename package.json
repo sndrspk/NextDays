@@ -10,7 +10,9 @@
     "typecheck": "tsc -b --noEmit",
     "test:search": "node --experimental-strip-types scripts/searchQuery.test.ts",
     "test:ordering": "node --experimental-strip-types scripts/taskOrdering.test.ts",
-    "test": "npm run test:search && npm run test:ordering"
+    "test:parse": "node --experimental-strip-types scripts/parseTaskTitle.test.ts",
+    "test:tokens": "node --experimental-strip-types scripts/tokenSuggest.test.ts",
+    "test": "npm run test:search && npm run test:ordering && npm run test:parse && npm run test:tokens"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

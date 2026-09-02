@@ -7,6 +7,7 @@ import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { todayLocal, toISODate } from "../../lib/dates";
 import RecurrenceEditor from "./RecurrenceEditor";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 
 function parseTags(input: string): string[] {
   return input
@@ -375,10 +376,12 @@ function PanelBody({
           )}
 
           <Field label="Tags">
-            <input
+            <TokenSuggestInput
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={setTags}
+              mode="csv"
               placeholder="comma, separated, tags"
+              aria-label="Tags"
               className={inputClass}
             />
           </Field>

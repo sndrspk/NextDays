@@ -4,6 +4,7 @@ import { useCreateTask } from "../../hooks/useTaskMutations";
 import { toISODate, todayLocal } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { useView } from "../../state/view";
+import TokenSuggestInput from "../common/TokenSuggestInput";
 import type { ISODate, UUID } from "../../types";
 
 interface CarryFields {
@@ -160,12 +161,15 @@ export default function AddTaskView() {
           }}
           className="flex flex-1 flex-col"
         >
-          <input
-            ref={titleRef}
+          <TokenSuggestInput
+            inputRef={titleRef}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={setTitle}
+            mode="inline"
             placeholder="Untitled task"
-            className="focus-ring mb-5 w-full bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-stone-900 placeholder:text-stone-300 focus:outline-none"
+            aria-label="Task title"
+            wrapperClassName="relative mb-5 w-full"
+            className="focus-ring w-full bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-stone-900 placeholder:text-stone-300 focus:outline-none"
           />
 
           <Field label="Notes">
@@ -251,10 +255,12 @@ export default function AddTaskView() {
           </Field>
 
           <Field label="Tags">
-            <input
+            <TokenSuggestInput
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={setTags}
+              mode="csv"
               placeholder="comma, separated, tags"
+              aria-label="Tags"
               className={inputClass}
             />
           </Field>
