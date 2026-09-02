@@ -7,7 +7,7 @@ Live app: <https://sndrspk.github.io/NextDays/> (single-owner, magic-link sign-i
 ## Features
 
 - **Rolling calendar strip** — responsive day window (3 days on phones, 4 on tablets / small laptops, and a user-chosen **3 or 5** on wide screens — default 5, toggled in the calendar header) with today highlighted; tasks sort by urgency and pin completed items to the bottom. Column headers show the date on top and a `Today` / `Tomorrow` / weekday label below.
-- **Quick-add and inline interactions** — add a task on any day, tick it off with a click, or open the slide-in detail panel for title, notes, start/due dates, project, and tags.
+- **Quick-add and inline interactions** — add a task on any day, tick it off with a click, or open the slide-in detail panel for title, notes, scheduled/due dates, project, and tags.
 - **`@Project` / `#tag` syntax with autocomplete** — type `@Home` or `#travel` in any quick-add (or the Add task title) and the project is assigned and the tag attached, with the token stripped from the title. An unknown `@name` is left in the title as plain text. Typing after `#` or `@` — or into a Tags field — suggests existing tags and projects that start with the same letters; ↑/↓ to move, Enter or Tab to accept, Escape to dismiss.
 - **Automatic rollover** — uncompleted tasks from past days move forward to today on app load, with a Personal/Work weekend exception.
 - **Projects** — coloured projects with a Personal/Work flag; per-project view with text search, tag filters, and bulk select (complete / mark active / delete). Project colour tints the task circle.
