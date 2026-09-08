@@ -9,6 +9,7 @@ import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Project, Task, UUID } from "../../types";
 import { compareActiveTasks } from "../../lib/taskOrdering";
+import TaskLink from "../common/TaskLink";
 
 export default function SearchView() {
   const [query, setQuery] = useState("");
@@ -242,6 +243,7 @@ function SearchResultRow({
               ↻
             </span>
           )}
+          <TaskLink url={task.url} completed={task.completed} />
         </span>
         {task.tags && task.tags.length > 0 && (
           <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">

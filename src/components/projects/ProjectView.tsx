@@ -9,12 +9,14 @@ import {
 } from "../../hooks/useTaskMutations";
 import { isDueOrOverdue, todayLocal, toISODate } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
+import { extractUrl, titleFromUrl } from "../../lib/extractUrl";
 import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { useView } from "../../state/view";
 import type { Task, UUID } from "../../types";
 import TagFilterRow from "../tags/TagFilterRow";
 import TokenSuggestInput from "../common/TokenSuggestInput";
+import TaskLink from "../common/TaskLink";
 
 type Filter = "active" | "completed" | "all";
 
@@ -413,11 +415,15 @@ function ProjectQuickAdd({ projectId, today }: { projectId: UUID; today: string 
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
-    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
-    if (!parsed.title) return;
+    // The first URL in the text becomes the task's link and leaves the title.
+    const { title: withoutUrl, url } = extractUrl(trimmed);
+    const parsed = parseTaskTitle(withoutUrl, projectsQuery.data ?? []);
+    const finalTitle = parsed.title || (url ? titleFromUrl(url) : "");
+    if (!finalTitle) return;
     create.mutate(
       {
-        title: parsed.title,
+        title: finalTitle,
+        url,
         scheduled_date: today,
         project_id: parsed.project_id ?? projectId,
         tags: parsed.tags,
@@ -556,6 +562,7 @@ function ProjectTaskRow({
             ↻
           </span>
         )}
+        <TaskLink url={task.url} completed={task.completed} inert={selectMode} />
         {task.tags && task.tags.length > 0 && (
           <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
             {task.tags.map((tag) => (
@@ -563,6 +570,9 @@ function ProjectTaskRow({
                 key={tag}
                 type="button"
                 onClick={(e) => {
+                  // In select mode the click belongs to the row, so let it
+                  // bubble and toggle selection instead of navigating away.
+                  if (selectMode) return;
                   e.stopPropagation();
                   setView({ kind: "tag", tag });
                 }}
