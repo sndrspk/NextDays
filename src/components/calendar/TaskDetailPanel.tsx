@@ -6,7 +6,9 @@ import { useDeleteTask, useDelayedDeleteTask, useUpdateTask } from "../../hooks/
 import { useSelection } from "../../state/selection";
 import { useToast } from "../../state/toast";
 import { todayLocal, toISODate } from "../../lib/dates";
+import { normaliseUrl, safeHref } from "../../lib/extractUrl";
 import RecurrenceEditor from "./RecurrenceEditor";
+import LinkIcon from "../common/LinkIcon";
 import TokenSuggestInput from "../common/TokenSuggestInput";
 
 function parseTags(input: string): string[] {
@@ -159,6 +161,13 @@ function PanelBody({
 }: PanelBodyProps) {
   const [title, setTitle] = useState(task.title);
   const [notes, setNotes] = useState(task.notes ?? "");
+  // `url` holds the committed (normalised) value; the draft only exists while
+  // the inline editor is open. Both are buffered until "Save task" like every
+  // other field.
+  const [url, setUrl] = useState(task.url ?? "");
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [urlDraft, setUrlDraft] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
   const [dueDate, setDueDate] = useState(task.due_date ?? "");
   const [tags, setTags] = useState(formatTags(task.tags));
@@ -168,6 +177,10 @@ function PanelBody({
   useEffect(() => {
     setTitle(task.title);
     setNotes(task.notes ?? "");
+    setUrl(task.url ?? "");
+    setEditingUrl(false);
+    setUrlDraft("");
+    setUrlError(null);
     setScheduledDate(task.scheduled_date ?? "");
     setDueDate(task.due_date ?? "");
     setTags(formatTags(task.tags));
@@ -185,6 +198,9 @@ function PanelBody({
 
     const nextNotes = notes === "" ? null : notes;
     if (nextNotes !== (task.notes ?? null)) patch.notes = nextNotes;
+
+    const nextUrl = url === "" ? null : url;
+    if (nextUrl !== (task.url ?? null)) patch.url = nextUrl;
 
     const nextProject = projectId === "" ? null : projectId;
     if (nextProject !== (task.project_id ?? null)) patch.project_id = nextProject;
@@ -230,6 +246,43 @@ function PanelBody({
     // The scheduled date is kept in local state so toggling Soon back off
     // restores the visible value; the inputs are disabled while Soon is on.
     if (checked) setDueDate("");
+  }
+
+  const href = safeHref(url);
+
+  function startEditingUrl() {
+    setUrlDraft(url);
+    setUrlError(null);
+    setEditingUrl(true);
+  }
+
+  function commitUrlDraft() {
+    const trimmed = urlDraft.trim();
+    if (trimmed === "") {
+      setUrl("");
+      setEditingUrl(false);
+      setUrlError(null);
+      return;
+    }
+    const next = normaliseUrl(trimmed);
+    if (!next) {
+      setUrlError("Enter a web address starting with http:// or https://.");
+      return;
+    }
+    setUrl(next);
+    setEditingUrl(false);
+    setUrlError(null);
+  }
+
+  function cancelUrlEdit() {
+    setEditingUrl(false);
+    setUrlDraft("");
+    setUrlError(null);
+  }
+
+  function deleteUrl() {
+    setUrl("");
+    cancelUrlEdit();
   }
 
   function submit() {
@@ -294,6 +347,91 @@ function PanelBody({
               className={inputClass + " resize-y leading-relaxed"}
             />
           </Field>
+
+          <div className="mb-5">
+            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
+              Link
+            </span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={href}
+                  aria-label="Open link"
+                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded text-accent transition-colors hover:bg-accent-50 hover:text-accent-700"
+                >
+                  <LinkIcon className="h-4 w-4" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startEditingUrl}
+                  aria-label="Add URL"
+                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded text-stone-400 transition-colors hover:bg-slate-100 hover:text-stone-600"
+                >
+                  <LinkIcon className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={startEditingUrl}
+                className="focus-ring rounded text-[12px] text-accent underline-offset-2 transition-colors hover:underline"
+              >
+                {url ? "Change URL" : "Add URL"}
+              </button>
+              <button
+                type="button"
+                onClick={deleteUrl}
+                disabled={url === ""}
+                className="focus-ring rounded text-[12px] text-stone-500 underline-offset-2 transition-colors hover:underline disabled:cursor-not-allowed disabled:text-stone-300 disabled:no-underline"
+              >
+                Delete URL
+              </button>
+            </div>
+
+            {editingUrl ? (
+              <input
+                autoFocus
+                type="text"
+                inputMode="url"
+                value={urlDraft}
+                onChange={(e) => {
+                  setUrlDraft(e.target.value);
+                  setUrlError(null);
+                }}
+                onBlur={commitUrlDraft}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    // The surrounding form would otherwise save and close.
+                    e.preventDefault();
+                    commitUrlDraft();
+                  } else if (e.key === "Escape") {
+                    // Only the inline editor closes — not the whole panel.
+                    e.stopPropagation();
+                    cancelUrlEdit();
+                  }
+                }}
+                placeholder="https://…"
+                aria-label="URL"
+                className={inputClass + " mt-2"}
+              />
+            ) : (
+              href && (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 block truncate text-[12px] text-stone-500 underline-offset-2 hover:text-stone-700 hover:underline"
+                >
+                  {href}
+                </a>
+              )
+            )}
+
+            {urlError && <p className="mt-1.5 text-[11px] text-red-600">{urlError}</p>}
+          </div>
 
           <label className="mb-5 flex cursor-pointer items-center gap-2.5">
             <span

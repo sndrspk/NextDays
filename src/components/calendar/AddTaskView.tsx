@@ -3,6 +3,7 @@ import { useProjects } from "../../hooks/useProjects";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { toISODate, todayLocal } from "../../lib/dates";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
+import { normaliseUrl } from "../../lib/extractUrl";
 import { useView } from "../../state/view";
 import TokenSuggestInput from "../common/TokenSuggestInput";
 import type { ISODate, UUID } from "../../types";
@@ -13,6 +14,7 @@ interface CarryFields {
   projectId: UUID | "";
   tags: string;
   notes: string;
+  url: string;
   soon: boolean;
 }
 
@@ -33,6 +35,8 @@ export default function AddTaskView() {
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [url, setUrl] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [scheduledDate, setScheduledDate] = useState<ISODate>(today);
   const [dueDate, setDueDate] = useState("");
   const [projectId, setProjectId] = useState<UUID | "">("");
@@ -48,6 +52,7 @@ export default function AddTaskView() {
     setProjectId(carry.projectId);
     setTags(carry.tags);
     setNotes(carry.notes);
+    setUrl(carry.url);
     setSoon(carry.soon);
   }, [carry]);
 
@@ -67,8 +72,10 @@ export default function AddTaskView() {
 
   function reset(keepCarry: boolean) {
     setTitle("");
+    setUrlError(null);
     if (!keepCarry) {
       setNotes("");
+      setUrl("");
       setScheduledDate(today);
       setDueDate("");
       setProjectId("");
@@ -81,6 +88,15 @@ export default function AddTaskView() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
     if (!soon && !scheduledDate) return;
+
+    // An unparseable link blocks the save rather than being silently dropped.
+    const trimmedUrl = url.trim();
+    const normalisedUrl = trimmedUrl === "" ? null : normaliseUrl(trimmedUrl);
+    if (trimmedUrl !== "" && normalisedUrl === null) {
+      setUrlError("Enter a web address starting with http:// or https://.");
+      return;
+    }
+    setUrlError(null);
 
     const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
     const parsedTags = parsed.tags.concat(
@@ -96,6 +112,7 @@ export default function AddTaskView() {
         project_id: parsed.project_id ?? (projectId === "" ? null : projectId),
         tags: parsedTags,
         notes: notes.trim() === "" ? null : notes,
+        url: normalisedUrl,
         due_date: soon ? null : (dueDate === "" ? null : dueDate),
         soon,
       },
@@ -108,6 +125,7 @@ export default function AddTaskView() {
               projectId: parsed.project_id ?? projectId,
               tags,
               notes,
+              url: normalisedUrl ?? "",
               soon,
             });
             reset(true);
@@ -174,6 +192,23 @@ export default function AddTaskView() {
               placeholder="Add notes…"
               className={inputClass + " resize-y leading-relaxed"}
             />
+          </Field>
+
+          <Field label="URL">
+            <input
+              // Deliberately not type="url": the browser's native validation
+              // would reject "example.com", which normaliseUrl accepts.
+              type="text"
+              inputMode="url"
+              value={url}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setUrlError(null);
+              }}
+              placeholder="https://…"
+              className={inputClass}
+            />
+            {urlError && <span className="mt-1 block text-[11px] text-red-600">{urlError}</span>}
           </Field>
 
           <label className="mb-5 flex cursor-pointer items-center gap-2.5">

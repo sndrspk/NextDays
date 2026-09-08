@@ -4,6 +4,7 @@ import type { Task } from "../../types";
 import { useCreateTask } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
+import { extractUrl, titleFromUrl } from "../../lib/extractUrl";
 import { filterCompletedForDisplay } from "../../lib/completedVisibility";
 import { orderTasksForDisplay } from "../../lib/taskOrdering";
 import TaskCard from "./TaskCard";
@@ -80,11 +81,15 @@ function SoonQuickAdd() {
   function submit() {
     const trimmed = title.trim();
     if (!trimmed || create.isPending) return;
-    const parsed = parseTaskTitle(trimmed, projectsQuery.data ?? []);
-    if (!parsed.title) return;
+    // The first URL in the text becomes the task's link and leaves the title.
+    const { title: withoutUrl, url } = extractUrl(trimmed);
+    const parsed = parseTaskTitle(withoutUrl, projectsQuery.data ?? []);
+    const finalTitle = parsed.title || (url ? titleFromUrl(url) : "");
+    if (!finalTitle) return;
     create.mutate(
       {
-        title: parsed.title,
+        title: finalTitle,
+        url,
         soon: true,
         project_id: parsed.project_id,
         tags: parsed.tags,

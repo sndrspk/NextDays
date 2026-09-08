@@ -7,6 +7,7 @@ type TaskUpdate = Partial<
     Task,
     | "title"
     | "notes"
+    | "url"
     | "scheduled_date"
     | "start_date"
     | "due_date"
@@ -23,6 +24,7 @@ interface CreateTaskInput {
   project_id?: UUID | null;
   tags?: string[];
   notes?: string | null;
+  url?: string | null;
   start_date?: ISODate | null;
   due_date?: ISODate | null;
   soon?: boolean;
@@ -37,6 +39,7 @@ export function useCreateTask() {
       project_id,
       tags,
       notes,
+      url,
       start_date,
       due_date,
       soon,
@@ -50,6 +53,7 @@ export function useCreateTask() {
           project_id: project_id ?? null,
           tags: tags && tags.length > 0 ? tags : [],
           notes: notes ?? null,
+          url: url ?? null,
           start_date: isSoon ? null : (start_date ?? null),
           due_date: isSoon ? null : (due_date ?? null),
           sort_order: Math.floor(Date.now() / 1000),

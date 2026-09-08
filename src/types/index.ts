@@ -6,6 +6,8 @@ export interface Task {
   id: UUID;
   title: string;
   notes: string | null;
+  /** Optional single link. Always an absolute http(s) URL when set. */
+  url: string | null;
   scheduled_date: ISODate | null;
   start_date: ISODate | null;
   due_date: ISODate | null;
