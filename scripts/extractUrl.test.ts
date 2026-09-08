@@ -37,8 +37,23 @@ check("URL as the whole title leaves an empty title", extractUrl("https://exampl
   url: "https://example.com/",
 });
 
-check("bare www. gets an https scheme", extractUrl("check www.example.com tomorrow"), {
-  title: "check tomorrow",
+check("a bare domain stays in the title", extractUrl("check example.com tomorrow"), {
+  title: "check example.com tomorrow",
+  url: null,
+});
+
+check("a bare www. domain stays in the title", extractUrl("check www.example.com tomorrow"), {
+  title: "check www.example.com tomorrow",
+  url: null,
+});
+
+check("a domain-shaped word is left alone", extractUrl("write up the web.dev talk"), {
+  title: "write up the web.dev talk",
+  url: null,
+});
+
+check("an explicit scheme on a www host is taken", extractUrl("check https://www.example.com now"), {
+  title: "check now",
   url: "https://www.example.com/",
 });
 
@@ -89,8 +104,8 @@ check("an email address is not a URL", extractUrl("mail a@b.com about it"), {
   url: null,
 });
 
-check("a mid-word www is not a URL", extractUrl("askwww.example.com"), {
-  title: "askwww.example.com",
+check("a scheme mid-word is not a URL", extractUrl("seehttps://example.com"), {
+  title: "seehttps://example.com",
   url: null,
 });
 

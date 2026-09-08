@@ -10,10 +10,16 @@ export interface ExtractedUrl {
   url: string | null;
 }
 
-// A URL either carries an explicit http(s) scheme or starts with `www.`.
-// It has to begin the string or follow whitespace or an opening bracket /
-// quote, so `(https://x.example)` matches while `a@b.com/x` never does.
-const URL_RE = /(?:^|[\s([<"'])((?:https?:\/\/|www\.)[^\s<>]+)/i;
+// Only an explicit http(s) scheme counts as a URL in a typed title. A bare
+// domain — `example.com`, `web.dev` — stays part of the title, because it is
+// far more often prose than a link the user wants filed away. The URL fields
+// in the task panel and the Add task screen are more forgiving: what is typed
+// there is unambiguously meant as a link, so normaliseUrl() fills in the
+// missing scheme.
+//
+// The token has to begin the string or follow whitespace or an opening
+// bracket / quote, so `(https://x.example)` matches.
+const URL_RE = /(?:^|[\s([<"'])(https?:\/\/[^\s<>]+)/i;
 
 // Trailing characters that are almost always sentence punctuation rather than
 // part of the link. Closing brackets are only dropped when unbalanced, so
