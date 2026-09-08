@@ -3,6 +3,8 @@ import { CSS } from "@dnd-kit/utilities";
 import type { ISODate, Task } from "../../types";
 import { dueUrgency, isDueOrOverdue } from "../../lib/dates";
 import { PILL_BASE, TAG_PILL, TAG_PILL_COMPLETED, dueBadgeFor } from "../../lib/dueBadge";
+import { safeHref } from "../../lib/extractUrl";
+import LinkIcon from "../common/LinkIcon";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
 import { useProjects } from "../../hooks/useProjects";
 import { useSelection } from "../../state/selection";
@@ -23,6 +25,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     : undefined;
   const u = dueUrgency(task.due_date, today, task.completed);
   const badge = dueBadgeFor(u);
+  const href = safeHref(task.url);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -128,6 +131,25 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           <span aria-label="Recurring" title="Recurring" className="ml-1 text-stone-400">
             ↻
           </span>
+        )}
+        {href && (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={href}
+            aria-label="Open link"
+            // The row itself opens the detail panel, so the link has to keep
+            // its click to itself.
+            onClick={(e) => e.stopPropagation()}
+            className={`focus-ring ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded align-middle transition-colors ${
+              task.completed
+                ? "text-stone-300 hover:text-stone-400"
+                : "text-accent hover:text-accent-700"
+            }`}
+          >
+            <LinkIcon className="h-3.5 w-3.5" />
+          </a>
         )}
         {badge && <span className={`${PILL_BASE} ${badge.className}`}>{badge.label}</span>}
         {task.tags?.map((tag) => (
