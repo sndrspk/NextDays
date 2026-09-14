@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { ISODate, Task } from "../../types";
-import { dueUrgency, isDueOrOverdue } from "../../lib/dates";
+import { diffInDays, dueUrgency, isDueOrOverdue } from "../../lib/dates";
 import { PILL_BASE, TAG_PILL, TAG_PILL_COMPLETED, dueBadgeFor } from "../../lib/dueBadge";
 import TaskLink from "../common/TaskLink";
 import { useToggleTaskCompleted } from "../../hooks/useTaskMutations";
@@ -23,7 +23,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
     ? projectsQuery.data?.find((p) => p.id === task.project_id)
     : undefined;
   const u = dueUrgency(task.due_date, today, task.completed);
-  const badge = dueBadgeFor(u);
+  const badge = dueBadgeFor(u, task.due_date ? diffInDays(task.due_date, today) : null);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -131,7 +131,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
           </span>
         )}
         <TaskLink url={task.url} completed={task.completed} />
-        {badge &&<span className={`${PILL_BASE} ${badge.className}`}>{badge.label}</span>}
+        {badge && <span className={`${PILL_BASE} ${badge.className}`}>{badge.label}</span>}
         {task.tags?.map((tag) => (
           <span
             key={tag}
