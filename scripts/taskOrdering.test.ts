@@ -1,5 +1,5 @@
 import { compareActiveTasks, orderTasksForDisplay } from "../src/lib/taskOrdering.ts";
-import { DUE_URGENCY_RANK, dueUrgency } from "../src/lib/dates.ts";
+import { DUE_URGENCY_RANK, diffInDays, dueUrgency } from "../src/lib/dates.ts";
 import { dueBadgeFor } from "../src/lib/dueBadge.ts";
 import type { Project, Task } from "../src/types/index.ts";
 
@@ -327,28 +327,55 @@ check("urgency: no due date", dueUrgency(null, TODAY, false), "none");
 check("urgency: completed tasks are never urgent", dueUrgency("2026-08-01", TODAY, true), "none");
 
 function badgeFor(dueDate: string | null, completed = false) {
-  return dueBadgeFor(dueUrgency(dueDate, TODAY, completed));
+  return dueBadgeFor(
+    dueUrgency(dueDate, TODAY, completed),
+    dueDate ? diffInDays(dueDate, TODAY) : null,
+  );
 }
+
+// TODAY is 2026-08-25, so this is "N days from today" as an ISO date.
+function inDays(n: number): string {
+  const ms = Date.UTC(2026, 7, 25) + n * 86_400_000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+const LATER_PILL = "border border-slate-300 bg-white font-normal text-stone-900";
 
 check("badge: overdue", badgeFor("2026-08-24"), {
   label: "OVERDUE",
-  className: "bg-red-600 text-white",
+  className: "bg-red-600 font-semibold text-white",
 });
 check("badge: due today", badgeFor(TODAY), {
   label: "DUE TODAY",
-  className: "bg-orange-500 text-white",
+  className: "bg-orange-500 font-semibold text-white",
 });
 check("badge: due tomorrow", badgeFor("2026-08-26"), {
   label: "Due Tomorrow",
-  className: "bg-yellow-200 text-stone-900",
+  className: "bg-yellow-200 font-semibold text-stone-900",
 });
 check("badge: due in 2 days", badgeFor("2026-08-27"), {
   label: "Due in 2 days",
-  className: "bg-slate-200 text-stone-900",
+  className: "bg-slate-200 font-semibold text-stone-900",
 });
+
+// The "later" rung: exact days up to a week, then rounded bands. Boundaries on
+// both sides of every band, since that is the only place this can go wrong.
+check("badge: 3 days counts out exactly", badgeFor(inDays(3)), {
+  label: "Due in 3 days",
+  className: LATER_PILL,
+});
+check("badge: 6 days is the last counted day", badgeFor(inDays(6))?.label, "Due in 6 days");
+check("badge: 7 days rounds to a week", badgeFor(inDays(7))?.label, "Due in a week");
+check("badge: 13 days is still a week", badgeFor(inDays(13))?.label, "Due in a week");
+check("badge: 14 days is two weeks", badgeFor(inDays(14))?.label, "Due in two weeks");
+check("badge: 20 days is still two weeks", badgeFor(inDays(20))?.label, "Due in two weeks");
+check("badge: 21 days is several weeks", badgeFor(inDays(21))?.label, "Due in several weeks");
+check("badge: a year out is several weeks", badgeFor(inDays(365))?.label, "Due in several weeks");
+check("badge: the later pill is white, outlined and not bold", badgeFor(inDays(30))?.className, LATER_PILL);
+
 check(
-  "badge: nothing for later, undated, or completed",
-  [badgeFor("2026-08-28"), badgeFor(null), badgeFor("2026-08-01", true)],
+  "badge: nothing for an undated or completed task",
+  [badgeFor(null), badgeFor("2026-08-01", true), badgeFor(inDays(30), true)],
   [null, null, null],
 );
 
