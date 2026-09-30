@@ -2,6 +2,7 @@ import {
   FONT_OPTIONS,
   FONT_SIZE_OPTIONS,
   useSettings,
+  type CompletedVisibilityDefault,
   type FontChoice,
   type FontSize,
 } from "../../state/settings";
@@ -34,6 +35,13 @@ export default function SettingsView() {
           subtitle="Scale every text and control proportionally."
         >
           <FontSizePicker />
+        </Panel>
+
+        <Panel
+          title="Completed tasks"
+          subtitle="Choose whether completed tasks are shown or hidden by default on the Calendar and Focus screens after each refresh. The header toggle still flips it per visit."
+        >
+          <CompletedVisibilityPicker />
         </Panel>
 
         <Panel
@@ -223,6 +231,61 @@ function FontSizeOptionButton({
           : "text-stone-600 hover:text-stone-900"
       }`}
       style={{ fontSize: `${previewSize}px` }}
+    >
+      {label}
+    </button>
+  );
+}
+
+const COMPLETED_VISIBILITY_OPTIONS: readonly {
+  id: CompletedVisibilityDefault;
+  label: string;
+}[] = [
+  { id: "show", label: "Show completed" },
+  { id: "hide", label: "Hide completed" },
+];
+
+function CompletedVisibilityPicker() {
+  const { completedVisibilityDefault, setCompletedVisibilityDefault } =
+    useSettings();
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Default completed-task visibility"
+      className="inline-flex rounded-lg border border-slate-200/80 bg-white p-0.5"
+    >
+      {COMPLETED_VISIBILITY_OPTIONS.map((opt) => (
+        <CompletedVisibilityOptionButton
+          key={opt.id}
+          label={opt.label}
+          selected={completedVisibilityDefault === opt.id}
+          onSelect={() => setCompletedVisibilityDefault(opt.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CompletedVisibilityOptionButton({
+  label,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={`focus-ring rounded-md px-3 py-1.5 text-[13px] transition-colors ${
+        selected
+          ? "bg-accent-50 text-accent-700"
+          : "text-stone-600 hover:text-stone-900"
+      }`}
     >
       {label}
     </button>
