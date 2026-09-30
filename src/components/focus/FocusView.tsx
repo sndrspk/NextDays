@@ -8,6 +8,7 @@ import { useIcsCalendars } from "../../hooks/useIcsCalendars";
 import { parseTaskTitle } from "../../lib/parseTaskTitle";
 import { extractUrl, titleFromUrl } from "../../lib/extractUrl";
 import { filterCompletedForDisplay } from "../../lib/completedVisibility";
+import { useSettings } from "../../state/settings";
 import { orderTasksForDisplay } from "../../lib/taskOrdering";
 import TaskCard from "../calendar/TaskCard";
 import EventCard from "../calendar/EventCard";
@@ -27,7 +28,10 @@ export default function FocusView() {
   const today = query.data?.today ?? "";
   const tasks = query.data?.tasks ?? [];
   const soonTasks = soonQuery.data ?? [];
-  const [showCompleted, setShowCompleted] = useState(false);
+  const { completedVisibilityDefault } = useSettings();
+  const [showCompleted, setShowCompleted] = useState(
+    completedVisibilityDefault === "show",
+  );
   const projects = useProjects().data ?? EMPTY_PROJECTS;
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];

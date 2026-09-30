@@ -74,6 +74,12 @@ export type CalendarLayout = "columns" | "grid";
 export const DEFAULT_CALENDAR_LAYOUT: CalendarLayout = "columns";
 const CALENDAR_LAYOUT_STORAGE_KEY = "nextdays:calendarLayout";
 
+// Default state of the show/hide-completed toggle on the Calendar and Focus
+// screens after each refresh. Persisted so the chosen default survives reloads.
+export type CompletedVisibilityDefault = "show" | "hide";
+export const DEFAULT_COMPLETED_VISIBILITY: CompletedVisibilityDefault = "show";
+const COMPLETED_VISIBILITY_STORAGE_KEY = "nextdays:completedVisibilityDefault";
+
 function readStoredFont(): FontChoice {
   if (typeof window === "undefined") return DEFAULT_FONT;
   const raw = window.localStorage.getItem(FONT_STORAGE_KEY);
@@ -103,6 +109,13 @@ function readStoredCalendarLayout(): CalendarLayout {
   return DEFAULT_CALENDAR_LAYOUT;
 }
 
+function readStoredCompletedVisibility(): CompletedVisibilityDefault {
+  if (typeof window === "undefined") return DEFAULT_COMPLETED_VISIBILITY;
+  const raw = window.localStorage.getItem(COMPLETED_VISIBILITY_STORAGE_KEY);
+  if (raw === "show" || raw === "hide") return raw;
+  return DEFAULT_COMPLETED_VISIBILITY;
+}
+
 function stackFor(choice: FontChoice): string {
   return (FONT_OPTIONS.find((o) => o.id === choice) ?? FONT_OPTIONS[0]).stack;
 }
@@ -120,6 +133,8 @@ interface SettingsState {
   setFontSize: (next: FontSize) => void;
   calendarLayout: CalendarLayout;
   setCalendarLayout: (next: CalendarLayout) => void;
+  completedVisibilityDefault: CompletedVisibilityDefault;
+  setCompletedVisibilityDefault: (next: CompletedVisibilityDefault) => void;
 }
 
 const SettingsContext = createContext<SettingsState | null>(null);
@@ -133,6 +148,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [calendarLayout, setCalendarLayoutState] = useState<CalendarLayout>(
     () => readStoredCalendarLayout(),
   );
+  const [completedVisibilityDefault, setCompletedVisibilityDefaultState] =
+    useState<CompletedVisibilityDefault>(() => readStoredCompletedVisibility());
 
   useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
@@ -185,6 +202,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setCompletedVisibilityDefault = (next: CompletedVisibilityDefault) => {
+    setCompletedVisibilityDefaultState(next);
+    try {
+      window.localStorage.setItem(COMPLETED_VISIBILITY_STORAGE_KEY, next);
+    } catch {
+      // see setFont
+    }
+  };
+
   const value = useMemo(
     () => ({
       font,
@@ -195,8 +221,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setFontSize,
       calendarLayout,
       setCalendarLayout,
+      completedVisibilityDefault,
+      setCompletedVisibilityDefault,
     }),
-    [font, desktopDayCount, fontSize, calendarLayout],
+    [
+      font,
+      desktopDayCount,
+      fontSize,
+      calendarLayout,
+      completedVisibilityDefault,
+    ],
   );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

@@ -30,10 +30,13 @@ import { useSettings } from "../../state/settings";
 export default function CalendarStrip() {
   const dayCount = useDayCount();
   const moveTask = useMoveTask();
-  const { calendarLayout, setCalendarLayout } = useSettings();
+  const { calendarLayout, setCalendarLayout, completedVisibilityDefault } =
+    useSettings();
   const { push } = useToast();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [showCompleted, setShowCompleted] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(
+    completedVisibilityDefault === "show",
+  );
   const calendarsQuery = useIcsCalendars();
   const icsCalendars = calendarsQuery.data ?? [];
   const { byDate: eventsByDate } = useExternalEvents();
