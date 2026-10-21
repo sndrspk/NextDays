@@ -61,6 +61,8 @@ Once Milestone 1 lands, expect to see:
   - Client passes `shouldCreateUser: false` to `signInWithOtp`, so strangers entering their own email get rejected with "This email isn't authorised to sign in." Only existing rows in `auth.users` can request a magic link.
   - **The owner is created manually once**: Supabase dashboard → Authentication → Users → "Add user" → use your email. After that, sign-in works.
   - The Supabase project needs its **Redirect URLs** allowlist to include both `http://localhost:5173` (dev) and the deployed origin (`https://sndrspk.github.io/NextDays/`) for the magic-link round-trip to land back on the app.
+- **Supabase project details (for the connector):** Project name **"NextDays Drambase"**, project ID `yrnbnejqkoyjxtjsuatd`. Owner user ID: `eeb2b229-eccd-4acb-a28f-326d2a53d8b4` (email `nextdays@sander-s.net`). When inserting rows via the Supabase connector (service role, bypasses RLS), always set `user_id` explicitly to the owner's ID.
+- **Assistant skill `add-nextdays-task`:** A Mistral skill (v0.0.65) lets the assistant add tasks to NextDays from any conversation via the Supabase connector. It encodes the title-parsing rules (`@Project` / `#tag` / URL extraction), the INSERT pattern for `public.tasks`, and the full schema reference. When adding tasks via SQL, follow the same rules: parse `@Project` and `#tag` tokens, extract URLs, set `scheduled_date` to today (or NULL with `soon=true`), use `extract(epoch from now())::integer` for `sort_order`, and always set `user_id` to the owner's ID.
 
 ## Schema notes (plan §4 + §10)
 
