@@ -72,7 +72,7 @@ export default function SearchView() {
         uppercase — lowercase <em>and</em> / <em>or</em> are searched as ordinary words.
       </p>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/95">
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto surface rounded-2xl border border-line/80 bg-white/95">
         {!trimmed ? (
           <EmptyState
             title="Search your tasks"
@@ -92,11 +92,11 @@ export default function SearchView() {
           />
         ) : (
           <>
-            <div className="border-b border-slate-100 px-4 py-2 text-[11px] text-stone-400 sm:px-5">
+            <div className="border-b border-line/50 px-4 py-2 text-[11px] text-stone-400 sm:px-5">
               {results.length} {results.length === 1 ? "result" : "results"}
               {activeCount !== results.length && ` · ${activeCount} active`}
             </div>
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-line/50">
               {results.map((t) => (
                 <SearchResultRow
                   key={t.id}
@@ -149,7 +149,7 @@ function SearchField({ value, onChange }: { value: string; onChange: (next: stri
           }
         }}
         placeholder='Search tasks — try: report OR invoice, "quarterly report"'
-        className="focus-ring w-full rounded-xl border border-slate-200/80 bg-white py-2.5 pl-9 pr-9 text-[14px] text-stone-800 placeholder:text-stone-400 transition-colors hover:border-slate-300 focus:border-accent/60 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+        className="focus-ring w-full rounded-xl border border-line/80 bg-white py-2.5 pl-9 pr-9 text-[14px] text-stone-800 placeholder:text-stone-400 transition-colors hover:border-line-strong focus:border-accent/60 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value && (
         <button
@@ -255,7 +255,7 @@ function SearchResultRow({
                   e.stopPropagation();
                   setView({ kind: "tag", tag });
                 }}
-                className="rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500 transition-colors hover:bg-slate-200/70 hover:text-stone-700"
+                className="nd-pill rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500 transition-colors hover:bg-slate-200/70 hover:text-stone-700"
               >
                 {tag}
               </button>
@@ -274,7 +274,7 @@ function SearchResultRow({
             e.stopPropagation();
             setView({ kind: "project", id: project.id });
           }}
-          className="hidden flex-none items-center gap-1.5 rounded-full border border-slate-200/80 px-2 py-0.5 text-[10px] font-medium text-stone-500 transition-colors hover:border-slate-300 hover:text-stone-800 sm:inline-flex"
+          className="hidden flex-none items-center gap-1.5 nd-pill rounded-full border border-line/80 px-2 py-0.5 text-[10px] font-medium text-stone-500 transition-colors hover:border-line-strong hover:text-stone-800 sm:inline-flex"
         >
           <span
             aria-hidden

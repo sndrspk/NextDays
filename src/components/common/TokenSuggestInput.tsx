@@ -161,7 +161,7 @@ export default function TokenSuggestInput({
       {showing && (
         <ul
           role="listbox"
-          className={`absolute left-0 z-30 max-h-56 w-full min-w-[9rem] max-w-[18rem] overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-panel ${
+          className={`absolute left-0 z-30 max-h-56 w-full min-w-[9rem] max-w-[18rem] overflow-y-auto rounded-lg border border-line bg-white py-1 shadow-panel ${
             placement === "above" ? "bottom-full mb-1" : "top-full mt-1"
           }`}
         >

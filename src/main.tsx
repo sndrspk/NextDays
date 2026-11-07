@@ -5,6 +5,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/public-sans";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/readex-pro";
 import "@fontsource-variable/rethink-sans";
 import App from "./App";
 import "./index.css";

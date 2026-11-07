@@ -52,7 +52,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
         }`}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] flex-none flex-col overflow-y-auto border-r border-slate-200/70 bg-white px-3 py-5 transition-transform duration-200 ease-out-soft md:static md:z-auto md:w-64 md:max-w-none md:translate-x-0 md:bg-white/40 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 max-w-[85vw] surface flex-none flex-col overflow-y-auto border-r border-line/70 bg-white px-3 py-5 transition-transform duration-200 ease-out-soft md:static md:z-auto md:w-64 md:max-w-none md:translate-x-0 md:bg-white/40 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -245,7 +245,7 @@ function UserFooter() {
   const email = session?.user?.email ?? "Signed in";
   return (
     <div className="mt-auto pt-6">
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-2">
+      <div className="flex items-center gap-2 rounded-lg border border-line/70 bg-white/60 px-2.5 py-2">
         <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent-100 text-[10px] font-semibold text-accent-700">
           {email.slice(0, 1).toUpperCase()}
         </div>
@@ -360,7 +360,7 @@ function ListNameForm({ initial = "", pending, submitLabel, onCancel, onSubmit }
         if (!trimmed || pending) return;
         onSubmit(trimmed);
       }}
-      className="animate-fade-up rounded-xl border border-slate-200/80 bg-white p-2.5"
+      className="animate-fade-up surface rounded-xl border border-line/80 bg-white p-2.5"
     >
       <input
         autoFocus
@@ -421,7 +421,7 @@ function ProjectRow({ project, active, onOpen, onEdit, onDelete }: ProjectRowPro
         />
         <span className={`truncate ${active ? "font-medium" : ""}`}>{project.name}</span>
         {!project.is_personal && (
-          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
+          <span className="nd-pill rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
             work
           </span>
         )}

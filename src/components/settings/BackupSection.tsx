@@ -105,7 +105,7 @@ export default function BackupSection() {
         )}
       </section>
 
-      <div className="border-t border-slate-200/70" />
+      <div className="border-t border-line/70" />
 
       <section>
         <SectionLabel>Restore from file</SectionLabel>
@@ -125,11 +125,11 @@ export default function BackupSection() {
             const f = e.target.files?.[0];
             if (f) handleFileChosen(f);
           }}
-          className="block w-full text-[12px] text-stone-600 file:mr-3 file:rounded-md file:border file:border-slate-200/80 file:bg-white file:px-2.5 file:py-1 file:text-[12px] file:font-medium file:text-stone-700 file:transition-colors hover:file:border-slate-300 hover:file:bg-slate-50"
+          className="block w-full text-[12px] text-stone-600 file:mr-3 file:rounded-md file:border file:border-line/80 file:bg-white file:px-2.5 file:py-1 file:text-[12px] file:font-medium file:text-stone-700 file:transition-colors hover:file:border-line-strong hover:file:bg-slate-50"
         />
 
         {status.kind === "loaded" && (
-          <div className="mt-3 rounded-lg border border-slate-200/80 bg-slate-50/60 px-3 py-2.5 text-[12px]">
+          <div className="mt-3 rounded-lg border border-line/80 bg-slate-50/60 px-3 py-2.5 text-[12px]">
             <div className="font-medium text-stone-800">{status.filename}</div>
             <div className="mt-0.5 text-[11px] text-stone-500">
               Contains {summary(countBackup(status.envelope))}.
@@ -230,10 +230,10 @@ function ModeRadio({
     tone === "danger"
       ? selected
         ? "border-red-200 bg-red-50"
-        : "border-slate-200/80 hover:border-slate-300"
+        : "border-line/80 hover:border-line-strong"
       : selected
       ? "border-accent-100 bg-accent-50"
-      : "border-slate-200/80 hover:border-slate-300";
+      : "border-line/80 hover:border-line-strong";
 
   return (
     <label

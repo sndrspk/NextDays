@@ -1,10 +1,12 @@
 import {
   FONT_OPTIONS,
   FONT_SIZE_OPTIONS,
+  THEME_OPTIONS,
   useSettings,
   type CompletedVisibilityDefault,
   type FontChoice,
   type FontSize,
+  type Theme,
 } from "../../state/settings";
 import AccountSafetySection from "./AccountSafetySection";
 import BackupSection from "./BackupSection";
@@ -26,6 +28,13 @@ export default function SettingsView() {
       </header>
 
       <div className="flex-1 space-y-8 overflow-y-auto pb-10">
+        <Panel
+          title="Theme"
+          subtitle="The overall look of the app. Font and text size below apply on top of any theme."
+        >
+          <ThemePicker />
+        </Panel>
+
         <Panel title="Appearance" subtitle="The font used everywhere in the app.">
           <FontPicker />
         </Panel>
@@ -97,7 +106,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white px-5 py-5 sm:px-6 sm:py-6">
+    <section className="surface rounded-2xl border border-line/80 bg-white px-5 py-5 sm:px-6 sm:py-6">
       <div className="mb-4">
         <h3 className="text-[14px] font-semibold tracking-tight text-stone-900">
           {title}
@@ -108,6 +117,79 @@ function Panel({
       </div>
       {children}
     </section>
+  );
+}
+
+function ThemePicker() {
+  const { theme, setTheme } = useSettings();
+  return (
+    <fieldset className="space-y-2">
+      <legend className="sr-only">Theme</legend>
+      {THEME_OPTIONS.map((opt) => (
+        <label
+          key={opt.id}
+          className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 transition-colors ${
+            theme === opt.id
+              ? "border-accent-100 bg-accent-50"
+              : "border-line/80 hover:border-line-strong"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <input
+              type="radio"
+              name="theme"
+              value={opt.id}
+              checked={theme === opt.id}
+              onChange={() => setTheme(opt.id)}
+              className="h-3.5 w-3.5 accent-accent"
+            />
+            <ThemeSwatch theme={opt.id} />
+            <div>
+              <div
+                className={`text-[14px] ${theme === opt.id ? "text-accent-700" : "text-stone-800"}`}
+              >
+                {opt.label}
+              </div>
+              <div className="text-[12px] text-stone-500">{opt.description}</div>
+            </div>
+          </div>
+          {opt.id === "default" && (
+            <span className="nd-pill rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
+              default
+            </span>
+          )}
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
+// Miniature preview of the theme: canvas, structural border, accent mark.
+function ThemeSwatch({ theme }: { theme: Theme }) {
+  const brutalist = theme === "brutalist";
+  return (
+    <span
+      aria-hidden
+      className="inline-block h-8 w-11 flex-none overflow-hidden border bg-white"
+      style={{
+        borderColor: brutalist ? "#000" : "#e2e8f0",
+        borderWidth: brutalist ? 2 : 1,
+        borderRadius: brutalist ? 0 : 6,
+        boxShadow: brutalist ? "3px 3px 0 #000" : "none",
+        backgroundImage: brutalist
+          ? "none"
+          : "linear-gradient(170deg, #eef2ff 0%, #fdf4ff 100%)",
+      }}
+    >
+      <span
+        className="ml-1 mt-1 block h-1 w-3"
+        style={{ backgroundColor: brutalist ? "#b05e27" : "#6366f1" }}
+      />
+      <span
+        className="ml-1 mt-1 block h-1 w-6"
+        style={{ backgroundColor: brutalist ? "#000" : "#cbd5e1" }}
+      />
+    </span>
   );
 }
 
@@ -122,6 +204,7 @@ function FontPicker() {
           id={opt.id}
           label={opt.label}
           stack={opt.stack}
+          bodyWeight={opt.bodyWeight}
           selected={font === opt.id}
           onSelect={() => setFont(opt.id)}
         />
@@ -134,21 +217,24 @@ function FontOptionRow({
   id,
   label,
   stack,
+  bodyWeight,
   selected,
   onSelect,
 }: {
   id: FontChoice;
   label: string;
   stack: string;
+  bodyWeight?: number;
   selected: boolean;
   onSelect: () => void;
 }) {
+  const previewStyle = { fontFamily: stack, fontWeight: bodyWeight };
   return (
     <label
       className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3.5 py-3 transition-colors ${
         selected
           ? "border-accent-100 bg-accent-50"
-          : "border-slate-200/80 hover:border-slate-300"
+          : "border-line/80 hover:border-line-strong"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -163,20 +249,17 @@ function FontOptionRow({
         <div>
           <div
             className={`text-[14px] ${selected ? "text-accent-700" : "text-stone-800"}`}
-            style={{ fontFamily: stack }}
+            style={previewStyle}
           >
             {label}
           </div>
-          <div
-            className="text-[12px] text-stone-500"
-            style={{ fontFamily: stack }}
-          >
+          <div className="text-[12px] text-stone-500" style={previewStyle}>
             The quick brown fox jumps over the lazy dog.
           </div>
         </div>
       </div>
       {id === "inter" && (
-        <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
+        <span className="nd-pill rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-stone-500">
           default
         </span>
       )}
@@ -190,7 +273,7 @@ function FontSizePicker() {
     <div
       role="radiogroup"
       aria-label="Text size"
-      className="inline-flex rounded-lg border border-slate-200/80 bg-white p-0.5"
+      className="inline-flex rounded-lg border border-line/80 bg-white p-0.5"
     >
       {FONT_SIZE_OPTIONS.map((opt) => (
         <FontSizeOptionButton
@@ -252,7 +335,7 @@ function CompletedVisibilityPicker() {
     <div
       role="radiogroup"
       aria-label="Default completed-task visibility"
-      className="inline-flex rounded-lg border border-slate-200/80 bg-white p-0.5"
+      className="inline-flex rounded-lg border border-line/80 bg-white p-0.5"
     >
       {COMPLETED_VISIBILITY_OPTIONS.map((opt) => (
         <CompletedVisibilityOptionButton

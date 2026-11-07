@@ -339,7 +339,7 @@ function inDays(n: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
-const LATER_PILL = "border border-slate-300 bg-white font-normal text-stone-900";
+const LATER_PILL = "border border-line-strong bg-white font-normal text-stone-900";
 
 check("badge: overdue", badgeFor("2026-08-24"), {
   label: "OVERDUE",

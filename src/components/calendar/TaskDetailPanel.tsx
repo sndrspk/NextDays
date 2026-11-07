@@ -109,7 +109,7 @@ export default function TaskDetailPanel() {
       <aside
         role="dialog"
         aria-label="Task details"
-        className={`fixed inset-x-0 bottom-0 top-12 z-40 flex flex-col overflow-hidden rounded-t-2xl border border-slate-200/80 bg-white shadow-panel transition-transform duration-200 ease-out-soft sm:inset-y-3 sm:inset-x-auto sm:right-3 sm:left-auto sm:w-[min(28rem,calc(100vw-1.5rem))] sm:rounded-2xl ${
+        className={`fixed inset-x-0 bottom-0 top-12 z-40 flex flex-col overflow-hidden rounded-t-2xl border border-line/80 bg-white shadow-panel transition-transform duration-200 ease-out-soft sm:inset-y-3 sm:inset-x-auto sm:right-3 sm:left-auto sm:w-[min(28rem,calc(100vw-1.5rem))] sm:rounded-2xl ${
           isOpen ? "translate-y-0 sm:translate-x-0 sm:translate-y-0" : "translate-y-[110%] sm:translate-y-0 sm:translate-x-[120%]"
         }`}
       >
@@ -293,13 +293,13 @@ function PanelBody({
   }
 
   const inputClass =
-    "focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none";
+    "focus-ring w-full rounded-lg border border-line/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-line-strong focus:border-accent/60 focus:outline-none";
   const disabledInputClass =
-    "w-full rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
+    "w-full rounded-lg border border-line/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
 
   return (
     <>
-      <header className="flex flex-none items-center justify-between border-b border-slate-200/80 bg-white px-4 py-3 sm:px-5">
+      <header className="flex flex-none items-center justify-between border-b border-line/80 bg-white px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-400">
           <span>Task</span>
           {isSaving ? (
@@ -529,7 +529,7 @@ function PanelBody({
           {/* The scheduled date used to be read-only footer text; it is an
               editable field above now, so only completion is echoed here. */}
           {task.completed && task.completed_at && (
-            <div className="mt-6 border-t border-slate-200/70 pt-4 text-[11px] text-stone-400">
+            <div className="mt-6 border-t border-line/70 pt-4 text-[11px] text-stone-400">
               <span className="text-stone-500">Completed</span> ·{" "}
               {new Date(task.completed_at).toLocaleString()}
             </div>
@@ -542,7 +542,7 @@ function PanelBody({
           )}
         </div>
 
-        <footer className="flex flex-none flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 bg-white px-4 py-3 sm:px-6">
+        <footer className="flex flex-none flex-wrap items-center justify-between gap-2 border-t border-line/80 bg-white px-4 py-3 sm:px-6">
           <button
             type="button"
             onClick={onDelete}

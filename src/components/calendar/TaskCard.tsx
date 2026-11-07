@@ -52,7 +52,7 @@ export default function TaskCard({ task, today }: TaskCardProps) {
       : "border-accent bg-accent text-white"
     : tint
     ? "bg-white hover:shadow-sm"
-    : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm";
+    : "border-line-strong bg-white hover:border-accent/60 hover:shadow-sm";
 
   const dragStyle = transform
     ? { transform: CSS.Transform.toString(transform), zIndex: 50 }

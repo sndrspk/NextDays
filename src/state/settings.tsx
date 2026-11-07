@@ -1,12 +1,22 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-export type FontChoice = "inter" | "public-sans" | "instrument-sans" | "hanken-grotesk" | "rethink-sans";
+export type FontChoice =
+  | "inter"
+  | "public-sans"
+  | "instrument-sans"
+  | "hanken-grotesk"
+  | "rethink-sans"
+  | "readex-pro";
 
 export interface FontOption {
   id: FontChoice;
   label: string;
   stack: string;
+  // Body text weight for variable fonts that want a non-default one
+  // (Readex Pro renders body text light, at 330). Applied via the
+  // `--app-body-wght` CSS variable on <html>.
+  bodyWeight?: number;
 }
 
 export const FONT_OPTIONS: readonly FontOption[] = [
@@ -38,10 +48,51 @@ export const FONT_OPTIONS: readonly FontOption[] = [
     stack:
       '"Rethink Sans Variable", "Rethink Sans", ui-sans-serif, system-ui, sans-serif',
   },
+  {
+    id: "readex-pro",
+    label: "Readex Pro",
+    stack: '"Readex Pro Variable", "Readex Pro", ui-sans-serif, system-ui, sans-serif',
+    bodyWeight: 330,
+  },
 ];
 
 export const DEFAULT_FONT: FontChoice = "inter";
 const FONT_STORAGE_KEY = "nextdays:font";
+
+// Visual themes. "default" is the original look; "brutalist" is the
+// "brutalist light" theme (flat white canvas, 2px black square borders, hard
+// black offset shadows, cognac accent). The palette lives in CSS variables in
+// src/index.css; this provider just flips `data-theme` on <html>.
+export type Theme = "default" | "brutalist";
+
+export interface ThemeOption {
+  id: Theme;
+  label: string;
+  description: string;
+}
+
+export const THEME_OPTIONS: readonly ThemeOption[] = [
+  {
+    id: "default",
+    label: "Default",
+    description: "Soft indigo accent on a light gradient wash.",
+  },
+  {
+    id: "brutalist",
+    label: "Brutalist light",
+    description:
+      "Flat white canvas, heavy black borders and hard offset shadows, cognac accent.",
+  },
+];
+
+export const DEFAULT_THEME: Theme = "default";
+const THEME_STORAGE_KEY = "nextdays:theme";
+
+// Browser chrome (address bar) colour per theme.
+const THEME_COLOR: Record<Theme, string> = {
+  default: "#6366f1",
+  brutalist: "#b05e27",
+};
 
 export type DesktopDayCount = 3;
 export const DESKTOP_DAY_COUNT_OPTIONS: readonly DesktopDayCount[] = [3];
@@ -89,6 +140,15 @@ function readStoredFont(): FontChoice {
   return DEFAULT_FONT;
 }
 
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return DEFAULT_THEME;
+  const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (raw && THEME_OPTIONS.some((o) => o.id === raw)) {
+    return raw as Theme;
+  }
+  return DEFAULT_THEME;
+}
+
 function readStoredDesktopDayCount(): DesktopDayCount {
   return DEFAULT_DESKTOP_DAY_COUNT;
 }
@@ -125,6 +185,8 @@ function scaleFor(size: FontSize): number {
 }
 
 interface SettingsState {
+  theme: Theme;
+  setTheme: (next: Theme) => void;
   font: FontChoice;
   setFont: (next: FontChoice) => void;
   desktopDayCount: DesktopDayCount;
@@ -140,6 +202,7 @@ interface SettingsState {
 const SettingsContext = createContext<SettingsState | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
   const [font, setFontState] = useState<FontChoice>(() => readStoredFont());
   const [desktopDayCount, setDesktopDayCountState] = useState<DesktopDayCount>(
     () => readStoredDesktopDayCount(),
@@ -152,7 +215,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     useState<CompletedVisibilityDefault>(() => readStoredCompletedVisibility());
 
   useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", THEME_COLOR[theme]);
+  }, [theme]);
+
+  useEffect(() => {
     document.documentElement.style.setProperty("--app-font-sans", stackFor(font));
+    const bodyWeight = FONT_OPTIONS.find((o) => o.id === font)?.bodyWeight;
+    if (bodyWeight != null) {
+      document.documentElement.style.setProperty("--app-body-wght", String(bodyWeight));
+    } else {
+      document.documentElement.style.removeProperty("--app-body-wght");
+    }
   }, [font]);
 
   useEffect(() => {
@@ -164,6 +240,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.setProperty("--app-font-scale", String(scale));
     document.documentElement.style.setProperty("zoom", String(scale));
   }, [fontSize]);
+
+  const setTheme = (next: Theme) => {
+    setThemeState(next);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+      // see setFont
+    }
+  };
 
   const setFont = (next: FontChoice) => {
     setFontState(next);
@@ -213,6 +298,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
+      theme,
+      setTheme,
       font,
       setFont,
       desktopDayCount,
@@ -225,6 +312,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setCompletedVisibilityDefault,
     }),
     [
+      theme,
       font,
       desktopDayCount,
       fontSize,
