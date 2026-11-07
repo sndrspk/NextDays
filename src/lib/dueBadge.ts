@@ -56,9 +56,10 @@ export const PILL_BASE =
 
 // One pastel for every tag — deliberately outside the red/orange/yellow/grey
 // urgency ramp so a tag never reads as a due state, and picked to sit with the
-// app's lilac background wash.
-export const TAG_PILL = "bg-violet-100 font-semibold text-violet-700";
+// app's lilac background wash. `nd-tag` lets the brutalist theme swap pill
+// styles (tags take the filled due-pill style there; see index.css).
+export const TAG_PILL = "nd-tag bg-violet-100 font-semibold text-violet-700";
 
 // Completed rows keep their tags, but muted: a bright chip next to a
 // struck-through title pulls more attention than the task deserves.
-export const TAG_PILL_COMPLETED = "bg-slate-100 font-semibold text-stone-400";
+export const TAG_PILL_COMPLETED = "nd-tag nd-tag-done bg-slate-100 font-semibold text-stone-400";
