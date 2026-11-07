@@ -217,16 +217,44 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* Status colours stay inside the system: pale tinted backgrounds, black
-   borders. The single accent never spreads over tag chips. */
+   borders. */
 [data-theme="brutalist"] .border-red-200,
 [data-theme="brutalist"] .border-red-200\/70,
 [data-theme="brutalist"] .border-red-300,
 [data-theme="brutalist"] .border-amber-200 {
   border-color: #000;
 }
-[data-theme="brutalist"] .bg-violet-100 {
-  background-color: #fff;
+/* Pill styles swap in this theme only. Tags take the filled due-pill style —
+   accent fill with a white label (completed tags get the muted tint variant) —
+   while due-timing pills take the tags' old neutral chip style but keep their
+   rung colour as the label colour (the title colour still signals urgency). */
+[data-theme="brutalist"] .nd-tag {
+  background-color: rgb(var(--c-accent-500));
+  color: #fff;
 }
-[data-theme="brutalist"] .text-violet-700 {
-  color: #000;
+[data-theme="brutalist"] .nd-tag:hover {
+  background-color: rgb(var(--c-accent-600));
+}
+[data-theme="brutalist"] .nd-tag.nd-tag-done {
+  background-color: rgb(var(--c-accent-50));
+  color: rgb(var(--c-accent-700));
+}
+[data-theme="brutalist"] .nd-pill.bg-red-600 {
+  background-color: #fff;
+  color: #dc2626;
+}
+[data-theme="brutalist"] .nd-pill.bg-orange-500 {
+  background-color: #fff;
+  color: #ea580c;
+}
+[data-theme="brutalist"] .nd-pill.bg-yellow-200 {
+  background-color: #fff;
+  color: #b45309;
+}
+[data-theme="brutalist"] .nd-pill.bg-slate-200 {
+  background-color: #fff;
+  color: #57534e;
+}
+[data-theme="brutalist"] .nd-pill.border.bg-white {
+  border-width: 0;
 }

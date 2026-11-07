@@ -255,7 +255,7 @@ function SearchResultRow({
                   e.stopPropagation();
                   setView({ kind: "tag", tag });
                 }}
-                className="nd-pill rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500 transition-colors hover:bg-slate-200/70 hover:text-stone-700"
+                className="nd-tag nd-pill rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-stone-500 transition-colors hover:bg-slate-200/70 hover:text-stone-700"
               >
                 {tag}
               </button>
