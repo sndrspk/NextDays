@@ -4,6 +4,89 @@
    for projects that haven't migrated their config to CSS @theme blocks yet. */
 @config "../tailwind.config.ts";
 
+/* Theme-aware palette: these map Tailwind colors onto the RGB-triplet
+   variables below, so `data-theme` on <html> re-skins the app. Tailwind v4
+   applies opacity modifiers (`bg-white/95`, `border-line/80`, ...) to these
+   via color-mix. Only the slate/stone shades actually used in src/ are
+   remapped; the rest of those ramps keeps Tailwind's defaults. `line` is the
+   semantic border color (call sites used slate-200/300, stone-200/300 before). */
+@theme {
+  --color-white: rgb(var(--c-white));
+  --color-slate-50: rgb(var(--c-slate-50));
+  --color-slate-100: rgb(var(--c-slate-100));
+  --color-slate-200: rgb(var(--c-slate-200));
+  --color-slate-900: rgb(var(--c-slate-900));
+  --color-stone-200: rgb(var(--c-stone-200));
+  --color-stone-300: rgb(var(--c-stone-300));
+  --color-stone-400: rgb(var(--c-stone-400));
+  --color-stone-500: rgb(var(--c-stone-500));
+  --color-stone-600: rgb(var(--c-stone-600));
+  --color-stone-700: rgb(var(--c-stone-700));
+  --color-stone-800: rgb(var(--c-stone-800));
+  --color-stone-900: rgb(var(--c-stone-900));
+  --color-line: rgb(var(--c-line));
+  --color-line-strong: rgb(var(--c-line-strong));
+  --color-accent: rgb(var(--c-accent-500));
+  --color-accent-50: rgb(var(--c-accent-50));
+  --color-accent-100: rgb(var(--c-accent-100));
+  --color-accent-500: rgb(var(--c-accent-500));
+  --color-accent-600: rgb(var(--c-accent-600));
+  --color-accent-700: rgb(var(--c-accent-700));
+}
+
+/* Theme token values (RGB triplets consumed by the @theme block above).
+   `:root` holds the "default" theme, matching the values that used to be
+   hardcoded; swapping `data-theme` on <html> (done by SettingsProvider)
+   re-skins the whole app. */
+:root {
+  color-scheme: light;
+  --c-white: 255 255 255;
+  --c-slate-50: 248 250 252;
+  --c-slate-100: 241 245 249;
+  --c-slate-200: 226 232 240;
+  --c-slate-900: 15 23 42;
+  --c-stone-200: 231 229 228;
+  --c-stone-300: 214 211 209;
+  --c-stone-400: 168 162 158;
+  --c-stone-500: 120 113 108;
+  --c-stone-600: 87 83 78;
+  --c-stone-700: 68 64 60;
+  --c-stone-800: 41 37 36;
+  --c-stone-900: 28 25 23;
+  --c-line: 226 232 240;
+  --c-line-strong: 203 213 225;
+  --c-accent-50: 238 242 255;
+  --c-accent-100: 224 231 255;
+  --c-accent-500: 99 102 241;
+  --c-accent-600: 79 70 229;
+  --c-accent-700: 67 56 202;
+}
+
+/* "Brutalist light": flat white canvas, black structure, one cognac accent,
+   warm tint washes, muted grey secondary text. */
+[data-theme="brutalist"] {
+  --c-white: 255 255 255;
+  --c-slate-50: 250 241 232; /* #faf1e8 hover wash */
+  --c-slate-100: 249 233 219; /* #f9e9db chip wash */
+  --c-slate-200: 229 229 229; /* #e5e5e5 neutral (toggle track, calm pill) */
+  --c-slate-900: 0 0 0;
+  --c-stone-200: 214 214 214;
+  --c-stone-300: 140 140 140;
+  --c-stone-400: 89 89 89; /* #595959 muted grey */
+  --c-stone-500: 89 89 89;
+  --c-stone-600: 89 89 89;
+  --c-stone-700: 0 0 0;
+  --c-stone-800: 0 0 0;
+  --c-stone-900: 0 0 0;
+  --c-line: 0 0 0;
+  --c-line-strong: 0 0 0;
+  --c-accent-50: 250 241 232;
+  --c-accent-100: 249 233 219;
+  --c-accent-500: 176 94 39; /* #b05e27 cognac */
+  --c-accent-600: 201 113 47; /* #c9712f cognac hover */
+  --c-accent-700: 176 94 39;
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -14,6 +97,9 @@ body {
   background-image:
     linear-gradient(170deg, #eef2ff 0%, #f1eefe 38%, #f7eefd 70%, #fdf4ff 100%);
   background-attachment: fixed;
+  /* `--app-body-wght` is set on <html> by SettingsProvider for fonts that want
+     a non-default body weight (Readex Pro renders body text at 330). */
+  font-weight: var(--app-body-wght, 400);
   font-feature-settings: "cv11", "ss01", "ss03";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -59,4 +145,88 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .focus-ring:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 0 4px rgba(99, 102, 241, 0.45);
+}
+
+/* ---- "Brutalist light" structural rules -----------------------------------
+   Unlayered CSS, so these win over Tailwind's @layer utilities on ties.
+   Structural rules per the brutalist spec: 2px square black borders, square
+   corners on structural elements, hard black offset shadows (scaled by element
+   size, always down-right), cognac reserved for state and primary actions. */
+
+[data-theme="brutalist"] body {
+  background-color: #ffffff;
+  background-image: none;
+}
+
+/* Heavy square outlines on cards, buttons, inputs, modals, nav containers.
+   Directional borders (border-b/t/l/r, dividers) stay 1px hairlines. */
+[data-theme="brutalist"] .border {
+  border-width: 2px;
+}
+
+[data-theme="brutalist"] .rounded,
+[data-theme="brutalist"] .rounded-md,
+[data-theme="brutalist"] .rounded-lg,
+[data-theme="brutalist"] .rounded-xl,
+[data-theme="brutalist"] .rounded-2xl,
+[data-theme="brutalist"] .rounded-t-2xl {
+  border-radius: 0;
+}
+
+/* Cards and modals: largest hard offset. `.surface` is a no-op marker class
+   placed on the main card containers; `shadow-panel` is used by floating
+   panels (task detail, toasts, menus, drag overlay). */
+[data-theme="brutalist"] .surface,
+[data-theme="brutalist"] .shadow-panel {
+  box-shadow: 6px 6px 0 #000;
+}
+
+/* Primary buttons carry the medium offset... */
+[data-theme="brutalist"] .shadow-sm {
+  box-shadow: 4px 4px 0 #000;
+}
+
+/* ...and "press into" it on hover: shift down-right, shrink the shadow. */
+[data-theme="brutalist"] .bg-accent:not(.rounded-full) {
+  box-shadow: 4px 4px 0 #000;
+}
+[data-theme="brutalist"] .bg-accent:not(.rounded-full):hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+/* Small round controls (toggle tracks when on, completion circles, thumbs)
+   and chips/pills get the smallest offset. */
+[data-theme="brutalist"] .bg-accent.rounded-full,
+[data-theme="brutalist"] .rounded-full.shadow-sm,
+[data-theme="brutalist"] .rounded-full.hover\:shadow-sm:hover,
+[data-theme="brutalist"] .nd-pill {
+  box-shadow: 3px 3px 0 #000;
+}
+
+/* Pills go square in this theme. */
+[data-theme="brutalist"] .nd-pill {
+  border-radius: 0;
+}
+
+/* Hard cognac offset as the focus indicator instead of a soft ring. */
+[data-theme="brutalist"] .focus-ring:focus-visible,
+[data-theme="brutalist"] .focus-within\:ring-2:focus-within {
+  outline: none;
+  box-shadow: 4px 4px 0 rgb(var(--c-accent-500));
+}
+
+/* Status colours stay inside the system: pale tinted backgrounds, black
+   borders. The single accent never spreads over tag chips. */
+[data-theme="brutalist"] .border-red-200,
+[data-theme="brutalist"] .border-red-200\/70,
+[data-theme="brutalist"] .border-red-300,
+[data-theme="brutalist"] .border-amber-200 {
+  border-color: #000;
+}
+[data-theme="brutalist"] .bg-violet-100 {
+  background-color: #fff;
+}
+[data-theme="brutalist"] .text-violet-700 {
+  color: #000;
 }

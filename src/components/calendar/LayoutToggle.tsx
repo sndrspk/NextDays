@@ -12,7 +12,7 @@ export default function LayoutToggle({ layout, onChange }: LayoutToggleProps) {
     <div
       role="radiogroup"
       aria-label="Calendar layout"
-      className="inline-flex w-fit gap-0.5 rounded-lg border border-slate-200/80 bg-white/60 p-0.5 text-[12px]"
+      className="inline-flex w-fit gap-0.5 rounded-lg border border-line/80 bg-white/60 p-0.5 text-[12px]"
     >
       <button
         type="button"

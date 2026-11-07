@@ -1,6 +1,11 @@
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 
+// Theme-aware colors (white, the used slate/stone shades, line, accent) are
+// CSS variables defined in a `@theme` block in src/index.css, so the active
+// theme — set as `data-theme` on <html> by SettingsProvider — can swap the
+// whole palette without touching components.
+
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
@@ -15,14 +20,6 @@ export default {
         ],
       },
       colors: {
-        accent: {
-          DEFAULT: "#6366f1",
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-        },
         canvas: "#f7f7fb",
         ink: {
           900: "#1f2330",

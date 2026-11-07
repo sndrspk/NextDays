@@ -138,9 +138,9 @@ export default function AddTaskView() {
   }
 
   const inputClass =
-    "focus-ring w-full rounded-lg border border-slate-200/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none";
+    "focus-ring w-full rounded-lg border border-line/80 bg-white px-3 py-2 text-[13px] text-stone-800 placeholder:text-stone-300 transition-colors duration-150 hover:border-line-strong focus:border-accent/60 focus:outline-none";
   const disabledInputClass =
-    "w-full rounded-lg border border-slate-200/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
+    "w-full rounded-lg border border-line/60 bg-slate-50 px-3 py-2 text-[13px] text-stone-400 cursor-not-allowed";
 
   return (
     <div className="h-full overflow-y-auto">
@@ -290,7 +290,7 @@ export default function AddTaskView() {
               type="checkbox"
               checked={carryFields}
               onChange={(e) => setCarryFields(e.target.checked)}
-              className="h-4 w-4 cursor-pointer rounded border-slate-300 text-accent focus:ring-accent"
+              className="h-4 w-4 cursor-pointer rounded border-line-strong text-accent focus:ring-accent"
             />
             Save fields for next task
           </label>
@@ -301,7 +301,7 @@ export default function AddTaskView() {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200/70 pt-4">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line/70 pt-4">
             <button
               type="button"
               onClick={() => setView({ kind: "calendar" })}

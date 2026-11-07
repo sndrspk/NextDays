@@ -33,7 +33,7 @@ export default function IcsCalendarsSection() {
       )}
 
       {calendars.length > 0 && (
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white">
+        <ul className="divide-y divide-line/50 rounded-xl border border-line/80 bg-white">
           {calendars.map((cal) => (
             <CalendarRow
               key={cal.id}
@@ -56,7 +56,7 @@ export default function IcsCalendarsSection() {
             type="button"
             onClick={refresh}
             disabled={isFetching}
-            className="focus-ring flex-none rounded-md border border-slate-200/80 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+            className="focus-ring flex-none rounded-md border border-line/80 bg-white px-2.5 py-1 text-[11px] font-medium text-stone-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
           >
             {isFetching ? "Refreshing…" : "Refresh all"}
           </button>
@@ -115,7 +115,7 @@ function AddCalendarForm() {
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://calendar.example.com/feed.ics"
           disabled={create.isPending}
-          className="focus-ring flex-1 rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50"
+          className="focus-ring flex-1 rounded-md border border-line/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50"
         />
         <input
           type="text"
@@ -123,7 +123,7 @@ function AddCalendarForm() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (optional)"
           disabled={create.isPending}
-          className="focus-ring rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50 sm:w-44"
+          className="focus-ring rounded-md border border-line/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none disabled:opacity-50 sm:w-44"
         />
       </div>
       <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ function ColourSwatches({
             className={`h-5 w-5 rounded-full border transition-transform ${
               isSelected
                 ? "scale-110 border-stone-900 ring-2 ring-stone-900/20"
-                : "border-stone-200 hover:scale-105"
+                : "border-line/70 hover:scale-105"
             }`}
             style={{ backgroundColor: c }}
           />
@@ -211,7 +211,7 @@ function CalendarRow({
           type="button"
           onClick={() => setShowColour((s) => !s)}
           aria-label="Change calendar colour"
-          className="h-4 w-4 flex-none rounded-full border border-stone-200"
+          className="h-4 w-4 flex-none rounded-full border border-line/70"
           style={{ backgroundColor: calendar.colour }}
         />
         <div className="min-w-0 flex-1">
@@ -230,7 +230,7 @@ function CalendarRow({
                   setEditingName(false);
                 }
               }}
-              className="focus-ring w-full rounded-md border border-slate-200/80 bg-white px-2 py-1 text-[13px] text-stone-800 focus:border-accent/60 focus:outline-none"
+              className="focus-ring w-full rounded-md border border-line/80 bg-white px-2 py-1 text-[13px] text-stone-800 focus:border-accent/60 focus:outline-none"
             />
           ) : (
             <button

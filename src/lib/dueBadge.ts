@@ -17,7 +17,7 @@ const BADGES: Partial<Record<DueUrgency, DueBadge>> = {
 // The calm end of the ladder: an outlined white pill with plain black text, so
 // a date three weeks out reports itself without competing with the saturated
 // rungs above it. This is the only pill that isn't bold.
-const LATER = "border border-slate-300 bg-white font-normal text-stone-900";
+const LATER = "border border-line-strong bg-white font-normal text-stone-900";
 
 // Rounded rather than exact once a date is a week or more away — "Due in 17
 // days" is precision nobody acts on. The bands are: 3–6 days counted out, then
@@ -52,7 +52,7 @@ export function dueBadgeFor(urgency: DueUrgency, daysUntil: number | null): DueB
 // here — the "later" badge is the one pill that stays non-bold, so each
 // className below carries its own weight.
 export const PILL_BASE =
-  "ml-1.5 whitespace-nowrap rounded-full px-1.5 py-px align-middle text-[10px] leading-[1.4] no-underline";
+  "ml-1.5 whitespace-nowrap nd-pill rounded-full px-1.5 py-px align-middle text-[10px] leading-[1.4] no-underline";
 
 // One pastel for every tag — deliberately outside the red/orange/yellow/grey
 // urgency ramp so a tag never reads as a due state, and picked to sit with the

@@ -38,8 +38,8 @@ export default function SoonColumn({
 
   const shape =
     variant === "card"
-      ? "rounded-2xl border border-slate-200/80 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 sm:pb-7"
-      : "flex-1 border-b border-slate-200/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0";
+      ? "surface rounded-2xl border border-line/80 px-4 pt-4 pb-6 sm:px-5 sm:pt-5 sm:pb-7"
+      : "flex-1 border-b border-line/70 px-4 pt-4 pb-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-5 sm:pt-5 sm:pb-7 sm:last:border-r-0";
   const background = isOver
     ? "bg-accent-100/60"
     : restingBg

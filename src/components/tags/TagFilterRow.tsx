@@ -226,10 +226,10 @@ export default function TagFilterRow({
             onPointerLeave={cancelLongPress}
             title={`${tag} — right-click or long-press to rename or remove`}
             style={{ WebkitTouchCallout: "none" }}
-            className={`focus-ring select-none rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
+            className={`focus-ring select-none nd-pill rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-50 ${
               active
                 ? "border-accent-100 bg-accent-50 text-accent-700"
-                : "border-slate-200/80 bg-white text-stone-600 hover:border-slate-300 hover:text-stone-900"
+                : "border-line/80 bg-white text-stone-600 hover:border-line-strong hover:text-stone-900"
             }`}
           >
             {tag}
@@ -305,7 +305,7 @@ function TagContextMenu({
       role="menu"
       aria-label={`Actions for tag ${state.tag}`}
       style={{ left, top, width: MENU_WIDTH }}
-      className="fixed z-50 overflow-hidden rounded-lg border border-slate-200/80 bg-white py-1 shadow-panel"
+      className="fixed z-50 overflow-hidden rounded-lg border border-line/80 bg-white py-1 shadow-panel"
     >
       <div className="truncate px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-400">
         {state.tag}

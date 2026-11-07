@@ -169,7 +169,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
         missingDateHint="Set a scheduled date above to make it recur."
       />
 
-      <div className="my-2.5 border-t border-slate-200/60" />
+      <div className="my-2.5 border-t border-line/60" />
 
       <RuleSection
         label="Due date"
@@ -207,7 +207,7 @@ export default function RecurrenceEditor({ task }: RecurrenceEditorProps) {
 }
 
 const selectClass =
-  "focus-ring rounded-lg border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-slate-300 focus:border-accent/60 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+  "focus-ring rounded-lg border border-line/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 transition-colors duration-150 hover:border-line-strong focus:border-accent/60 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 interface RuleSectionProps {
   label: string;

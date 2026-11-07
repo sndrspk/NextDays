@@ -43,12 +43,12 @@ export default function CustomListView({ listId }: CustomListViewProps) {
         <h2 className="text-[22px] font-semibold tracking-tight text-stone-900 sm:text-[26px]">
           {list.name}
         </h2>
-        <span className="rounded-full border border-slate-200/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
+        <span className="nd-pill rounded-full border border-line/80 bg-white/70 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-500">
           List
         </span>
       </header>
 
-      <div className="inline-flex w-fit gap-0.5 rounded-lg border border-slate-200/80 bg-white/60 p-0.5 text-[12px]">
+      <div className="inline-flex w-fit gap-0.5 rounded-lg border border-line/80 bg-white/60 p-0.5 text-[12px]">
         {(["active", "completed", "all"] as const).map((f) => (
           <button
             key={f}
@@ -64,7 +64,7 @@ export default function CustomListView({ listId }: CustomListViewProps) {
         ))}
       </div>
 
-      <div className="mt-4 flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95">
+      <div className="mt-4 flex flex-1 flex-col overflow-hidden surface rounded-2xl border border-line/80 bg-white/95">
         <div className="flex-1 overflow-y-auto">
           {itemsQuery.isLoading ? (
             <p className="p-8 text-sm text-stone-400">Loading…</p>
@@ -74,7 +74,7 @@ export default function CustomListView({ listId }: CustomListViewProps) {
               <p className="text-xs text-stone-400">Add one below to get started.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-line/50">
               {filtered.map((item) => (
                 <ItemRow key={item.id} item={item} />
               ))}
@@ -121,7 +121,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
           className={`focus-ring inline-flex h-4 w-4 flex-none items-center justify-center rounded-full border transition-all duration-150 ease-out-soft ${
             item.completed
               ? "border-accent bg-accent text-white"
-              : "border-stone-300 bg-white hover:border-accent/60 hover:shadow-sm"
+              : "border-line-strong bg-white hover:border-accent/60 hover:shadow-sm"
           } disabled:opacity-50`}
         >
           {item.completed && (
@@ -182,7 +182,7 @@ function ItemRow({ item }: { item: CustomListItem }) {
             onBlur={saveNotes}
             placeholder="Notes…"
             rows={2}
-            className="focus-ring w-full resize-y rounded-lg border border-slate-200/80 bg-slate-50/60 px-2.5 py-2 text-[12px] leading-relaxed text-stone-700 placeholder:text-stone-300 focus:border-accent/60 focus:bg-white focus:outline-none"
+            className="focus-ring w-full resize-y rounded-lg border border-line/80 bg-slate-50/60 px-2.5 py-2 text-[12px] leading-relaxed text-stone-700 placeholder:text-stone-300 focus:border-accent/60 focus:bg-white focus:outline-none"
           />
         </div>
       )}
@@ -209,9 +209,9 @@ function AddItemRow({ listId }: { listId: UUID }) {
         e.preventDefault();
         submit();
       }}
-      className="flex items-center gap-3 border-t border-slate-200/70 bg-slate-50/40 px-4 py-3 sm:px-5"
+      className="flex items-center gap-3 border-t border-line/70 bg-slate-50/40 px-4 py-3 sm:px-5"
     >
-      <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full border border-dashed border-stone-300 text-[10px] text-stone-400">
+      <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full border border-dashed border-line-strong text-[10px] text-stone-400">
         +
       </span>
       <input

@@ -43,14 +43,14 @@ export default function ProjectForm({
         if (!trimmed) return;
         onSubmit({ name: trimmed, colour, is_personal: isPersonal });
       }}
-      className="animate-fade-up space-y-3 rounded-xl border border-slate-200/80 bg-white p-3"
+      className="animate-fade-up surface space-y-3 rounded-xl border border-line/80 bg-white p-3"
     >
       <input
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Project name"
-        className="w-full border-0 border-b border-stone-200 bg-transparent pb-1 text-[13px] text-stone-900 placeholder:text-stone-400 focus:border-accent focus:outline-none"
+        className="w-full border-0 border-b border-line/70 bg-transparent pb-1 text-[13px] text-stone-900 placeholder:text-stone-400 focus:border-accent focus:outline-none"
       />
 
       <div className="flex flex-wrap gap-1.5">
@@ -68,7 +68,7 @@ export default function ProjectForm({
         ))}
       </div>
 
-      <div className="inline-flex gap-0.5 rounded-lg border border-slate-200/80 bg-slate-50/60 p-0.5 text-[11px]">
+      <div className="inline-flex gap-0.5 rounded-lg border border-line/80 bg-slate-50/60 p-0.5 text-[11px]">
         {(
           [
             { v: true, label: "Personal" },

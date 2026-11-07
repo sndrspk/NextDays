@@ -130,7 +130,7 @@ export default function NotificationSection() {
             markDirty();
           }}
           placeholder="e.g. 123456789012345678"
-          className="focus-ring w-full rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 font-mono text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
+          className="focus-ring w-full rounded-md border border-line/80 bg-white px-2.5 py-1.5 font-mono text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
         />
         <p className="text-[11px] text-stone-400">
           Discord → Settings → Advanced → Developer Mode, then right-click your
@@ -150,7 +150,7 @@ export default function NotificationSection() {
               setHour(Number(e.target.value));
               markDirty();
             }}
-            className="focus-ring w-full rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
+            className="focus-ring w-full rounded-md border border-line/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
           >
             {HOUR_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -170,7 +170,7 @@ export default function NotificationSection() {
               setTimezone(e.target.value);
               markDirty();
             }}
-            className="focus-ring w-full rounded-md border border-slate-200/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
+            className="focus-ring w-full rounded-md border border-line/80 bg-white px-2.5 py-1.5 text-[12px] text-stone-800 focus:border-accent/60 focus:outline-none"
           >
             {TIMEZONES.map((tz) => (
               <option key={tz.value} value={tz.value}>
@@ -214,7 +214,7 @@ export default function NotificationSection() {
       </div>
 
       {/* Setup instructions */}
-      <div className="rounded-lg border border-slate-200/60 bg-slate-50 px-4 py-3">
+      <div className="rounded-lg border border-line/60 bg-slate-50 px-4 py-3">
         <p className="mb-1.5 text-[11px] font-medium text-stone-600">Setup checklist</p>
         <ol className="list-decimal space-y-1 pl-4 text-[11px] text-stone-500">
           <li>

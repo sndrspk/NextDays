@@ -116,7 +116,7 @@ function MobileTopBar({ onOpenNav }: { onOpenNav: () => void }) {
       : "List";
 
   return (
-    <header className="flex flex-none items-center gap-3 border-b border-slate-200/70 bg-white/80 px-3 py-2.5 md:hidden">
+    <header className="flex flex-none items-center gap-3 border-b border-line/70 bg-white/80 px-3 py-2.5 md:hidden">
       <button
         type="button"
         onClick={onOpenNav}

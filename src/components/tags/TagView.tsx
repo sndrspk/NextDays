@@ -54,7 +54,7 @@ export default function TagView({ tag }: { tag: string }) {
         <button
           type="button"
           onClick={() => setView({ kind: "calendar" })}
-          className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3 py-1.5 text-[12px] font-medium text-stone-600 transition-colors hover:bg-slate-50"
+          className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-line/80 bg-white px-3 py-1.5 text-[12px] font-medium text-stone-600 transition-colors hover:bg-slate-50"
         >
           <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M10.5 3.5L5.5 8l5 4.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -63,7 +63,7 @@ export default function TagView({ tag }: { tag: string }) {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/95 px-2 py-1.5">
+      <div className="flex-1 overflow-y-auto surface rounded-2xl border border-line/80 bg-white/95 px-2 py-1.5">
         {query.isLoading ? (
           <p className="p-8 text-sm text-stone-400">Loading...</p>
         ) : sorted.length === 0 ? (

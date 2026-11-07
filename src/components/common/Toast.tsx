@@ -13,7 +13,7 @@ export default function ToastItem({ id, message, actionLabel, onAction }: ToastP
   return (
     <div
       role="status"
-      className="pointer-events-auto flex w-full items-center gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-panel sm:w-auto"
+      className="pointer-events-auto flex w-full items-center gap-3 rounded-xl border border-line/80 bg-white px-4 py-3 shadow-panel sm:w-auto"
     >
       <span className="flex-1 text-[13px] text-stone-800">{message}</span>
       {actionLabel && onAction && (

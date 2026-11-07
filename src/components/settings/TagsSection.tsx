@@ -20,7 +20,7 @@ export default function TagsSection() {
   }
 
   return (
-    <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200/80 bg-white">
+    <ul className="divide-y divide-line/50 rounded-xl border border-line/80 bg-white">
       {tags.map((tag) => (
         <TagRow key={tag.name.toLowerCase()} tag={tag} />
       ))}
@@ -88,13 +88,13 @@ function TagRow({ tag }: { tag: TagUsage }) {
               }
             }}
             disabled={pending}
-            className="focus-ring w-full rounded-md border border-slate-200/80 bg-white px-2 py-1 text-[13px] text-stone-800 focus:border-accent/60 focus:outline-none"
+            className="focus-ring w-full rounded-md border border-line/80 bg-white px-2 py-1 text-[13px] text-stone-800 focus:border-accent/60 focus:outline-none"
           />
         ) : (
           <button
             type="button"
             onClick={() => setView({ kind: "tag", tag: tag.name })}
-            className="rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-stone-600 transition-colors hover:bg-slate-200/70 hover:text-stone-900"
+            className="nd-pill rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-stone-600 transition-colors hover:bg-slate-200/70 hover:text-stone-900"
           >
             #{tag.name}
           </button>
@@ -109,7 +109,7 @@ function TagRow({ tag }: { tag: TagUsage }) {
             type="button"
             onClick={startEdit}
             disabled={pending}
-            className="focus-ring rounded-md border border-slate-200/80 bg-white px-2 py-1 text-[11px] font-medium text-stone-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+            className="focus-ring rounded-md border border-line/80 bg-white px-2 py-1 text-[11px] font-medium text-stone-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
           >
             Rename
           </button>

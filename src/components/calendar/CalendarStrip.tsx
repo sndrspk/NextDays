@@ -196,7 +196,7 @@ export default function CalendarStrip() {
             />
           </div>
         ) : (
-          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 sm:min-h-[70vh] sm:flex-row xl:[&>section]:min-w-[180px] 2xl:[&>section]:min-w-[220px]">
+          <div className="flex flex-col overflow-hidden surface rounded-2xl border border-line/80 bg-white/95 sm:min-h-[70vh] sm:flex-row xl:[&>section]:min-w-[180px] 2xl:[&>section]:min-w-[220px]">
             {windowDates.map((date) => {
               const iso = toISODate(date);
               return (
@@ -228,7 +228,7 @@ export default function CalendarStrip() {
 
       <DragOverlay dropAnimation={null}>
         {activeTask ? (
-          <div className="rotate-1 scale-105 rounded-lg border border-slate-200 bg-white px-2 py-1.5 shadow-panel opacity-95">
+          <div className="rotate-1 scale-105 rounded-lg border border-line bg-white px-2 py-1.5 shadow-panel opacity-95">
             <TaskCard task={activeTask} today={today} />
           </div>
         ) : null}
